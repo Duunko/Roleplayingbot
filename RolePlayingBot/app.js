@@ -10,9 +10,10 @@ Requires: node, discord.js, fs
 const Discord = require("discord.js");
 const fs = require('fs');
 const path = require('path');
+const package = require('./package.json');
 
 //bot token ***DO NOT SHARE***
-const token = "MzcxNzg5NzE5MjgyOTA5MTg0.DM6vwQ.2G4msbOZXp7fVWLbBB7ujZLdei0";
+const token = package.token;
 
 //prefix for bot commands
 const prefix = "*";
@@ -121,7 +122,7 @@ bot.on("message", function (message) {
             var text = args.splice(1).join(" ");
 
             //searches for new lines and seperates headers from texts
-            var regEx = /^(?:"|ì)(.*?)(?:"|î)\w*(.*?)$/gm;
+            var regEx = /^(?:"|‚Äú)(.*?)(?:"|‚Äù)\w*(.*?)$/gm;
             var match;
             while ((match = regEx.exec(text)) !== null) {
                 console.log("ping");
