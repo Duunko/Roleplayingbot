@@ -11,5 +11,6 @@
   "dependencies": {
     "discord.js": "^11.2.1",
     "discordv8": "^8.4.2"
-  }
+  },
+  "token": "MzcxNzg5NzE5MjgyOTA5MTg0.DM6vwQ.2G4msbOZXp7fVWLbBB7ujZLdei0"
 }
