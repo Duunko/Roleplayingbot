@@ -153,8 +153,9 @@ bot.on("message", function (message) {
         //"header1" TEXT1
         //"header2" TEXT2
         case "quest":
+            
+			new_quest(args, message);
 
-            new_quest(args, message);
 
             break;
 
