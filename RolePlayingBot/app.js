@@ -16,6 +16,9 @@ const mysql = require('mysql');
 //bot token ***DO NOT SHARE***
 const token = package.token;
 
+//for exp/level calculations
+const level_up_breakpoints = [0, 300, 900, 2700, 6500, 14000, 23000, 34000, 48000, 64000, 85000, 100000, 120000, 140000, 165000, 195000, 225000, 265000, 305000, 355000];
+
 //prefix for bot commands
 const prefix = "~";
 
@@ -90,6 +93,18 @@ bot.on("message", function (message) {
         case "list":
 
             list_quests(args, message);
+
+            return;
+
+        case "spell":
+            //IN PROGRESS, POTENTIALLY ERRORS
+            search_spells(args, message);
+
+            return;
+
+        case "loot":
+
+            roll_loot(args, message);
 
             return;
 
@@ -451,6 +466,143 @@ var update_bot_status = function (args, message) {
 }
 
 
+
+var search_spells = function (args, message) {
+
+    if (!args[1]) {
+        return message.channel.send("Please give a spell");
+    }
+
+    var spell_name = args.splice(1).join(" ");
+
+    for (spell in spell_list) {
+        var current_spell = spell_list[spell];
+        if (current_spell.name.toLowerCase() == spell_name.toLowerCase()) {
+            var show_spell = new Discord.RichEmbed()
+                .setColor([40, 110, 200])
+                .setTitle("Spell")
+                .setThumbnail(bot.user.avatarURL);
+
+            var spell_basics = "";
+
+            if (current_spell.level == "0") {
+                spell_basics += "Cantrip ";
+            } else {
+                spell_basics += `Level ${current_spell.level} `;
+            }
+
+            switch (current_spell.school) {
+                case 'T':
+                    spell_basics += `Transmutation`;
+                    break;
+                case 'E':
+                    spell_basics += `Enchantment`;
+                    break;
+                case 'V':
+                    spell_basics += `Evocation`;
+                    break;
+                case 'C':
+                    spell_basics += `Conjuration`;
+                    break;
+                case 'A':
+                    spell_basics += `Abjuration`;
+                    break;
+                case 'D':
+                    spell_basics += `Divination`;
+                    break;
+                case 'N':
+                    spell_basics += `Necromancy`;
+                    break;
+                case 'I':
+                    spell_basics += `Illusion`;
+                    break;
+                default:
+                    spell_basics += `Schoolless`;
+            }
+
+            spell_basics += " Spell (";
+
+            for (caster_class in current_spell.classes.fromClassList) {
+                spell_basics += `${current_spell.classes.fromClassList[caster_class].name}, `;
+            }
+
+
+            for (caster_subclass in current_spell.classes.fromSubclass) {
+                spell_basics += `${current_spell.classes.fromSubclass[caster_subclass].class.name} (${current_spell.classes.fromSubclass[caster_subclass].subclass.name}), `
+            }
+
+            spell_basics = `${spell_basics.substring(0, spell_basics.length - 2)}).`;
+
+            show_spell.addField(current_spell.name, spell_basics);
+
+            show_spell.addField("Casting Time", `${current_spell.time[0].number} ${current_spell.time[0].unit}`);
+
+            var description = "";
+            var extras = {};
+
+            for (entry in current_spell.entries) {
+
+                if (!current_spell.entries[entry].type) {
+                    description += `${current_spell.entries[entry]}\n`;
+                } else {
+                    extras[current_spell.entries[entry].name] = current_spell.entries[entry].entries;
+                }
+            }
+
+            console.log(description.length);
+
+            if (description.length > 2000) {
+                var description_array = []
+                var i = 0;
+                while (description.length > 1000) {
+                    description_array[i] = description.substring(0, 1000);
+                    console.log(description_array[i]);
+                    i++;
+                    description = description.substring(1000);
+                }
+                description_array[i] = description;
+                show_spell.addField("Description", description_array[0]);
+
+                //console.log(description_array);
+
+                for (i = 1; i < description_array.length; i++) {
+                    //show_spell.addField(, description_array[i]);
+                }
+
+            } else {
+                show_spell.addField("Description", description);
+            }
+
+            for (extra in extras) {
+                show_spell.addField(extra, extras[extra]);
+            }
+
+            message.channel.send(show_spell);
+        }
+    }
+
+}
+
+
+var roll_loot = function (args, message) {
+
+    //CHOOSES WHAT TABLE TO ROLL LOOT FROM (SHOULD BE CHANGED TO REFLECT SHARDS USED)
+    var table_number = parseInt(Math.random() * 9);
+    var table = loot_table[table_number].table;
+
+    //ROLLS A D100 FOR LOOT
+    var d100 = parseInt(Math.random() * 100 + 1);
+
+    //FINDS THE RESULT ON CORRECT TABLE
+    for (var i = 0; i < table.length; i++) {
+        if (table[i].min <= d100 & table[i].max >= d100) {
+            message.channel.send(`The Collector gave you a ${table[i].item}`);
+            return;
+        }
+    }
+
+}
+
 var add_character = function (args, message) {
 	//if there are not the right number of arguments, return.
 	
@@ -493,58 +645,79 @@ var add_character = function (args, message) {
 }
 
 
-var quest_complete = function(args, message) {
-	
-	var text = args.splice(1).join(" ");
-	
-	var regEx = /^(?:"|“)(.*?)\W*(?:"|”) (.*?)$/gm;
-    var match;
-	
-	console.log(text);
-	
-	var players = [];
-	var xp;
-	var checker = false;
-	
-	while ((match = regEx.exec(text)) !== null) {
-        console.log("ping");
-		if(match[1].toLowerCase() == "player"){
-			players.push(match[2]);
-		}
-        else if(match[1].toLowerCase() == 'xp' || match[1].toLowerCase == 'exp') {
-			
-			xp = match[2];
-			checker = true;
-        } 
-        
+var quest_complete = function (args, message) {
+
+    //input form:
+    //~quest_complete xp_value_integer, player1 name, player2 name, player3 name... playerN name
+
+    //doesn't care about line breaks. you can use them or not use them and the regex will be fine
+
+    var xp = parseInt(args[1]);
+
+    if (!xp) {
+        return message.author.send("The experience value was incorrect");
     }
-	
-	if(checker === false || players.length === 0){
-		message.author.send("Incorrect arguments, add players or an XP value");
-		console.log(checker + " " + xp + " " + players.length);
-		return;	
-	}
-	
-	var sql = "UPDATE roster SET exp=exp +" + xp + ", edited=1 WHERE charName IN (\'";
-	for(var i = 0; i < players.length; i++){
-		sql += players[i] + "\'";
-		if(i + 1 != players.length){
-			sql += ", \'";
-		}
-	}
-	sql += ");"
-	
-	console.log(sql);
-	
-	con.connect(function(err) {
-		if (err) throw err;
-		console.log("Connected!");
-		con.query(sql, function (err, result) {
-		if (err) throw err;
-			console.log("Values updated");
-		});
-	});
-	
+
+    //starts at args[2] to ignore the experience value
+    var text = args.splice(2).join(" ");
+
+    var regEx = /\W*(.*?)(?:,|$)/g;
+    var match;
+
+    console.log(text);
+
+    var players = [];
+    var xp;
+
+    while ((match = regEx.exec(text)) !== null) {
+        console.log("ping");
+        players.push(match[1]);
+    }
+
+    if (players.length === 0) {
+        return message.author.send("Incorrect arguments, there needs to be at least 1 player");
+    }
+
+    var sql = "UPDATE roster SET exp=exp +" + xp + ", edited=1 WHERE charName IN (\'";
+    for (var i = 0; i < players.length; i++) {
+        sql += players[i] + "\'";
+        if (i + 1 != players.length) {
+            sql += ", \'";
+        }
+    }
+    sql += ");"
+
+    console.log(sql);
+
+    con.connect(function (err) {
+        if (err) throw err;
+        console.log("Connected!");
+        con.query(sql, function (err, result) {
+            if (err) throw err;
+            console.log("Values updated");
+        });
+    });
+
+    //SQL CALL TO GET LIST OF PLAYERS, RETURNS ARRAY/OBJECT
+
+
+
+    /////////////////////////////////
+
+    for (player in players) {
+        player.exp += exp_gained;
+        var changed = false;
+        while (player.exp > level_up_breakpoints[player.level]) {
+            player.level++;
+        }
+        if (changed) {
+            message.channel.send(`${player.char_name} has leveled up to ${player.level}`);
+            //SQL UPDATE LEVEL 
+
+            //////////////////
+        }
+    }
+
 }
 
 var add_shards = function(args, message){
@@ -604,4 +777,62 @@ var add_shards = function(args, message){
 		});
 	});
 	
+}
+
+
+
+var spend_dth = function (args, message) {
+
+    var dth_use = args.splice(1).join(" ");
+    var dth_quantity;
+
+    if (dth_use == "skill") {
+        dth_quantity = 120;
+    } else if (dth_use == "weapon" || dth_use == "armor") {
+        dth_quantity = 80;
+    } else if (dth_use == "tool" || dth_use == "language") {
+        dth_quantity = 40;
+    } else if (parseInt(dth_use)) {
+        dth_quantity = parseInt(dth_use);
+    } else {
+        return message.channel.send("Invalid argument");
+    }
+
+
+    //SQL CALL TO VERIFY HAVE NECESSARY DTH TO SPEND
+    var sqlCall;
+    var player = sqlCall;
+    if (player.dth < dth_quantity) {
+        return message.channel.send("You do not have enough DTH for this task.");
+    }
+    /////////////////////////////////////////////////
+
+    switch (dth_quantity) {
+        case 0:
+        case 1:
+        case 2:
+        case 3:
+        case 4:
+        case 5:
+        case 6:
+        case 7:
+        case 8:
+            message.channel.send(`${player.char_name} has spent ${dth_quantity} hours work and and earned ${dth_quantity * 15} gp from your profession.`);
+            break;
+        case 40:
+        case 80:
+        case 120:
+            message.channel.send(`${player.char_name} has spent ${dth_quantity} hours learning and picked up a new ${dth_use} proficiency.`);
+            break;
+        default:
+            return message.channel.send("You have given an invalid amount of DTH to spend.");
+    }
+
+    //SQL CALL TO UPDATE PLAYERS DTH HOURS FOR PLAYER
+
+
+
+    /////////////////////////////////////////////////
+
+
 }
