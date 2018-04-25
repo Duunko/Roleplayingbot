@@ -60,10 +60,16 @@ bot.on("ready", () => {
 	}
 	
 	con = mysql.createConnection({
-		host: "35.185.199.134",
-		user: "root",
+		connectionLimit: 10,
+		host: "colonelrabbit.com",
+		user: "bot_user",
 		password: "Adventurer123",
-		database: "rosterinfo"
+		database: "guildrosterdata"
+	});
+	
+	con.connect(function(err) {
+		if (err) throw err;
+		console.log("Connected!");
 	});
 	
     console.log("Ready");
@@ -507,18 +513,12 @@ var add_character = function (args, message) {
 	var level = check_level(xp);
 	
 	
-	
-	
-	
-	con.connect(function(err) {
-		if (err) throw err;
-		console.log("Connected!");
-		var sql = "INSERT INTO roster (charName, charPlayer, exp, downHours, riftShards, dead, edited, level) VALUES (\'" + outCats[0]+ "\', \'" + outCats[1] + "\', " + outCats[2] + ", 0, 0, 0, 0, " + level + ")";
-		con.query(sql, function (err, result) {
+	var sql = "INSERT INTO roster (charName, charPlayer, exp, downHours, riftShards, dead, edited, level) VALUES (\'" + outCats[0]+ "\', \'" + outCats[1] + "\', " + outCats[2] + ", 0, 0, 0, 0, " + level + ")";
+	con.query(sql, function (err, result) {
 		if (err) throw err;
 			console.log("1 record inserted");
-		});
 	});
+
 }
 
 
@@ -573,28 +573,25 @@ var quest_complete = function(args, message) {
 	}
 	sql += ");"
 	
-	con.connect(function(err) {
+	con.query(quer1, function (err, result, fields) {
 		if (err) throw err;
-		con.query(quer1, function (err, result, fields) {
+			
+		con.query(sql, function (err, result) {
 			if (err) throw err;
-			
-			con.query(sql, function (err, result) {
-				if (err) throw err;
-				console.log("Values updated");
-			});		
-			for(var i = 0; i < result.length; i++){
-				newLevel = check_level(parseInt(result[i].exp) + parseInt(xp));
-				console.log(newLevel);
-				if (newLevel > parseInt(result[i].level)){
-					con.query("UPDATE roster SET level=" + newLevel + " WHERE charName=\'" + result[i].charName + "\';", function(err, result) {
-						if (err) throw err;
-						console.log("Level updated");
-					});
-					level_message(result[i].charName, result[i].charPlayer, result[i].level);
-				}
+			console.log("Values updated");
+		});		
+		for(var i = 0; i < result.length; i++){
+			newLevel = check_level(parseInt(result[i].exp) + parseInt(xp));
+			console.log(newLevel);
+			if (newLevel > parseInt(result[i].level)){
+				con.query("UPDATE roster SET level=" + newLevel + " WHERE charName=\'" + result[i].charName + "\';", function(err, result) {
+					if (err) throw err;
+					console.log("Level updated");
+				});
+				level_message(result[i].charName, result[i].charPlayer, result[i].level);
 			}
+		}
 			
-		});
 	});
 	
 	
@@ -648,14 +645,10 @@ var add_shards = function(args, message){
 	
 	console.log(sql);
 	
-	con.connect(function(err) {
-		if (err) throw err;
-		console.log("Connected!");
-		con.query(sql, function (err, result) {
+	con.query(sql, function (err, result) {
 		if (err) throw err;
 			console.log("Values updated");
 		});
-	});
 	
 }
 
@@ -707,14 +700,11 @@ var add_hours = function(args, message){
 	
 	console.log(sql);
 	
-	con.connect(function(err) {
-		if (err) throw err;
-		console.log("Connected!");
+
 		con.query(sql, function (err, result) {
 		if (err) throw err;
 			console.log("Values updated");
 		});
-	});
 	
 }
 
