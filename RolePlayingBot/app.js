@@ -1,7 +1,7 @@
 /*
 Title: RP Bot
 Description: Posts quest listings for a D&D adventurers guild campaign
-Version: 2.0.0
+Version: 3.0.2
 Author: Colonel Rabbit, Duunko
 Requires: node, discord.js, fs
 */
@@ -26,13 +26,18 @@ bot.login(token);
 //Channel Consts
 const quest_board_id = '438050640271507466';
 const complete_board_id = '438461335337172992';
+const server_id = '438048843150393366';
 var quest_board;
 var adv_guild;
 var complete_board;
+var server;
 
 const folder = './';
 
 var con;
+
+var xp_table;
+var loot_table;
 
 
 
@@ -42,6 +47,17 @@ bot.on("ready", () => {
     quest_board = bot.channels.get(quest_board_id);
     adv_guild = quest_board.guild;
 	complete_board = bot.channels.get(complete_board_id);
+	server = bot.guilds.get(server_id);
+	
+	var new_xp_table = JSON.parse(fs.readFileSync('level_xp.json', 'utf8'));
+	
+	var tab = Object.entries(new_xp_table);
+	
+	xp_table = [];
+	
+	for(var i = 0; i < tab.length; i++) {
+		xp_table.push(tab[i][1]);
+	}
 	
 	con = mysql.createConnection({
 		host: "35.185.199.134",
@@ -192,6 +208,11 @@ bot.on("message", function (message) {
 			
 			break;
 			
+		case "addhours":
+		
+			add_hours(args, message);
+			
+			break;
 
         //if not a valid command, note it
         default:
@@ -481,10 +502,18 @@ var add_character = function (args, message) {
 		
 	}
 	
+	var xp = parseInt(outCats[2]);
+	
+	var level = check_level(xp);
+	
+	
+	
+	
+	
 	con.connect(function(err) {
 		if (err) throw err;
 		console.log("Connected!");
-		var sql = "INSERT INTO roster (charName, charPlayer, exp, downHours, riftShards, dead, edited) VALUES (\'" + outCats[0]+ "\', \'" + outCats[1] + "\', " + outCats[2] + ", 0, 0, 0, 0)";
+		var sql = "INSERT INTO roster (charName, charPlayer, exp, downHours, riftShards, dead, edited, level) VALUES (\'" + outCats[0]+ "\', \'" + outCats[1] + "\', " + outCats[2] + ", 0, 0, 0, 0, " + level + ")";
 		con.query(sql, function (err, result) {
 		if (err) throw err;
 			console.log("1 record inserted");
@@ -525,6 +554,16 @@ var quest_complete = function(args, message) {
 		return;	
 	}
 	
+		
+	var quer1 = "SELECT exp, level, charName, charPlayer FROM roster WHERE charName IN (\'";
+	for(var i = 0; i < players.length; i++){
+		quer1 += players[i] + "\'";
+		if(i + 1 != players.length){
+			quer1 += ", \'";
+		}
+	}
+	quer1 += ");"
+	
 	var sql = "UPDATE roster SET exp=exp +" + xp + ", edited=1 WHERE charName IN (\'";
 	for(var i = 0; i < players.length; i++){
 		sql += players[i] + "\'";
@@ -534,16 +573,30 @@ var quest_complete = function(args, message) {
 	}
 	sql += ");"
 	
-	console.log(sql);
-	
 	con.connect(function(err) {
 		if (err) throw err;
-		console.log("Connected!");
-		con.query(sql, function (err, result) {
-		if (err) throw err;
-			console.log("Values updated");
+		con.query(quer1, function (err, result, fields) {
+			if (err) throw err;
+			
+			con.query(sql, function (err, result) {
+				if (err) throw err;
+				console.log("Values updated");
+			});		
+			for(var i = 0; i < result.length; i++){
+				newLevel = check_level(parseInt(result[i].exp) + parseInt(xp));
+				console.log(newLevel);
+				if (newLevel > parseInt(result[i].level)){
+					con.query("UPDATE roster SET level=" + newLevel + " WHERE charName=\'" + result[i].charName + "\';", function(err, result) {
+						if (err) throw err;
+						console.log("Level updated");
+					});
+					level_message(result[i].charName, result[i].charPlayer, result[i].level);
+				}
+			}
+			
 		});
 	});
+	
 	
 }
 
@@ -605,3 +658,84 @@ var add_shards = function(args, message){
 	});
 	
 }
+
+var add_hours = function(args, message){
+	console.log(message.author.username);
+	if(message.author.id != '188928848287498240'){
+		message.author.send("You do not have permission to use this command!");
+		return;
+	}
+	
+	var text = args.splice(1).join(" ");
+	
+	var regEx = /^(?:"|“)(.*?)\W*(?:"|”) (.*?)$/gm;
+    var match;
+	
+	console.log(text);
+	
+	var players = [];
+	var hours;
+	var checker = false;
+	
+	while ((match = regEx.exec(text)) !== null) {
+        console.log("ping");
+		if(match[1].toLowerCase() == "player"){
+			players.push(match[2]);
+		}
+        else if(match[1].toLowerCase() == 'hours') {
+			
+			hours = match[2];
+			checker = true;
+        } 
+        
+    }
+	
+	if(checker === false || players.length === 0){
+		message.author.send("Incorrect arguments, add players or a shard value");
+		console.log(checker + " " + xp + " " + players.length);
+		return;	
+	}
+	
+	var sql = "UPDATE roster SET downHours=downHours +" + hours + ", edited=1 WHERE charName IN (\'";
+	for(var i = 0; i < players.length; i++){
+		sql += players[i] + "\'";
+		if(i + 1 != players.length){
+			sql += ", \'";
+		}
+	}
+	sql += ");"
+	
+	console.log(sql);
+	
+	con.connect(function(err) {
+		if (err) throw err;
+		console.log("Connected!");
+		con.query(sql, function (err, result) {
+		if (err) throw err;
+			console.log("Values updated");
+		});
+	});
+	
+}
+
+var level_message = function(character, player, level){
+	//playerID = server.members.find(val => val.user.name == player);
+	
+	//playerID.send("Congratulations, your character " + character + " has made it to level " + level + "!");
+	
+	
+}
+
+var check_level = function(xp) {
+	var retval = 1
+	for(var i = 0; i < xp_table.length; i++){
+		if(xp >= xp_table[i][0]){
+			retval = xp_table[i][1];
+		} else {
+			break;
+		}
+		
+	}
+	return retval;
+}
+

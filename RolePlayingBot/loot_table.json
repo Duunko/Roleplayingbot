@@ -1,0 +1,1631 @@
+{
+	"magicitems": [
+		{
+			"name": "Magic Item Table A",
+			"type": "A",
+			"table": [
+				{
+					"min": 1,
+					"max": 20,
+					"item": "Potion of Healing"
+				},
+				{
+					"min": 21,
+					"max": 30,
+					"item": "Spell Scroll (Cantrip)"
+				},
+				{
+					"min": 31,
+					"max": 41,
+					"item": "Spell Scroll (1st Level)"
+				},
+				{
+					"min": 42,
+					"max": 42,
+					"item": "Armor of Gleaming"
+				},
+				{
+					"min": 43,
+					"max": 43,
+					"item": "Bead of Nourishment"
+				},
+				{
+					"min": 44,
+					"max": 44,
+					"item": "Bead of Refreshment"
+				},
+				{
+					"min": 45,
+					"max": 45,
+					"item": "Boots of False Tracks"
+				},
+				{
+					"min": 46,
+					"max": 46,
+					"item": "Candle of the Deep"
+				}
+			]
+		},
+		{
+			"name": "Magic Item Table B",
+			"source": "DMG",
+			"page": 144,
+			"type": "B",
+			"table": [
+				{
+					"min": 1,
+					"max": 15,
+					"item": "Potion of Greater Healing"
+				},
+				{
+					"min": 16,
+					"max": 22,
+					"item": "Potion of Fire Breath"
+				},
+				{
+					"min": 23,
+					"max": 29,
+					"item": "Potion of Resistance"
+				},
+				{
+					"min": 30,
+					"max": 34,
+					"item": "Ammunition +1|dmg"
+				},
+				{
+					"min": 35,
+					"max": 39,
+					"item": "Potion of Animal Friendship"
+				},
+				{
+					"min": 40,
+					"max": 44,
+					"item": "Potion of Hill Giant Strength"
+				},
+				{
+					"min": 45,
+					"max": 49,
+					"item": "Potion of Growth"
+				},
+				{
+					"min": 50,
+					"max": 54,
+					"item": "Potion of Water Breathing"
+				},
+				{
+					"min": 55,
+					"max": 59,
+					"item": "Spell Scroll (2nd Level)"
+				},
+				{
+					"min": 60,
+					"max": 64,
+					"item": "Spell Scroll (3rd Level)"
+				},
+				{
+					"min": 65,
+					"max": 67,
+					"item": "Bag of Holding"
+				},
+				{
+					"min": 68,
+					"max": 70,
+					"item": "Keoghtom's Ointment"
+				},
+				{
+					"min": 71,
+					"max": 73,
+					"item": "Oil of Slipperiness"
+				},
+				{
+					"min": 74,
+					"max": 75,
+					"item": "Dust of Disappearance"
+				},
+				{
+					"min": 76,
+					"max": 77,
+					"item": "Dust of Dryness"
+				},
+				{
+					"min": 78,
+					"max": 79,
+					"item": "Dust of Sneezing and Choking"
+				},
+				{
+					"min": 80,
+					"max": 81,
+					"item": "Elemental Gem, Red Corundum|dmg|Elemental Gem"
+				},
+				{
+					"min": 82,
+					"max": 83,
+					"item": "Philter of Love"
+				},
+				{
+					"min": 84,
+					"max": 84,
+					"item": "Alchemy Jug"
+				},
+				{
+					"min": 85,
+					"max": 85,
+					"item": "Cap of Water Breathing"
+				},
+				{
+					"min": 86,
+					"max": 86,
+					"item": "Cloak of the Manta Ray"
+				},
+				{
+					"min": 87,
+					"max": 87,
+					"item": "Driftglobe"
+				},
+				{
+					"min": 88,
+					"max": 88,
+					"item": "Goggles of Night"
+				},
+				{
+					"min": 89,
+					"max": 89,
+					"item": "Helm of Comprehending Languages"
+				},
+				{
+					"min": 90,
+					"max": 90,
+					"item": "Immovable Rod"
+				},
+				{
+					"min": 91,
+					"max": 91,
+					"item": "Lantern of Revealing"
+				},
+				{
+					"min": 92,
+					"max": 92,
+					"item": "Mariner's Armor"
+				},
+				{
+					"min": 93,
+					"max": 93,
+					"item": "Mithral Armor"
+				},
+				{
+					"min": 94,
+					"max": 94,
+					"item": "Potion of Poison"
+				},
+				{
+					"min": 95,
+					"max": 95,
+					"item": "Ring of Swimming"
+				},
+				{
+					"min": 96,
+					"max": 96,
+					"item": "Robe of Useful Items"
+				},
+				{
+					"min": 97,
+					"max": 97,
+					"item": "Rope of Climbing"
+				},
+				{
+					"min": 98,
+					"max": 98,
+					"item": "Saddle of the Cavalier"
+				},
+				{
+					"min": 99,
+					"max": 99,
+					"item": "Wand of Magic Detection"
+				},
+				{
+					"min": 100,
+					"max": 100,
+					"item": "Wand of Secrets"
+				}
+			]
+		},
+		{
+			"name": "Magic Item Table C",
+			"source": "DMG",
+			"page": 145,
+			"type": "C",
+			"table": [
+				{
+					"min": 1,
+					"max": 15,
+					"item": "Potion of Superior Healing"
+				},
+				{
+					"min": 16,
+					"max": 22,
+					"item": "Spell Scroll (4th Level)"
+				},
+				{
+					"min": 23,
+					"max": 27,
+					"item": "Ammunition +2|dmg"
+				},
+				{
+					"min": 28,
+					"max": 32,
+					"item": "Potion of Clairvoyance"
+				},
+				{
+					"min": 33,
+					"max": 37,
+					"item": "Potion of Diminution"
+				},
+				{
+					"min": 38,
+					"max": 42,
+					"item": "Potion of Gaseous Form"
+				},
+				{
+					"min": 43,
+					"max": 47,
+					"item": "Potion of Frost Giant Strength"
+				},
+				{
+					"min": 48,
+					"max": 52,
+					"item": "Potion of Stone Giant Strength"
+				},
+				{
+					"min": 53,
+					"max": 57,
+					"item": "Potion of Heroism"
+				},
+				{
+					"min": 58,
+					"max": 62,
+					"item": "Potion of Invulnerability"
+				},
+				{
+					"min": 63,
+					"max": 67,
+					"item": "Potion of Mind Reading"
+				},
+				{
+					"min": 68,
+					"max": 72,
+					"item": "Spell Scroll (5th Level)"
+				},
+				{
+					"min": 73,
+					"max": 75,
+					"item": "Elixir of Health"
+				},
+				{
+					"min": 76,
+					"max": 78,
+					"item": "Oil of Etherealness"
+				},
+				{
+					"min": 79,
+					"max": 81,
+					"item": "Potion of Fire Giant Strength"
+				},
+				{
+					"min": 82,
+					"max": 84,
+					"item": "Quaal's Feather Token, Anchor|dmg|Quaal's Feather Token"
+				},
+				{
+					"min": 85,
+					"max": 87,
+					"item": "Scroll of Protection from Aberrations|dmg|Scroll of Protection"
+				},
+				{
+					"min": 88,
+					"max": 89,
+					"item": "Bag of Beans"
+				},
+				{
+					"min": 90,
+					"max": 91,
+					"item": "Bead of Force"
+				},
+				{
+					"min": 92,
+					"max": 92,
+					"item": "Chime of Opening"
+				},
+				{
+					"min": 93,
+					"max": 93,
+					"item": "Decanter of Endless Water"
+				},
+				{
+					"min": 94,
+					"max": 94,
+					"item": "Eyes of Minute Seeing"
+				},
+				{
+					"min": 95,
+					"max": 95,
+					"item": "Folding Boat"
+				},
+				{
+					"min": 96,
+					"max": 96,
+					"item": "Heward's Handy Haversack"
+				},
+				{
+					"min": 97,
+					"max": 97,
+					"item": "Horseshoes of Speed"
+				},
+				{
+					"min": 98,
+					"max": 98,
+					"item": "Necklace of Fireballs"
+				},
+				{
+					"min": 99,
+					"max": 99,
+					"item": "Periapt of Health"
+				},
+				{
+					"min": 100,
+					"max": 100,
+					"item": "Sending Stones"
+				}
+			]
+		},
+		{
+			"name": "Magic Item Table D",
+			"source": "DMG",
+			"page": 145,
+			"type": "D",
+			"table": [
+				{
+					"min": 1,
+					"max": 20,
+					"item": "Potion of Supreme Healing"
+				},
+				{
+					"min": 21,
+					"max": 30,
+					"item": "Potion of Invisibility"
+				},
+				{
+					"min": 31,
+					"max": 40,
+					"item": "Potion of Speed"
+				},
+				{
+					"min": 41,
+					"max": 50,
+					"item": "Spell Scroll (6th level)"
+				},
+				{
+					"min": 51,
+					"max": 57,
+					"item": "Spell Scroll (7th level)"
+				},
+				{
+					"min": 58,
+					"max": 62,
+					"item": "Ammunition +3|dmg"
+				},
+				{
+					"min": 63,
+					"max": 67,
+					"item": "Oil of Sharpness"
+				},
+				{
+					"min": 68,
+					"max": 72,
+					"item": "Potion of Flying"
+				},
+				{
+					"min": 73,
+					"max": 77,
+					"item": "Potion of Cloud Giant Strength"
+				},
+				{
+					"min": 78,
+					"max": 82,
+					"item": "Potion of Longevity"
+				},
+				{
+					"min": 83,
+					"max": 87,
+					"item": "Potion of Vitality"
+				},
+				{
+					"min": 88,
+					"max": 92,
+					"item": "Spell Scroll (8th level)"
+				},
+				{
+					"min": 93,
+					"max": 95,
+					"item": "Horseshoes of a Zephyr"
+				},
+				{
+					"min": 96,
+					"max": 98,
+					"item": "Nolzur's Marvelous Pigments"
+				},
+				{
+					"min": 99,
+					"max": 99,
+					"item": "Bag of Devouring"
+				},
+				{
+					"min": 100,
+					"max": 100,
+					"item": "Portable Hole"
+				}
+			]
+		},
+		{
+			"name": "Magic Item Table E",
+			"source": "DMG",
+			"page": 145,
+			"type": "E",
+			"table": [
+				{
+					"min": 1,
+					"max": 30,
+					"item": "Spell Scroll (8th level)"
+				},
+				{
+					"min": 31,
+					"max": 55,
+					"item": "Potion of Storm Giant Strength"
+				},
+				{
+					"min": 56,
+					"max": 70,
+					"item": "Potion of Supreme Healing"
+				},
+				{
+					"min": 71,
+					"max": 86,
+					"item": "Spell Scroll (9th level)"
+				},
+				{
+					"min": 86,
+					"max": 93,
+					"item": "Universal Solvent"
+				},
+				{
+					"min": 94,
+					"max": 98,
+					"item": "Arrow of Slaying"
+				},
+				{
+					"min": 99,
+					"max": 100,
+					"item": "Sovereign Glue"
+				}
+			]
+		},
+		{
+			"name": "Magic Item Table F",
+			"source": "DMG",
+			"page": 146,
+			"type": "F",
+			"table": [
+				{
+					"min": 1,
+					"max": 15,
+					"item": "Weapon +1|dmg"
+				},
+				{
+					"min": 16,
+					"max": 18,
+					"item": "Shield +1|dmg"
+				},
+				{
+					"min": 19,
+					"max": 21,
+					"item": "Sentinel Shield"
+				},
+				{
+					"min": 22,
+					"max": 23,
+					"item": "Amulet of Proof Against Detection and Location"
+				},
+				{
+					"min": 24,
+					"max": 25,
+					"item": "Boots of Elvenkind"
+				},
+				{
+					"min": 26,
+					"max": 27,
+					"item": "Boots of Striding and Springing"
+				},
+				{
+					"min": 28,
+					"max": 29,
+					"item": "Bracers of Archery"
+				},
+				{
+					"min": 30,
+					"max": 31,
+					"item": "Brooch of Shielding"
+				},
+				{
+					"min": 32,
+					"max": 33,
+					"item": "Broom of Flying"
+				},
+				{
+					"min": 34,
+					"max": 35,
+					"item": "Cloak of Elvenkind"
+				},
+				{
+					"min": 36,
+					"max": 37,
+					"item": "Cloak of Protection"
+				},
+				{
+					"min": 38,
+					"max": 39,
+					"item": "Gauntlets of Ogre Power"
+				},
+				{
+					"min": 40,
+					"max": 41,
+					"item": "Hat of Disguise"
+				},
+				{
+					"min": 42,
+					"max": 43,
+					"item": "Javelin of Lightning"
+				},
+				{
+					"min": 44,
+					"max": 45,
+					"item": "Pearl of Power"
+				},
+				{
+					"min": 46,
+					"max": 47,
+					"item": "Rod of the Pact Keeper, +1|dmg"
+				},
+				{
+					"min": 48,
+					"max": 49,
+					"item": "Slippers of Spider Climbing"
+				},
+				{
+					"min": 50,
+					"max": 51,
+					"item": "Staff of the Adder"
+				},
+				{
+					"min": 52,
+					"max": 53,
+					"item": "Staff of the Python"
+				},
+				{
+					"min": 54,
+					"max": 55,
+					"item": "Sword of Vengeance"
+				},
+				{
+					"min": 56,
+					"max": 57,
+					"item": "Trident of Fish Command"
+				},
+				{
+					"min": 58,
+					"max": 59,
+					"item": "Wand of Magic Missiles"
+				},
+				{
+					"min": 60,
+					"max": 61,
+					"item": "Wand of the War Mage, +1|dmg"
+				},
+				{
+					"min": 62,
+					"max": 63,
+					"item": "Wand of Web"
+				},
+				{
+					"min": 64,
+					"max": 65,
+					"item": "Weapon of Warning"
+				},
+				{
+					"min": 66,
+					"max": 66,
+					"item": "Adamantine Chain Mail"
+				},
+				{
+					"min": 67,
+					"max": 67,
+					"item": "Adamantine Chain Shirt"
+				},
+				{
+					"min": 68,
+					"max": 68,
+					"item": "Adamantine Scale Mail"
+				},
+				{
+					"min": 69,
+					"max": 69,
+					"item": "Bag of Tricks, Gray|dmg"
+				},
+				{
+					"min": 70,
+					"max": 70,
+					"item": "Bag of Tricks, Rust|dmg"
+				},
+				{
+					"min": 71,
+					"max": 71,
+					"item": "Bag of Tricks, Tan|dmg"
+				},
+				{
+					"min": 72,
+					"max": 72,
+					"item": "Boots of the Winterlands"
+				},
+				{
+					"min": 73,
+					"max": 73,
+					"item": "Circlet of Blasting"
+				},
+				{
+					"min": 74,
+					"max": 74,
+					"item": "Deck of Illusions"
+				},
+				{
+					"min": 75,
+					"max": 75,
+					"item": "Eversmoking Bottle"
+				},
+				{
+					"min": 76,
+					"max": 76,
+					"item": "Eyes of Charming"
+				},
+				{
+					"min": 77,
+					"max": 77,
+					"item": "Eyes of the Eagle"
+				},
+				{
+					"min": 78,
+					"max": 78,
+					"item": "Figurine of Wondrous Power, Silver Raven|dmg"
+				},
+				{
+					"min": 79,
+					"max": 79,
+					"item": "Gem of Brightness"
+				},
+				{
+					"min": 80,
+					"max": 80,
+					"item": "Gloves of Missile Snaring"
+				},
+				{
+					"min": 81,
+					"max": 81,
+					"item": "Gloves of Swimming and Climbing"
+				},
+				{
+					"min": 82,
+					"max": 82,
+					"item": "Gloves of Thievery"
+				},
+				{
+					"min": 83,
+					"max": 83,
+					"item": "Headband of Intellect"
+				},
+				{
+					"min": 84,
+					"max": 84,
+					"item": "Helm of Telepathy"
+				},
+				{
+					"min": 85,
+					"max": 85,
+					"item": "Instrument of the Bards, Doss Lute|dmg"
+				},
+				{
+					"min": 86,
+					"max": 86,
+					"item": "Instrument of the Bards, Fochlucan Bandore|dmg"
+				},
+				{
+					"min": 87,
+					"max": 87,
+					"item": "Instrument of the Bards, Mac-Fuirmidh Cittern|dmg"
+				},
+				{
+					"min": 88,
+					"max": 88,
+					"item": "Medallion of Thoughts"
+				},
+				{
+					"min": 89,
+					"max": 89,
+					"item": "Necklace of Adaptation"
+				},
+				{
+					"min": 90,
+					"max": 90,
+					"item": "Periapt of Wound Closure"
+				},
+				{
+					"min": 91,
+					"max": 91,
+					"item": "Pipes of Haunting"
+				},
+				{
+					"min": 92,
+					"max": 92,
+					"item": "Pipes of the Sewers"
+				},
+				{
+					"min": 93,
+					"max": 93,
+					"item": "Ring of Jumping"
+				},
+				{
+					"min": 94,
+					"max": 94,
+					"item": "Ring of Mind Shielding"
+				},
+				{
+					"min": 95,
+					"max": 95,
+					"item": "Ring of Warmth"
+				},
+				{
+					"min": 96,
+					"max": 96,
+					"item": "Ring of Water Walking"
+				},
+				{
+					"min": 97,
+					"max": 97,
+					"item": "Quiver of Ehlonna"
+				},
+				{
+					"min": 98,
+					"max": 98,
+					"item": "Stone of Good Luck"
+				},
+				{
+					"min": 99,
+					"max": 99,
+					"item": "Wind Fan"
+				},
+				{
+					"min": 100,
+					"max": 100,
+					"item": "Winged Boots"
+				}
+			]
+		},
+		{
+			"name": "Magic Item Table G",
+			"source": "DMG",
+			"page": 147,
+			"type": "G",
+			"table": [
+				{
+					"min": 1,
+					"max": 11,
+					"item": "Weapon +2|dmg"
+				},
+				{
+					"min": 12,
+					"max": 14,
+					"item": "Figurine of Wondrous Power",
+					"table": [
+						"Figurine of Wondrous Power, Bronze Griffon|dmg",
+						"Figurine of Wondrous Power, Ebony Fly|dmg",
+						"Figurine of Wondrous Power, Golden Lions|dmg",
+						"Figurine of Wondrous Power, Ivory Goats|dmg",
+						"Figurine of Wondrous Power, Marble Elephant|dmg",
+						"Figurine of Wondrous Power, Onyx Dog|dmg",
+						"Figurine of Wondrous Power, Onyx Dog|dmg",
+						"Figurine of Wondrous Power, Serpentine Owl|dmg"
+					]
+				},
+				{
+					"min": 15,
+					"max": 15,
+					"item": "Adamantine Breastplate"
+				},
+				{
+					"min": 16,
+					"max": 16,
+					"item": "Adamantine Splint Armor"
+				},
+				{
+					"min": 17,
+					"max": 17,
+					"item": "Amulet of Health"
+				},
+				{
+					"min": 18,
+					"max": 18,
+					"item": "Armor of Vulnerability (Bludgeoning)|dmg|Armor of Vulnerability"
+				},
+				{
+					"min": 19,
+					"max": 19,
+					"item": "Arrow-catching Shield|dmg"
+				},
+				{
+					"min": 20,
+					"max": 20,
+					"item": "Belt of Dwarvenkind"
+				},
+				{
+					"min": 21,
+					"max": 21,
+					"item": "Belt of Hill Giant Strength"
+				},
+				{
+					"min": 22,
+					"max": 22,
+					"item": "Berserker Axe"
+				},
+				{
+					"min": 23,
+					"max": 23,
+					"item": "Boots of Levitation"
+				},
+				{
+					"min": 24,
+					"max": 24,
+					"item": "Boots of Speed"
+				},
+				{
+					"min": 25,
+					"max": 25,
+					"item": "Bowl of Commanding Water Elementals"
+				},
+				{
+					"min": 26,
+					"max": 26,
+					"item": "Bracers of Defense"
+				},
+				{
+					"min": 27,
+					"max": 27,
+					"item": "Brazier of Commanding Fire Elementals"
+				},
+				{
+					"min": 28,
+					"max": 28,
+					"item": "Cape of the Mountebank"
+				},
+				{
+					"min": 29,
+					"max": 29,
+					"item": "Censer of Controlling Air Elementals"
+				},
+				{
+					"min": 30,
+					"max": 30,
+					"item": "Chain Mail +1|dmg"
+				},
+				{
+					"min": 31,
+					"max": 31,
+					"item": "Chain Mail of Resistance"
+				},
+				{
+					"min": 32,
+					"max": 32,
+					"item": "Chain Shirt +1|dmg"
+				},
+				{
+					"min": 33,
+					"max": 33,
+					"item": "Chain Shirt of Resistance"
+				},
+				{
+					"min": 34,
+					"max": 34,
+					"item": "Cloak of Displacement"
+				},
+				{
+					"min": 35,
+					"max": 35,
+					"item": "Cloak of the Bat"
+				},
+				{
+					"min": 36,
+					"max": 36,
+					"item": "Cube of Force"
+				},
+				{
+					"min": 37,
+					"max": 37,
+					"item": "Daern's Instant Fortress"
+				},
+				{
+					"min": 38,
+					"max": 38,
+					"item": "Dagger of Venom"
+				},
+				{
+					"min": 39,
+					"max": 39,
+					"item": "Dimensional Shackles"
+				},
+				{
+					"min": 40,
+					"max": 40,
+					"item": "Dragon Slayer"
+				},
+				{
+					"min": 41,
+					"max": 41,
+					"item": "Elven Chain"
+				},
+				{
+					"min": 42,
+					"max": 42,
+					"item": "Flame Tongue"
+				},
+				{
+					"min": 43,
+					"max": 43,
+					"item": "Gem of Seeing"
+				},
+				{
+					"min": 44,
+					"max": 44,
+					"item": "Giant Slayer"
+				},
+				{
+					"min": 45,
+					"max": 45,
+					"item": "Glamoured Studded Leather"
+				},
+				{
+					"min": 46,
+					"max": 46,
+					"item": "Helm of Teleportation"
+				},
+				{
+					"min": 47,
+					"max": 47,
+					"item": "Horn of Blasting"
+				},
+				{
+					"min": 48,
+					"max": 48,
+					"item": "Horn of Valhalla (item Horn of Valhalla, Silver|dmg|silver or item Horn of Valhalla, Brass|dmg|brass)"
+				},
+				{
+					"min": 49,
+					"max": 49,
+					"item": "Instrument of the Bards, Canaith Mandolin|dmg"
+				},
+				{
+					"min": 50,
+					"max": 50,
+					"item": "Instrument of the Bards, Cli Lyre|dmg"
+				},
+				{
+					"min": 51,
+					"max": 51,
+					"item": "Ioun Stone, Awareness|dmg"
+				},
+				{
+					"min": 52,
+					"max": 52,
+					"item": "Ioun Stone, Protection|dmg"
+				},
+				{
+					"min": 53,
+					"max": 53,
+					"item": "Ioun Stone, Reserve|dmg"
+				},
+				{
+					"min": 54,
+					"max": 54,
+					"item": "Ioun Stone, Sustenance|dmg"
+				},
+				{
+					"min": 55,
+					"max": 55,
+					"item": "Iron Bands of Bilarro"
+				},
+				{
+					"min": 56,
+					"max": 56,
+					"item": "Leather Armor +1|dmg"
+				},
+				{
+					"min": 57,
+					"max": 57,
+					"item": "Leather Armor of Resistance"
+				},
+				{
+					"min": 58,
+					"max": 58,
+					"item": "Mace of Disruption"
+				},
+				{
+					"min": 59,
+					"max": 59,
+					"item": "Mace of Smiting"
+				},
+				{
+					"min": 60,
+					"max": 60,
+					"item": "Mace of Terror"
+				},
+				{
+					"min": 61,
+					"max": 61,
+					"item": "Mantle of Spell Resistance"
+				},
+				{
+					"min": 62,
+					"max": 62,
+					"item": "Necklace of Prayer Beads"
+				},
+				{
+					"min": 63,
+					"max": 63,
+					"item": "Periapt of Proof Against Poison"
+				},
+				{
+					"min": 64,
+					"max": 64,
+					"item": "Ring of Animal Influence"
+				},
+				{
+					"min": 65,
+					"max": 65,
+					"item": "Ring of Evasion"
+				},
+				{
+					"min": 66,
+					"max": 66,
+					"item": "Ring of Feather Falling"
+				},
+				{
+					"min": 67,
+					"max": 67,
+					"item": "Ring of Free Action"
+				},
+				{
+					"min": 68,
+					"max": 68,
+					"item": "Ring of Protection"
+				},
+				{
+					"min": 69,
+					"max": 69,
+					"item": "Ring of Resistance"
+				},
+				{
+					"min": 70,
+					"max": 70,
+					"item": "Ring of Spell Storing"
+				},
+				{
+					"min": 71,
+					"max": 71,
+					"item": "Ring of the Ram"
+				},
+				{
+					"min": 72,
+					"max": 72,
+					"item": "Ring of X-ray Vision|dmg"
+				},
+				{
+					"min": 73,
+					"max": 73,
+					"item": "Robe of Eyes"
+				},
+				{
+					"min": 74,
+					"max": 74,
+					"item": "Rod of Rulership"
+				},
+				{
+					"min": 75,
+					"max": 75,
+					"item": "Rod of the Pact Keeper, +2|dmg"
+				},
+				{
+					"min": 76,
+					"max": 76,
+					"item": "Rope of Entanglement"
+				},
+				{
+					"min": 77,
+					"max": 77,
+					"item": "Scale Mail +1|dmg"
+				},
+				{
+					"min": 78,
+					"max": 78,
+					"item": "Scale Mail of Resistance"
+				},
+				{
+					"min": 79,
+					"max": 79,
+					"item": "Shield +2|dmg"
+				},
+				{
+					"min": 80,
+					"max": 80,
+					"item": "Shield of Missile Attraction"
+				},
+				{
+					"min": 81,
+					"max": 81,
+					"item": "Staff of Charming"
+				},
+				{
+					"min": 82,
+					"max": 82,
+					"item": "Staff of Healing"
+				},
+				{
+					"min": 83,
+					"max": 83,
+					"item": "Staff of Swarming Insects"
+				},
+				{
+					"min": 84,
+					"max": 84,
+					"item": "Staff of the Woodlands"
+				},
+				{
+					"min": 85,
+					"max": 85,
+					"item": "Staff of Withering"
+				},
+				{
+					"min": 86,
+					"max": 86,
+					"item": "Stone of Controlling Earth Elementals"
+				},
+				{
+					"min": 87,
+					"max": 87,
+					"item": "Sun Blade"
+				},
+				{
+					"min": 88,
+					"max": 88,
+					"item": "Sword of Life Stealing"
+				},
+				{
+					"min": 89,
+					"max": 89,
+					"item": "Sword of Wounding"
+				},
+				{
+					"min": 90,
+					"max": 90,
+					"item": "Tentacle Rod"
+				},
+				{
+					"min": 91,
+					"max": 91,
+					"item": "Vicious Weapon"
+				},
+				{
+					"min": 92,
+					"max": 92,
+					"item": "Wand of Binding"
+				},
+				{
+					"min": 93,
+					"max": 93,
+					"item": "Wand of Enemy Detection"
+				},
+				{
+					"min": 94,
+					"max": 94,
+					"item": "Wand of Fear"
+				},
+				{
+					"min": 95,
+					"max": 95,
+					"item": "Wand of Fireballs"
+				},
+				{
+					"min": 96,
+					"max": 96,
+					"item": "Wand of Lightning Bolts"
+				},
+				{
+					"min": 97,
+					"max": 97,
+					"item": "Wand of Paralysis"
+				},
+				{
+					"min": 98,
+					"max": 98,
+					"item": "Wand of the War Mage, +2|dmg"
+				},
+				{
+					"min": 99,
+					"max": 99,
+					"item": "Wand of Wonder"
+				},
+				{
+					"min": 100,
+					"max": 100,
+					"item": "Wings of Flying"
+				}
+			]
+		},
+		{
+			"name": "Magic Item Table H",
+			"source": "DMG",
+			"page": 148,
+			"type": "H",
+			"table": [
+				{
+					"min": 1,
+					"max": 10,
+					"item": "Weapon +3|dmg"
+				},
+				{
+					"min": 11,
+					"max": 12,
+					"item": "Amulet of the Planes"
+				},
+				{
+					"min": 13,
+					"max": 14,
+					"item": "Carpet of Flying"
+				},
+				{
+					"min": 15,
+					"max": 16,
+					"item": "Crystal Ball"
+				},
+				{
+					"min": 17,
+					"max": 18,
+					"item": "Ring of Regeneration"
+				},
+				{
+					"min": 19,
+					"max": 20,
+					"item": "Ring of Shooting Stars"
+				},
+				{
+					"min": 21,
+					"max": 22,
+					"item": "Ring of Telekinesis"
+				},
+				{
+					"min": 23,
+					"max": 24,
+					"item": "Robe of Scintillating Colors"
+				},
+				{
+					"min": 25,
+					"max": 26,
+					"item": "Robe of Stars"
+				},
+				{
+					"min": 27,
+					"max": 28,
+					"item": "Rod of absorption"
+				},
+				{
+					"min": 29,
+					"max": 30,
+					"item": "Rod of Alertness"
+				},
+				{
+					"min": 31,
+					"max": 32,
+					"item": "Rod of Security"
+				},
+				{
+					"min": 33,
+					"max": 34,
+					"item": "Rod of the Pact Keeper, +3|dmg"
+				},
+				{
+					"min": 35,
+					"max": 36,
+					"item": "Scimitar of Speed"
+				},
+				{
+					"min": 37,
+					"max": 38,
+					"item": "Shield +3|dmg"
+				},
+				{
+					"min": 39,
+					"max": 40,
+					"item": "Staff of Fire"
+				},
+				{
+					"min": 41,
+					"max": 42,
+					"item": "Staff of Frost"
+				},
+				{
+					"min": 43,
+					"max": 44,
+					"item": "Staff of Power"
+				},
+				{
+					"min": 45,
+					"max": 46,
+					"item": "Staff of Striking"
+				},
+				{
+					"min": 47,
+					"max": 48,
+					"item": "Staff of Thunder and Lightning"
+				},
+				{
+					"min": 49,
+					"max": 50,
+					"item": "Sword of Sharpness"
+				},
+				{
+					"min": 51,
+					"max": 52,
+					"item": "Wand of Polymorph"
+				},
+				{
+					"min": 53,
+					"max": 54,
+					"item": "Wand of the War Mage, +3|dmg"
+				},
+				{
+					"min": 55,
+					"max": 55,
+					"item": "Adamantine Half Plate Armor"
+				},
+				{
+					"min": 56,
+					"max": 56,
+					"item": "Adamantine Plate Armor"
+				},
+				{
+					"min": 57,
+					"max": 57,
+					"item": "Animated Shield"
+				},
+				{
+					"min": 58,
+					"max": 58,
+					"item": "Belt of Fire Giant Strength"
+				},
+				{
+					"min": 59,
+					"max": 59,
+					"item": "Belt of item Belt of Frost Giant Strength|dmg|frost or item Belt of Stone Giant Strength|dmg|stone giant strength"
+				},
+				{
+					"min": 60,
+					"max": 60,
+					"item": "Breastplate +1|dmg"
+				},
+				{
+					"min": 61,
+					"max": 61,
+					"item": "Breastplate of Resistance"
+				},
+				{
+					"min": 62,
+					"max": 62,
+					"item": "Candle of Invocation"
+				},
+				{
+					"min": 63,
+					"max": 63,
+					"item": "Chain Mail +2|dmg"
+				},
+				{
+					"min": 64,
+					"max": 64,
+					"item": "Chain Shirt +2|dmg"
+				},
+				{
+					"min": 65,
+					"max": 65,
+					"item": "Cloak of Arachnida"
+				},
+				{
+					"min": 66,
+					"max": 66,
+					"item": "Dancing Sword"
+				},
+				{
+					"min": 67,
+					"max": 67,
+					"item": "Demon Armor"
+				},
+				{
+					"min": 68,
+					"max": 68,
+					"item": "Dragon Scale Mail"
+				},
+				{
+					"min": 69,
+					"max": 69,
+					"item": "Dwarven Plate"
+				},
+				{
+					"min": 70,
+					"max": 70,
+					"item": "Dwarven Thrower"
+				},
+				{
+					"min": 71,
+					"max": 71,
+					"item": "Efreeti Bottle"
+				},
+				{
+					"min": 72,
+					"max": 72,
+					"item": "Figurine of Wondrous Power, Obsidian Steed|dmg"
+				},
+				{
+					"min": 73,
+					"max": 73,
+					"item": "Frost Brand"
+				},
+				{
+					"min": 74,
+					"max": 74,
+					"item": "Helm of Brilliance"
+				},
+				{
+					"min": 75,
+					"max": 75,
+					"item": "Horn of Valhalla, Bronze|dmg"
+				},
+				{
+					"min": 76,
+					"max": 76,
+					"item": "Instrument of the Bards, Anstruth Harp|dmg"
+				},
+				{
+					"min": 77,
+					"max": 77,
+					"item": "Ioun Stone, Absorption|dmg,"
+				},
+				{
+					"min": 78,
+					"max": 78,
+					"item": "Ioun Stone, Agility|dmg,"
+				},
+				{
+					"min": 79,
+					"max": 79,
+					"item": "Ioun Stone, Fortitude|dmg,"
+				},
+				{
+					"min": 80,
+					"max": 80,
+					"item": "Ioun Stone, Insight|dmg"
+				},
+				{
+					"min": 81,
+					"max": 81,
+					"item": "Ioun Stone, Intellect|dmg"
+				},
+				{
+					"min": 82,
+					"max": 82,
+					"item": "Ioun Stone, Leadership|dmg"
+				},
+				{
+					"min": 83,
+					"max": 83,
+					"item": "Ioun Stone, Strength|dmg"
+				},
+				{
+					"min": 84,
+					"max": 84,
+					"item": "Leather Armor +2|dmg"
+				},
+				{
+					"min": 85,
+					"max": 85,
+					"item": "Manual of Bodily Health"
+				},
+				{
+					"min": 86,
+					"max": 86,
+					"item": "Manual of Gainful Exercise"
+				},
+				{
+					"min": 87,
+					"max": 87,
+					"item": "Manual of Clay Golems|dmg|Manual of Golems"
+				},
+				{
+					"min": 88,
+					"max": 88,
+					"item": "Manual of Quickness of Action"
+				},
+				{
+					"min": 89,
+					"max": 89,
+					"item": "Mirror of Life Trapping"
+				},
+				{
+					"min": 90,
+					"max": 90,
+					"item": "Nine Lives Stealer"
+				},
+				{
+					"min": 91,
+					"max": 91,
+					"item": "Oathbow"
+				},
+				{
+					"min": 92,
+					"max": 92,
+					"item": "Scale Mail +2|dmg"
+				},
+				{
+					"min": 93,
+					"max": 93,
+					"item": "Spellguard Shield"
+				},
+				{
+					"min": 94,
+					"max": 94,
+					"item": "Splint Armor +1|dmg"
+				},
+				{
+					"min": 95,
+					"max": 95,
+					"item": "Splint Armor of Resistance"
+				},
+				{
+					"min": 96,
+					"max": 96,
+					"item": "Studded Leather Armor +1|dmg"
+				},
+				{
+					"min": 97,
+					"max": 97,
+					"item": "Studded Leather Armor of Resistance"
+				},
+				{
+					"min": 98,
+					"max": 98,
+					"item": "Tome of Clear Thought"
+				},
+				{
+					"min": 99,
+					"max": 99,
+					"item": "Tome of Leadership and Influence"
+				},
+				{
+					"min": 100,
+					"max": 100,
+					"item": "Tome of Understanding"
+				}
+			]
+		}                                                                                                                                                  
+	]
+}
