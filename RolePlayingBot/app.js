@@ -16,7 +16,6 @@ const mysql = require('mysql');
 //bot token ***DO NOT SHARE***
 const token = package.token;
 
-
 //prefix for bot commands
 const prefix = "~";
 
@@ -33,14 +32,13 @@ var adv_guild;
 var complete_board;
 var server;
 
+//data JSON files
+const xp_table = require('./level_xp.json');
+const loot_table = require('./loot_table.json');
+
 const folder = './';
 
 var con;
-
-var xp_table;
-var loot_table;
-
-
 
 //when ready, log in console
 bot.on("ready", () => {
@@ -48,18 +46,9 @@ bot.on("ready", () => {
     quest_board = bot.channels.get(quest_board_id);
     adv_guild = quest_board.guild;
 	complete_board = bot.channels.get(complete_board_id);
-	server = bot.guilds.get(server_id);
-	
-	var new_xp_table = JSON.parse(fs.readFileSync('level_xp.json', 'utf8'));
-	
-	var tab = Object.entries(new_xp_table);
-	
-	xp_table = [];
-	
-	for(var i = 0; i < tab.length; i++) {
-		xp_table.push(tab[i][1]);
-	}
-	
+    server = bot.guilds.get(server_id);
+
+    
 	con = mysql.createConnection({
 		connectionLimit: 10,
 		host: "colonelrabbit.com",
@@ -74,6 +63,7 @@ bot.on("ready", () => {
 	});
 	
     console.log("Ready");
+
 
 });
 
@@ -93,6 +83,12 @@ bot.on("message", function (message) {
 
     //read message arguments
     switch (args[0].toLowerCase()) {
+
+        case "spenddth":
+
+            spend_dth(args, message);
+
+            return;
 
         //rolls X dice with Y sides
         //takes input of form: XdY
@@ -147,10 +143,6 @@ bot.on("message", function (message) {
 
             break;
 			
-		
-		
-
-
         //if command doesn't match, notify user and send help list
         default:
 
@@ -245,9 +237,9 @@ bot.on("message", function (message) {
             var commands = new Discord.RichEmbed()
                 .setColor([40, 110, 200])
                 .setTitle("RPBot Dungeon Master Commands:")
-                .addField('*quest', '"title" TITLE \n "header1" TEXT1 \n "header2" TEXT2 \n\n*Make sure all quests have a "title". To make a test quest, make the title test.*')
-                .addField('*update', '"title" new status \n\n*When the quest is done, set status to "complete" but it will make it so that quest status cannot be changed any further.*')
-                .addField('*status', 'sets the game the bot is playing.')
+                .addField('~quest', '"title" TITLE \n "header1" TEXT1 \n "header2" TEXT2 \n\n*Make sure all quests have a "title". To make a test quest, make the title test.*')
+                .addField('~update', '"title" new status \n\n*When the quest is done, set status to "complete" but it will make it so that quest status cannot be changed any further.*')
+                .addField('~status', 'sets the game the bot is playing.')
                 .setThumbnail(bot.user.avatarURL);
             message.author.send(commands);
 
@@ -257,7 +249,7 @@ bot.on("message", function (message) {
 
 var roll_dice = function (args, message) {
     //if no input return
-    if (!args[1] == /\dd\d/) {
+    if (args[1] != /\dd\d/) {
         message.channel.send("Give a dice value, XdY");
         return;
     }
@@ -429,6 +421,7 @@ var new_quest = function (args, message) {
     //searches for new lines and seperates headers from texts
     var regEx = /^(?:"|“)(.*?)\W*(?:"|”) (.*?)$/gm;
     var match;
+
     while ((match = regEx.exec(text)) !== null) {
         console.log("ping");
         //if "title" set as title
@@ -491,31 +484,40 @@ var update_bot_status = function (args, message) {
 }
 
 
-
+//INCOMPLETE
+//searches database of spells and spits out description
 var search_spells = function (args, message) {
 
+    //if no arguments, return
     if (!args[1]) {
         return message.channel.send("Please give a spell");
     }
 
+    //build spell name
     var spell_name = args.splice(1).join(" ");
 
+    //search for spell by name in spell list
     for (spell in spell_list) {
         var current_spell = spell_list[spell];
+
+        //if found, build spell description
         if (current_spell.name.toLowerCase() == spell_name.toLowerCase()) {
             var show_spell = new Discord.RichEmbed()
                 .setColor([40, 110, 200])
                 .setTitle("Spell")
                 .setThumbnail(bot.user.avatarURL);
 
+            //builds a string of basic information on the spell
             var spell_basics = "";
 
+            //spell level
             if (current_spell.level == "0") {
                 spell_basics += "Cantrip ";
             } else {
                 spell_basics += `Level ${current_spell.level} `;
             }
 
+            //spell school
             switch (current_spell.school) {
                 case 'T':
                     spell_basics += `Transmutation`;
@@ -547,11 +549,12 @@ var search_spells = function (args, message) {
 
             spell_basics += " Spell (";
 
+            //adds spell classes
             for (caster_class in current_spell.classes.fromClassList) {
                 spell_basics += `${current_spell.classes.fromClassList[caster_class].name}, `;
             }
 
-
+            //and spell subclasses
             for (caster_subclass in current_spell.classes.fromSubclass) {
                 spell_basics += `${current_spell.classes.fromSubclass[caster_subclass].class.name} (${current_spell.classes.fromSubclass[caster_subclass].subclass.name}), `
             }
@@ -560,11 +563,15 @@ var search_spells = function (args, message) {
 
             show_spell.addField(current_spell.name, spell_basics);
 
+            //spell casting time
             show_spell.addField("Casting Time", `${current_spell.time[0].number} ${current_spell.time[0].unit}`);
 
             var description = "";
             var extras = {};
 
+            //INCOMPLETE/BROKEN
+            //displays the text of the spell
+            //doesn't work for spells with descriptions longer than ~2000 chars
             for (entry in current_spell.entries) {
 
                 if (!current_spell.entries[entry].type) {
@@ -629,21 +636,29 @@ var roll_loot = function (args, message) {
 }
 
 var add_character = function (args, message) {
-	//if there are not the right number of arguments, return.
-	
+
+    //return if no arguments
+    if (!args[1]) {
+        return message.author.send("Invalid number of arguments.");
+    }
+
+    //INPUT FORM:
+    //~character [char name], [player's username], [starting exp]
+
 	//combines input into a single string for regex
     var text = args.splice(1).join(" ");
 
-    //searches for new lines and seperates headers from texts
-    var regEx = /^(?:"|“)(.*?)\W*(?:"|”) (.*?)$/gm;
+    //regEx to get char information
+    var regEx = /\W*(.*?)(?:,|$)/g;
     var match;
-	
+
 	var outCats = [];
-	
-	while ((match = regEx.exec(text)) !== null) {
-        console.log("ping");
+
+    //grabs key information from input
+	while ((match = regEx.exec(text)[1]) != '') {
+        
         try {
-                outCats.push(match[2]);
+                outCats.push(match);
         } catch (e) {
                 console.log(e);
                 message.author.send("Error adding character, check console for details.");
@@ -651,63 +666,94 @@ var add_character = function (args, message) {
         }
         
     }
-	
+
+    //if not enough arguments, return
 	if(outCats.length !== 3) {
 		message.author.send("Syntax error");
 		return;
 		
 	}
-	
-	var xp = parseInt(outCats[2]);
-	
-	var level = check_level(xp);
-	
-	
-	var sql = "INSERT INTO roster (charName, charPlayer, exp, downHours, riftShards, dead, edited, level) VALUES (\'" + outCats[0]+ "\', \'" + outCats[1] + "\', " + outCats[2] + ", 0, 0, 0, 0, " + level + ")";
-	con.query(sql, function (err, result) {
-		if (err) throw err;
-			console.log("1 record inserted");
-	});
 
+    //gets key information
+    var char_name = outCats[0];
+    var player_name = outCats[1];
+	var initial_xp = parseInt(outCats[2]);	
+	var level = check_level(initial_xp);
+
+    var player_id;
+    var found_player_id = false;
+
+    //searches for player's discord id in adv_guild members
+    adv_guild.members.forEach(member => {
+        //if player match is found, get the ID
+        if (member.user.username == player_name) {
+            player_id = member.user.id;
+            //a player match was found, exit loop
+            found_player_id = true;
+            return;
+        }
+    });
+
+    //if no player match was found, return
+    if (!found_player_id) {
+        return message.author.send("no player found");
+    }
+
+    //build SQl string
+	var sql = "INSERT INTO roster (charName, charPlayer, exp, downHours, riftShards, dead, edited, level) VALUES (\'" + char_name+ "\', \'" + player_id + "\', " + initial_xp + ", 0, 0, 0, 0, " + level + ")";
+
+    //query SQL to add char to roster
+    con.query(sql, function (err, result) {
+		if (err) throw err;
+	    console.log("1 record inserted");
+	});
+    
 }
 
-
+//WHEN A QUEST IS COMPLETE, AWARD EXP TO CERTAIN PLAYERS
 var quest_complete = function (args, message) {
+
+    //Requires at least 2 arguments
+    if (!args[2]) {
+        return message.author.send("Not enough arguments");
+    }
 
     //input form:
     //~quest_complete xp_value_integer, player1 name, player2 name, player3 name... playerN name
-
     //doesn't care about line breaks. you can use them or not use them and the regex will be fine
 
+    //gets exp to be awarded from first argument
     var xp = parseInt(args[1]);
 
+    //if an int value couldn't be parsed return
     if (!xp) {
         return message.author.send("The experience value was incorrect");
     }
 
-    //starts at args[2] to ignore the experience value
+    //starts at args[2] to ignore the experience value in args[1]
     var text = args.splice(2).join(" ");
 
+    //regEx to extract char names from 'text' string
     var regEx = /\W*(.*?)(?:,|$)/g;
     var match;
 
     console.log(text);
 
     var players = [];
-    var xp;
-
-    while ((match = regEx.exec(text)) !== null) {
+    
+    //grabs all char names from 'text'
+    while ((match = regEx.exec(text)[1]) != '') {
         console.log("ping");
-        players.push(match[1]);
+        players.push(match);
     }
-	
-	if(checker === false || players.length === 0){
-		message.author.send("Incorrect arguments, add players or an XP value");
-		console.log(checker + " " + xp + " " + players.length);
+
+    //if no players, return
+	if(players.length === 0){
+		message.author.send("Incorrect arguments, add players");
 		return;	
 	}
 	
-		
+    //builds query to search for all players to be awared exp		
 	var quer1 = "SELECT exp, level, charName, charPlayer FROM roster WHERE charName IN (\'";
 	for(var i = 0; i < players.length; i++){
 		quer1 += players[i] + "\'";
@@ -716,7 +762,8 @@ var quest_complete = function (args, message) {
 		}
 	}
 	quer1 += ");"
-	
+
+    //builds query to update their exp
 	var sql = "UPDATE roster SET exp=exp +" + xp + ", edited=1 WHERE charName IN (\'";
 	for(var i = 0; i < players.length; i++){
 		sql += players[i] + "\'";
@@ -725,17 +772,22 @@ var quest_complete = function (args, message) {
 		}
 	}
 	sql += ");"
-	
+
+    //SQL query to make sure there are no errors
 	con.query(quer1, function (err, result, fields) {
 		if (err) throw err;
-			
+
+        //if no errors, award exp
 		con.query(sql, function (err, result) {
 			if (err) throw err;
 			console.log("Values updated");
-		});		
+        });		
+
+        //check to see if anyone leveled up
 		for(var i = 0; i < result.length; i++){
 			newLevel = check_level(parseInt(result[i].exp) + parseInt(xp));
-			console.log(newLevel);
+            console.log(newLevel);
+            //if they leveld up, update database
 			if (newLevel > parseInt(result[i].level)){
 				con.query("UPDATE roster SET level=" + newLevel + " WHERE charName=\'" + result[i].charName + "\';", function(err, result) {
 					if (err) throw err;
@@ -749,43 +801,57 @@ var quest_complete = function (args, message) {
 	
 }
 
+//GIVES PLAYERS SHARDS AFTER WEEKLY EVENT
 var add_shards = function(args, message){
-	console.log(message.author.username);
+
+    //if Duncan isn't using the command, it is invalid
+    console.log(message.author.username);
 	if(message.author.id != '188928848287498240'){
 		message.author.send("You do not have permission to use this command!");
 		return;
 	}
-	
-	var text = args.splice(1).join(" ");
-	
-	var regEx = /^(?:"|“)(.*?)\W*(?:"|”) (.*?)$/gm;
+
+    //checks to make sure there are enough arguments
+    if (!args[2]) {
+        return message.author.send("Too few arguments");
+    }
+
+    //input form:
+    //~add_shards [quantity of shards], [player1 name], [player2 name],... 
+    //doesn't care about line breaks. you can use them or not use them and the regex will be fine
+
+    //gets exp to be awarded from first argument
+    var shards = parseInt(args[1]);
+
+    //if an int value couldn't be parsed return
+    if (!shards) {
+        return message.author.send("The experience value was incorrect");
+    }
+
+    //starts at args[2] to ignore the experience value in args[1]
+    var text = args.splice(2).join(" ");
+
+    //regEx to extract char names from 'text' string
+    var regEx = /\W*(.*?)(?:,|$)/g;
     var match;
+
+    var players = [];
 	
 	console.log(text);
 	
-	var players = [];
-	var shards;
-	var checker = false;
-	
-	while ((match = regEx.exec(text)) !== null) {
+	//grabs all players to be given shards
+	while ((match = regEx.exec(text)[1]) != '') {
         console.log("ping");
-		if(match[1].toLowerCase() == "player"){
-			players.push(match[2]);
-		}
-        else if(match[1].toLowerCase() == 'shards') {
-			
-			shards = match[2];
-			checker = true;
-        } 
-        
+    	players.push(match);
     }
-	
-	if(checker === false || players.length === 0){
-		message.author.send("Incorrect arguments, add players or a shard value");
-		console.log(checker + " " + xp + " " + players.length);
+
+    //if no players, return
+	if(players.length === 0){
+		message.author.send("Incorrect arguments, add players");
 		return;	
 	}
-	
+
+    //builds sql query to update all players shards
 	var sql = "UPDATE roster SET riftShards=riftShards +" + shards + ", edited=1 WHERE charName IN (\'";
 	for(var i = 0; i < players.length; i++){
 		sql += players[i] + "\'";
@@ -796,7 +862,8 @@ var add_shards = function(args, message){
 	sql += ");"
 	
 	console.log(sql);
-	
+
+    //SQL updates player information
 	con.query(sql, function (err, result) {
 		if (err) throw err;
 			console.log("Values updated");
@@ -804,8 +871,13 @@ var add_shards = function(args, message){
 	
 }
 
+//GIVES ALL PLAYERS DOWNTIME HOURS AT THE END OF WEEK 
+//(CURRENTLY IS MANUAL INSTEAD OF AUTOMATIC)
+//TO BE CHANGED TO MATCH REGEX FORMAT OF QUEST_COMPLETE AND ADD_SHARDS
 var add_hours = function(args, message){
-	console.log(message.author.username);
+
+    //if not Duncan, fuck off
+    console.log(message.author.username);
 	if(message.author.id != '188928848287498240'){
 		message.author.send("You do not have permission to use this command!");
 		return;
@@ -853,17 +925,17 @@ var add_hours = function(args, message){
 	console.log(sql);
 	
 
-		con.query(sql, function (err, result) {
-		if (err) throw err;
-			console.log("Values updated");
-		});
+	con.query(sql, function (err, result) {
+	if (err) throw err;
+		console.log("Values updated");
+	});
 	
 }
 
 var level_message = function(character, player, level){
 	//playerID = server.members.find(val => val.user.name == player);
 	
-	//playerID.send("Congratulations, your character " + character + " has made it to level " + level + "!");
+	//playerID.send(`Congratulations, your character ${character} has made it to level ${level}!`);
 	
 	
 }
@@ -881,11 +953,34 @@ var check_level = function(xp) {
 	return retval;
 }
 
+
+//CHECKS IF PLAYER HAS ENOUGH DTH FOR A THING AND THEN UPDATES DATABASE
 var spend_dth = function (args, message) {
 
-    var dth_use = args.splice(1).join(" ");
-    var dth_quantity;
+    //checks to make sure there are enough arguments
+    if (!args[2]) {
+        return message.author.send("Too few arguments");
+    }
 
+    //input form:
+    //~spendDTH [player name], [use/quantity of DTH] 
+    //doesn't care about line breaks. you can use them or not use them and the regex will be fine
+
+    var text = args.splice(1).join(" ");
+
+    //regEx to extract char names from 'text' string
+    var regEx = /\W*(.*?),\W(.*?)$/;
+    var match = regEx.exec(text);
+
+    var char_name = match[1];
+    var dth_use = match[2];
+
+    if (!char_name || !dth_use) {
+        return message.author.send("Syntax or arguments error.");
+    }
+    
+    //checks intent of player and sets expected DTH useage 
+    var dth_quantity;
     if (dth_use == "skill") {
         dth_quantity = 120;
     } else if (dth_use == "weapon" || dth_use == "armor") {
@@ -898,41 +993,52 @@ var spend_dth = function (args, message) {
         return message.channel.send("Invalid argument");
     }
 
+    var player = message.author.id;
 
-    //SQL CALL TO VERIFY HAVE NECESSARY DTH TO SPEND
-    var sqlCall;
-    var player = sqlCall;
-    if (player.dth < dth_quantity) {
-        return message.channel.send("You do not have enough DTH for this task.");
-    }
-    /////////////////////////////////////////////////
+    //SQL call to verify they have neough, and then update quantity if they do
+    var sql = "SELECT `downHours` FROM `roster` WHERE `charPlayer`= '" + player + "' AND `charName` = '" + char_name + "'";
 
-    switch (dth_quantity) {
-        case 0:
-        case 1:
-        case 2:
-        case 3:
-        case 4:
-        case 5:
-        case 6:
-        case 7:
-        case 8:
-            message.channel.send(`${player.char_name} has spent ${dth_quantity} hours work and and earned ${dth_quantity * 15} gp from your profession.`);
-            break;
-        case 40:
-        case 80:
-        case 120:
-            message.channel.send(`${player.char_name} has spent ${dth_quantity} hours learning and picked up a new ${dth_use} proficiency.`);
-            break;
-        default:
-            return message.channel.send("You have given an invalid amount of DTH to spend.");
-    }
+    con.query(sql, function (err, result) {
+        if (err) throw err;
+        if (result.length == 0) {
+            return message.author.send("no match found");
+        }
+        //gets characters DTH from results
+        var dth_available = result[0].downHours;
 
-    //SQL CALL TO UPDATE PLAYERS DTH HOURS FOR PLAYER
+        //if they are trying to use too many, return
+        if (dth_quantity > dth_available) {
+            return message.author.send("You don't have enough DTH to do that.")
+        }
 
+        //switch statement for player output. 
+        switch (dth_quantity) {
+            case 1:
+            case 2:
+            case 3:
+            case 4:
+            case 5:
+            case 6:
+            case 7:
+            case 8:
+                message.channel.send(`${char_name} has spent ${dth_quantity} hours work and and earned ${dth_quantity * 15} gp from your profession.`);
+                break;
+            case 40:
+            case 80:
+            case 120:
+                message.channel.send(`${char_name} has spent ${dth_quantity} hours learning and picked up a new ${dth_use} proficiency.`);
+                break;
+            default:
+                return message.channel.send("You have given an invalid amount of DTH to spend.");
+        }
 
+        //SQL to update character's dth
+        var update = "UPDATE roster SET downHours=downHours - " + dth_quantity + ", edited=1 WHERE charName= '" + char_name + "'";
+        con.query(update, function (err, result) {
+            if (err) throw err;
+            console.log("Updated");
+        });
 
-    /////////////////////////////////////////////////
-
+    });
 
 }
