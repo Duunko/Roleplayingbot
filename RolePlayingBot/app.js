@@ -998,6 +998,10 @@ var spend_dth = function (args, message) {
         return message.channel.send("Invalid argument");
     }
 
+    if (dth_quantity <= 0) {
+        return message.channel.send("DTH expended must be positive.");
+    }
+
     var player = message.author.id;
 
     //SQL call to verify they have neough, and then update quantity if they do
@@ -1006,7 +1010,7 @@ var spend_dth = function (args, message) {
     con.query(sql, function (err, result) {
         if (err) throw err;
         if (result.length == 0) {
-            return message.author.send("no match found");
+            return message.author.send("no character/player found");
         }
         //gets characters DTH from results
         var dth_available = result[0].downHours;
@@ -1016,29 +1020,15 @@ var spend_dth = function (args, message) {
             return message.author.send("You don't have enough DTH to do that.")
         }
 
-        //switch statement for player output. 
-        switch (dth_quantity) {
-            case 1:
-            case 2:
-            case 3:
-            case 4:
-            case 5:
-            case 6:
-            case 7:
-            case 8:
-                message.channel.send(`${char_name} has spent ${dth_quantity} hours work and and earned ${dth_quantity * 15} gp from your profession.`);
-                break;
-            case 40:
-            case 80:
-            case 120:
-                message.channel.send(`${char_name} has spent ${dth_quantity} hours learning and picked up a new ${dth_use} proficiency.`);
-                break;
-            default:
-                return message.channel.send("You have given an invalid amount of DTH to spend.");
+        if (parseInt(dth_use)) {
+            message.channel.send(`${char_name} has spent ${dth_quantity} hours work and and earned ${dth_quantity * 15} gp from your profession.`);
+        }
+        else {
+            message.channel.send(`${char_name} has spent ${dth_quantity} hours learning and picked up a new ${dth_use} proficiency.`);
         }
 
         //SQL to update character's dth
-        var update = "UPDATE roster SET downHours=downHours - " + dth_quantity + ", edited=1 WHERE charName= '" + char_name + "'";
+        var update = "UPDATE roster SET downHours=downHours - " + dth_quantity + " WHERE charName= '" + char_name + "'";
         con.query(update, function (err, result) {
             if (err) throw err;
             console.log("Updated");
