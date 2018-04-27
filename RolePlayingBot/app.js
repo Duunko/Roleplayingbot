@@ -84,7 +84,7 @@ bot.on("message", function (message) {
     //read message arguments
     switch (args[0].toLowerCase()) {
 
-        case "spenddth":
+        case "dth":
 
             spend_dth(args, message);
 
@@ -131,9 +131,12 @@ bot.on("message", function (message) {
             var commands = new Discord.RichEmbed()
                 .setColor([40, 110, 200])
                 .setTitle("RPBot General Commands:")
-                .addField('~list X', 'Lists all quests that have level X.')
-                .addField('~join title', 'Sends a message to the DM that you want to join their quest.')
-                .addField('~roll XdY (+Z)', "rolls XdY dice with an option for a modifier of +/-Z (don't add parentheses)")
+                .addField('~list [quest level]', 'Lists all quests that have level X.')
+                .addField('~join [quest title]', 'Sends a message to the DM that you want to join their quest, and adds your character to the quest.')
+                .addField('~spell [spell name]', 'Send you a message displaying the details of the requested spell (incomplete)')
+                .addField('~loot [shards spent]', 'Rolls you a magic item based on the shards used and updates your balance')
+                .addField('~roll [X]d[Y] [+Z]', "rolls XdY dice with an option for a modifier of +/-Z. Only supports one type of die per roll.")
+                .addField('~dth [char name], [hours spent/use]', 'spends DTH for a character. To get gold, make "hours spent" and integer value. You will get 15*hours gp. For proficiencies type the kind proficiency you want to learn. "skill" costs 120 hrs, "weapon" or "armor" costs 80 hours and "tool" or "language" costs 40 hours.')
                 .setThumbnail(bot.user.avatarURL);
             message.author.send(commands);
 
@@ -151,7 +154,7 @@ bot.on("message", function (message) {
                 break;
             }
 
-            message.channel.send(message.content + " is not a valid command. Use *help for a list of commands.");
+            message.channel.send(message.content + " is not a valid command. Use ~help for a list of commands.");
 
             break;
 
@@ -183,11 +186,10 @@ bot.on("message", function (message) {
             
 			new_quest(args, message);
 
-
             break;
 
         //sets bot "playing" status
-        case "status":
+        case "botstatus":
 
             update_bot_status(args, message);
 
@@ -196,6 +198,7 @@ bot.on("message", function (message) {
         //command to test bot responsiveness, sends a response to the log
         case "test":
 
+            message.author.send("ping!");
             console.log("PING");
             break;
 			
@@ -228,7 +231,7 @@ bot.on("message", function (message) {
         //if not a valid command, note it
         default:
 
-            message.channel.send(message.content + " is not a valid command. Use *help for a list of commands.");
+            message.channel.send(message.content + " is not a valid command. Use ~help for a list of commands.");
             break;
 
         case "help":
@@ -237,9 +240,13 @@ bot.on("message", function (message) {
             var commands = new Discord.RichEmbed()
                 .setColor([40, 110, 200])
                 .setTitle("RPBot Dungeon Master Commands:")
+                .addField('~test', 'PMs a "ping!" to the sender to confirm the bot is working.')
+                .addField('~completequest [xp awarded], [char 1], [char 2]', 'awards exp to the specified players at the end of a quest')
+                .addField('~addshards [shards awarded], [char 1], [char 2]', 'gives shards to specified players (Duncan only).')
+                .addField('~addhours [DTH awarded], [char 1], [char 2]', 'gives DTH hours to specified players (Duncan only).')
                 .addField('~quest', '"title" TITLE \n "header1" TEXT1 \n "header2" TEXT2 \n\n*Make sure all quests have a "title". To make a test quest, make the title test.*')
-                .addField('~update', '"title" new status \n\n*When the quest is done, set status to "complete" but it will make it so that quest status cannot be changed any further.*')
-                .addField('~status', 'sets the game the bot is playing.')
+                .addField('~update [quest title], [new status]', 'Updates the status of a quest. \n\n*When the quest is done, set status to "complete" but it will make it so that quest status cannot be changed any further.*')
+                .addField('~botstatus [new status]', 'sets the status of the bot.')
                 .setThumbnail(bot.user.avatarURL);
             message.author.send(commands);
 
@@ -374,7 +381,7 @@ var update_quest = function (args, message) {
     var input = args.splice(1).join(" ");
 
     //regex seperates title and status
-    var regEx = /"(.*)"\W*(.*)/;
+    var regEx = /\W*(.*?),\W(.*?)$/;
 
     var match;
     if (match = regEx.exec(input)) {
@@ -480,7 +487,7 @@ var update_bot_status = function (args, message) {
     var text = args.splice(1).join(" ");
 
     //set status
-    bot.user.setPresence({ status: 'online', game: { name: text } });
+    bot.user.setGame(text);
 }
 
 
@@ -883,33 +890,31 @@ var add_hours = function(args, message){
 		return;
 	}
 	
-	var text = args.splice(1).join(" ");
-	
-	var regEx = /^(?:"|“)(.*?)\W*(?:"|”) (.*?)$/gm;
+    //gets exp to be awarded from first argument
+    var hours = parseInt(args[1]);
+
+    //if an int value couldn't be parsed return
+    if (!hours) {
+        return message.author.send("The experience value was incorrect");
+    }
+
+    //starts at args[2] to ignore the experience value in args[1]
+    var text = args.splice(2).join(" ");
+
+    //regEx to extract char names from 'text' string
+    var regEx = /\W*(.*?)(?:,|$)/g;
     var match;
-	
-	console.log(text);
-	
-	var players = [];
-	var hours;
-	var checker = false;
-	
-	while ((match = regEx.exec(text)) !== null) {
-        console.log("ping");
-		if(match[1].toLowerCase() == "player"){
-			players.push(match[2]);
-		}
-        else if(match[1].toLowerCase() == 'hours') {
-			
-			hours = match[2];
-			checker = true;
-        } 
-        
+
+    var players = [];
+
+    console.log(text);
+
+	while ((match = regEx.exec(text)[1]) != "") {
+        players.push(match);        
     }
 	
-	if(checker === false || players.length === 0){
-		message.author.send("Incorrect arguments, add players or a shard value");
-		console.log(checker + " " + xp + " " + players.length);
+	if(players.length === 0){
+		message.author.send("Incorrect arguments, add players");
 		return;	
 	}
 	
