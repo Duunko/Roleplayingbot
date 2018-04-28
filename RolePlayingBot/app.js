@@ -48,8 +48,7 @@ bot.on("ready", () => {
     adv_guild = quest_board.guild;
 	complete_board = bot.channels.get(complete_board_id);
     server = bot.guilds.get(server_id);
-
-    console.log(loot_table);
+    
 
 	con = mysql.createConnection({
 		connectionLimit: 10,
