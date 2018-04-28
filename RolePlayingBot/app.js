@@ -34,7 +34,8 @@ var server;
 
 //data JSON files
 const xp_table = require('./level_xp.json');
-const loot_table = require('./loot_table.json');
+const loot_table = require('./loot_table.json' ).magicitems;
+const spell_list = require('./spells-phb.json').spell;
 
 const folder = './';
 
@@ -48,7 +49,8 @@ bot.on("ready", () => {
 	complete_board = bot.channels.get(complete_board_id);
     server = bot.guilds.get(server_id);
 
-    
+    console.log(loot_table);
+
 	con = mysql.createConnection({
 		connectionLimit: 10,
 		host: "colonelrabbit.com",
