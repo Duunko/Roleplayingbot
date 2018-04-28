@@ -34,8 +34,17 @@ var server;
 
 //data JSON files
 const xp_table = require('./level_xp.json');
-const loot_table = require('./loot_table.json' ).magicitems;
-const spell_list = require('./spells-phb.json').spell;
+const loot_table = require('./loot_table.json').magicitems;
+
+var spell_list = []; 
+spell_list.push.apply(spell_list,require('./spells-phb.json').spell);
+spell_list.push.apply(spell_list,require('./spells-bols.json').spell);
+spell_list.push.apply(spell_list, require('./spells-scag.json').spell);
+spell_list.push.apply(spell_list, require('./spells-ua-mm.json').spell);
+spell_list.push.apply(spell_list, require('./spells-ua-ss.json').spell);
+spell_list.push.apply(spell_list, require('./spells-ua-tobm.json').spell);
+spell_list.push.apply(spell_list, require('./spells-xge.json').spell);
+
 
 const folder = './';
 
@@ -48,7 +57,6 @@ bot.on("ready", () => {
     adv_guild = quest_board.guild;
 	complete_board = bot.channels.get(complete_board_id);
     server = bot.guilds.get(server_id);
-    
 
 	con = mysql.createConnection({
 		connectionLimit: 10,
@@ -504,6 +512,8 @@ var search_spells = function (args, message) {
     //build spell name
     var spell_name = args.splice(1).join(" ");
 
+    console.log(spell_name);
+
     //search for spell by name in spell list
     for (spell in spell_list) {
         var current_spell = spell_list[spell];
@@ -512,8 +522,10 @@ var search_spells = function (args, message) {
         if (current_spell.name.toLowerCase() == spell_name.toLowerCase()) {
             var show_spell = new Discord.RichEmbed()
                 .setColor([40, 110, 200])
-                .setTitle("Spell")
+                .setTitle(current_spell.name)
                 .setThumbnail(bot.user.avatarURL);
+
+            spell_name_link = spell_name.replace(" ", "%20") + "_" + current_spell.source.replace(" ", "%20");
 
             //builds a string of basic information on the spell
             var spell_basics = "";
@@ -569,10 +581,37 @@ var search_spells = function (args, message) {
 
             spell_basics = `${spell_basics.substring(0, spell_basics.length - 2)}).`;
 
-            show_spell.addField(current_spell.name, spell_basics);
+            show_spell.addField(`https://5etools.com/spells.html#${spell_name_link}`, spell_basics);
+
+            var spell_components = "";
+            if (current_spell.components.v) {
+                spell_components += "verbal\n";
+            }
+            if (current_spell.components.s) {
+                spell_components += "somatic\n";
+            }
+            if (current_spell.components.m) {
+                spell_components += `material: ${current_spell.components.m}`;
+            }
+
+            if (spell_components == "") {
+                spell_components = "none";
+            }
+
+            show_spell.addField("Components", spell_components);
 
             //spell casting time
             show_spell.addField("Casting Time", `${current_spell.time[0].number} ${current_spell.time[0].unit}`);
+
+            var spell_range = "";
+
+            if (current_spell.range.distance.amount) {
+                spell_range += `${current_spell.range.distance.amount} ${current_spell.range.distance.type} (${current_spell.range.type})`;
+            } else {
+                spell_range += `${current_spell.range.distance.type} (${current_spell.range.type})`;
+            }
+
+            show_spell.addField("Range", spell_range);
 
             var description = "";
             var extras = {};
@@ -589,14 +628,12 @@ var search_spells = function (args, message) {
                 }
             }
 
-            console.log(description.length);
-
             if (description.length > 2000) {
                 var description_array = []
                 var i = 0;
                 while (description.length > 1000) {
                     description_array[i] = description.substring(0, 1000);
-                    console.log(description_array[i]);
+                    //console.log(description_array[i]);
                     i++;
                     description = description.substring(1000);
                 }
@@ -606,7 +643,7 @@ var search_spells = function (args, message) {
                 //console.log(description_array);
 
                 for (i = 1; i < description_array.length; i++) {
-                    //show_spell.addField(, description_array[i]);
+                    show_spell.addField("Description (cont.)", description_array[i]);
                 }
 
             } else {
@@ -614,12 +651,21 @@ var search_spells = function (args, message) {
             }
 
             for (extra in extras) {
-                show_spell.addField(extra, extras[extra]);
+                if (extra != 'undefined') {
+                    show_spell.addField(extra, extras[extra]);
+                }
             }
 
+
             message.channel.send(show_spell);
+
+            return;
+            
         }
+        
     }
+
+    message.channel.send("Spell not found. Please check spelling");
 
 }
 
