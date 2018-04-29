@@ -499,8 +499,6 @@ var update_bot_status = function (args, message) {
     bot.user.setGame(text);
 }
 
-
-//INCOMPLETE
 //searches database of spells and spits out description
 var search_spells = function (args, message) {
 
