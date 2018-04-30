@@ -27,6 +27,7 @@ bot.login(token);
 const quest_board_id = '438050640271507466';
 const complete_board_id = '438461335337172992';
 const server_id = '438048843150393366';
+const duncan_id = '188928848287498240';
 var quest_board;
 var adv_guild;
 var complete_board;
@@ -49,6 +50,7 @@ spell_list.push.apply(spell_list, require('./spells-xge.json').spell);
 const folder = './';
 
 var con;
+var pool;
 
 //when ready, log in console
 bot.on("ready", () => {
@@ -58,7 +60,7 @@ bot.on("ready", () => {
 	complete_board = bot.channels.get(complete_board_id);
     server = bot.guilds.get(server_id);
 
-	con = mysql.createConnection({
+	pool = mysql.createPool({
 		connectionLimit: 10,
 		host: "colonelrabbit.com",
 		user: "bot_user",
@@ -66,10 +68,6 @@ bot.on("ready", () => {
 		database: "guildrosterdata"
 	});
 	
-	con.connect(function(err) {
-		if (err) throw err;
-		console.log("Connected!");
-	});
 	
     console.log("Ready");
 
@@ -78,189 +76,207 @@ bot.on("ready", () => {
 
 //when message is posted in a chat, check to see how the bot should respond
 bot.on("message", function (message) {
+	
+	pool.getConnection(function(err,connection) {
+		if (err) throw err ;
+		con = connection;
+	
+		//if bot sent the message, check to see if it was a quest posting, else return
+		if (message.author.equals(bot.user)) {
+			return;
+		}
 
-    //if bot sent the message, check to see if it was a quest posting, else return
-    if (message.author.equals(bot.user)) {
-        return;
-    }
+		//if message doesn't start with proper prefix, ignore
+		if (!message.content.startsWith(prefix)) return;
 
-    //if message doesn't start with proper prefix, ignore
-    if (!message.content.startsWith(prefix)) return;
+		//seperate message into array based on spaces (get rid of prefix)
+		var args = message.content.substring(prefix.length).split(" ");
 
-    //seperate message into array based on spaces (get rid of prefix)
-    var args = message.content.substring(prefix.length).split(" ");
+		//read message arguments
+		switch (args[0].toLowerCase()) {
 
-    //read message arguments
-    switch (args[0].toLowerCase()) {
+			case "dth":
 
-        case "dth":
+				spend_dth(args, message);
 
-            spend_dth(args, message);
+				return;
 
-            return;
+			//rolls X dice with Y sides
+			//takes input of form: XdY
+			case "roll":
 
-        //rolls X dice with Y sides
-        //takes input of form: XdY
-        case "roll":
+				roll_dice(args, message);
 
-            roll_dice(args, message);
+				return;
 
-            return;
+			//PM's the DM to join their quest
+			case "join":
 
-        //PM's the DM to join their quest
-        case "join":
+				join_quest(args, message);
 
-            join_quest(args, message);
+				return;
 
-            return;
+			//List quests of particular level
+			case "list":
 
-        //List quests of particular level
-        case "list":
+				list_quests(args, message);
 
-            list_quests(args, message);
+				return;
 
-            return;
+			case "spell":
+				//IN PROGRESS, POTENTIALLY ERRORS
+				search_spells(args, message);
 
-        case "spell":
-            //IN PROGRESS, POTENTIALLY ERRORS
-            search_spells(args, message);
+				return;
 
-            return;
+			case "loot":
 
-        case "loot":
+				roll_loot(args, message);
 
-            roll_loot(args, message);
-
-            return;
-
-        //creates an embed displaying the list of commands and sends it
-        case "help":
-
-            //embed of bot commands
-            var commands = new Discord.RichEmbed()
-                .setColor([40, 110, 200])
-                .setTitle("RPBot General Commands:")
-                .addField('~list [quest level]', 'Lists all quests that have level X.')
-                .addField('~join [quest title]', 'Sends a message to the DM that you want to join their quest, and adds your character to the quest.')
-                .addField('~spell [spell name]', 'Send you a message displaying the details of the requested spell (incomplete)')
-                .addField('~loot [shards spent]', 'Rolls you a magic item based on the shards used and updates your balance')
-                .addField('~roll [X]d[Y] [+Z]', "rolls XdY dice with an option for a modifier of +/-Z. Only supports one type of die per roll.")
-                .addField('~dth [char name], [hours spent/use]', 'spends DTH for a character. To get gold, make "hours spent" and integer value. You will get 15*hours gp. For proficiencies type the kind proficiency you want to learn. "skill" costs 120 hrs, "weapon" or "armor" costs 80 hours and "tool" or "language" costs 40 hours.')
-                .setThumbnail(bot.user.avatarURL);
-            message.author.send(commands);
-
-            if (message.channel.type != "dm") {
-                message.channel.send("The help menu was PM'ed to you.");
-            }
-
-            break;
+				return;
+				
+			case "check":
 			
-        //if command doesn't match, notify user and send help list
-        default:
-
-            //if a quest giver, not check that the command isn't valid
-            if (adv_guild.members.get(message.author.id).roles.find("name", "Dungeon Master")) {
-                break;
-            }
-
-            message.channel.send(message.content + " is not a valid command. Use ~help for a list of commands.");
-
-            break;
-
-    }
-    
-
-    //if message sender isn't a "Dungeon Master", stop (QG commands below)
-    if (!adv_guild.members.get(message.author.id).roles.find("name", "Dungeon Master")) {
-        return;
-    }
-
-    //switch statement checks if message contains commands
-    switch (args[0].toLowerCase()) {
-
-        //updates status of a quest
-        //takes input: "title" new status
-        case "update":
-
-            update_quest(args, message);
-            
-            break;
-
-        //creates a new quest posting
-        //takes input of form:
-        //"title" TITLE TEXT
-        //"header1" TEXT1
-        //"header2" TEXT2
-        case "quest":
-            
-			new_quest(args, message);
-
-            break;
-
-        //sets bot "playing" status
-        case "botstatus":
-
-            update_bot_status(args, message);
-
-            break;
-
-        //command to test bot responsiveness, sends a response to the log
-        case "test":
-
-            message.author.send("ping!");
-            console.log("PING");
-            break;
+				check_character(args, message);
+				
+				return;
 			
-		//command to add a character
-		case "character":
-			
-			add_character(args, message);
-			
-			break;
-			
-		case "completequest":
-			
-			quest_complete(args, message);
-			
-			break;
-			
+
+			//creates an embed displaying the list of commands and sends it
+			case "help":
+
+				//embed of bot commands
+				var commands = new Discord.RichEmbed()
+					.setColor([40, 110, 200])
+					.setTitle("RPBot General Commands:")
+					.addField('~list [quest level]', 'Lists all quests that have level X.')
+					.addField('~join [quest title]', 'Sends a message to the DM that you want to join their quest, and adds your character to the quest.')
+					.addField('~spell [spell name]', 'Send you a message displaying the details of the requested spell (incomplete)')
+					.addField('~loot [shards spent]', 'Rolls you a magic item based on the shards used and updates your balance')
+					.addField('~roll [X]d[Y] [+Z]', "rolls XdY dice with an option for a modifier of +/-Z. Only supports one type of die per roll.")
+					.addField('~dth [char name], [hours spent/use]', 'spends DTH for a character. To get gold, make "hours spent" and integer value. You will get 15*hours gp. For proficiencies type the kind proficiency you want to learn. "skill" costs 120 hrs, "weapon" or "armor" costs 80 hours and "tool" or "language" costs 40 hours.')
+					.setThumbnail(bot.user.avatarURL);
+				message.author.send(commands);
+
+				if (message.channel.type != "dm") {
+					message.channel.send("The help menu was PM'ed to you.");
+				}
+
+				break;
+				
+			//if command doesn't match, notify user and send help list
+			default:
+
+				//if a quest giver, not check that the command isn't valid
+				if (adv_guild.members.get(message.author.id).roles.find("name", "Dungeon Master")) {
+					break;
+				}
+
+				message.channel.send(message.content + " is not a valid command. Use ~help for a list of commands.");
+
+				break;
+
+		}
 		
-		case "addshards":
-		
-			add_shards(args, message);
+
+		//if message sender isn't a "Dungeon Master", stop (QG commands below)
+		if (!adv_guild.members.get(message.author.id).roles.find("name", "Dungeon Master")) {
+			return;
+		}
+
+		//switch statement checks if message contains commands
+		switch (args[0].toLowerCase()) {
+
+			//updates status of a quest
+			//takes input: "title" new status
+			case "update":
+
+				update_quest(args, message);
+				
+				break;
+
+			//creates a new quest posting
+			//takes input of form:
+			//"title" TITLE TEXT
+			//"header1" TEXT1
+			//"header2" TEXT2
+			case "quest":
+				
+				new_quest(args, message);
+
+				break;
+
+			//sets bot "playing" status
+			case "botstatus":
+
+				update_bot_status(args, message);
+
+				break;
+
+			//command to test bot responsiveness, sends a response to the log
+			case "test":
+
+				message.author.send("ping!");
+				console.log("PING");
+				break;
+				
+			//command to add a character
+			case "character":
+				
+				add_character(args, message);
+				
+				break;
+				
+			case "completequest":
+				
+				quest_complete(args, message);
+				
+				break;
+				
+			case "addxp":
+				
+				manual_xp(args, message);
+				
+				break;
+				
 			
-			break;
+			case "addshards":
 			
-		case "addhours":
-		
-			add_hours(args, message);
+				add_shards(args, message);
+				
+				break;
+				
+			case "addhours":
 			
-			break;
+				add_hours(args, message);
+				
+				break;
 
-        //if not a valid command, note it
-        default:
+			//if not a valid command, note it
+			default:
 
-            message.channel.send(message.content + " is not a valid command. Use ~help for a list of commands.");
-            break;
+				message.channel.send(message.content + " is not a valid command. Use ~help for a list of commands.");
+				break;
 
-        case "help":
+			case "help":
 
-            //embed of Quest Giver bot commands
-            var commands = new Discord.RichEmbed()
-                .setColor([40, 110, 200])
-                .setTitle("RPBot Dungeon Master Commands:")
-                .addField('~test', 'PMs a "ping!" to the sender to confirm the bot is working.')
-                .addField('~completequest [xp awarded], [char 1], [char 2]', 'awards exp to the specified players at the end of a quest')
-                .addField('~addshards [shards awarded], [char 1], [char 2]', 'gives shards to specified players (Duncan only).')
-                .addField('~addhours [DTH awarded], [char 1], [char 2]', 'gives DTH hours to specified players (Duncan only).')
-                .addField('~quest', '"title" TITLE \n "header1" TEXT1 \n "header2" TEXT2 \n\n*Make sure all quests have a "title". To make a test quest, make the title test.*')
-                .addField('~update [quest title], [new status]', 'Updates the status of a quest. \n\n*When the quest is done, set status to "complete" but it will make it so that quest status cannot be changed any further.*')
-                .addField('~botstatus [new status]', 'sets the status of the bot.')
-                .setThumbnail(bot.user.avatarURL);
-            message.author.send(commands);
+				//embed of Quest Giver bot commands
+				var commands = new Discord.RichEmbed()
+					.setColor([40, 110, 200])
+					.setTitle("RPBot Dungeon Master Commands:")
+					.addField('~test', 'PMs a "ping!" to the sender to confirm the bot is working.')
+					.addField('~completequest [xp awarded], [char 1], [char 2]', 'awards exp to the specified players at the end of a quest')
+					.addField('~addshards [shards awarded], [char 1], [char 2]', 'gives shards to specified players (Duncan only).')
+					.addField('~addhours [DTH awarded], [char 1], [char 2]', 'gives DTH hours to specified players (Duncan only).')
+					.addField('~quest', '"title" TITLE \n "header1" TEXT1 \n "header2" TEXT2 \n\n*Make sure all quests have a "title". To make a test quest, make the title test.*')
+					.addField('~update [quest title], [new status]', 'Updates the status of a quest. \n\n*When the quest is done, set status to "complete" but it will make it so that quest status cannot be changed any further.*')
+					.addField('~botstatus [new status]', 'sets the status of the bot.')
+					.setThumbnail(bot.user.avatarURL);
+				message.author.send(commands);
 
-    }
-
+		}
+	con.release();
+	});
 });
 
 var roll_dice = function (args, message) {
@@ -305,10 +321,52 @@ var join_quest = function (args, message) {
     //no match found yet
     var found = false;
     //reads input arguments
-    var quest = args.splice(1).join(" ");
+    var text = args.splice(1).join(" ");
 
-    //search all quest txt files
-    fs.readdirSync(folder).forEach(file => {
+    //regEx to extract char names from 'text' string
+    var regEx = /\W*(.*?),\W(.*?)$/;
+    var match = regEx.exec(text);
+
+    var quest = match[1];
+    var character = match[2];
+	
+	con.query("SELECT * FROM quest_data WHERE quest_name=\'" + quest + "\';", function(err, result) {
+		if (err) {
+			auth.send("No such quest with that title");
+		}
+		if(result[0].quest_status != "CLOSED" && result[0].active != 1) {
+			con.query("SELECT * FROM roster WHERE charName=\'" + character + "\';", function(err, result2){
+				if(err) {
+					auth.send("Invalid player");
+				}
+				var qPlayersNew;
+				console.log(result[0]);
+				console.log(result2[0]);
+				if(result[0].active_players == '') {
+					qPlayersNew = result2[0].entryID;
+				} else {
+					qPlayersNew = result[0].active_players + " " + result2[0].entryID;
+				}
+				var qTotNew = result[0].total_players + 1;
+				var qStatNew;
+				if (qTotNew == result[0].size) {
+					qStatNew = "CLOSED";
+				} else {
+					qStatNew = "OPEN ("+ qTotNew + "/" + result[0].size + ")";
+				}
+				var upquer = "UPDATE quest_data SET quest_status=\'" + qStatNew + "\', active_players=\'" + qPlayersNew + "\', total_players=" + qTotNew + " WHERE quest_name=\'" + quest + "\';";
+				con.query(upquer, function(err, result) {
+					if (err) throw err;
+					console.log("Quest updated");	
+				});
+			});
+		}
+		
+	});
+			
+
+    //search all quest txt files **DEPRECATED
+    /*fs.readdirSync(folder).forEach(file => {
         if (file == quest + '.txt') {
             //grab contents of txt files
             var id = fs.readFileSync(file, 'utf8');
@@ -338,9 +396,16 @@ var join_quest = function (args, message) {
                 }
             });
         }
-    });
+    });*/
+}
+//Changes quest to active
+var fire_quest = function(args, message) {
+	
+	
 }
 
+
+//Lists quests of a particular level
 var list_quests = function (args, message) {
     //set author of message
     var auth = message.author;
@@ -354,9 +419,23 @@ var list_quests = function (args, message) {
 
     //prep the message
     auth.send("Quests of level " + input);
+	
+	//Reads SQL database to find quests of given level
+	con.query("SELECT quest_name FROM quest_data WHERE quest_status!='CLOSED' AND quest_lvl=" + input + ";", function(err, result) {
+		if (err) throw err ;
+		console.log(result);
+		for(entry in result) {
+			try {
+				auth.send(result[entry].quest_name);
+			} catch(error){
+				console.log(error);
+			}
+		}
+		
+	});
 
-    //reads directory of quest files for each
-    var fileArr = fs.readdirSync(folder).forEach(file => {
+    //reads directory of quest files for each **DEPRECATED**
+    /*var fileArr = fs.readdirSync(folder).forEach(file => {
         //looks for only txt files
         if (path.extname(file) == '.txt') {
             console.log(file);
@@ -382,9 +461,9 @@ var list_quests = function (args, message) {
                 }
             });
         }
-    });
+    });*/
 }
-
+//Deprecated. Functionality now automatic.
 var update_quest = function (args, message) {
     //combines input into a string
     var input = args.splice(1).join(" ");
@@ -406,12 +485,12 @@ var update_quest = function (args, message) {
     try {
 
         //looks for file w/ name of title
-        var id = fs.readFileSync(__dirname + '/' + title + ".txt", 'utf8');
+        //var id = fs.readFileSync(__dirname + '/' + title + ".txt", 'utf8');
 
         //if quest complete, delete txt file
-        if (status.toLowerCase() == "complete") {
-            fs.unlinkSync(__dirname + '/' + title + ".txt");
-        }
+        //if (status.toLowerCase() == "complete") {
+            //fs.unlinkSync(__dirname + '/' + title + ".txt");
+        //}
 
         //find the message posting, edit to set quest status to new status
         quest_board.fetchMessage(id).then(message => {
@@ -437,6 +516,11 @@ var new_quest = function (args, message) {
     //searches for new lines and seperates headers from texts
     var regEx = /^(?:"|“)(.*?)\W*(?:"|”) (.*?)$/gm;
     var match;
+	
+	
+	var lvl;
+	var size;
+	
 
     while ((match = regEx.exec(text)) !== null) {
         console.log("ping");
@@ -448,6 +532,11 @@ var new_quest = function (args, message) {
         else {
             try {
                 listing.addField(match[1], match[2], false);
+				if(match[1].toLowerCase() == "party level" || match[1].toLowerCase() == "recommended level" || match[1].toLowerCase() == "level") {
+					lvl = parseInt(match[2]);
+				} else if(match[1].toLowerCase() == "party size"){
+					size = match[2];
+				}
             } catch (e) {
                 console.log(e);
                 message.author.send("Error posting quest, check console for details; likely a field exceeded 1024 characters.");
@@ -470,6 +559,8 @@ var new_quest = function (args, message) {
         return;
     }
 
+	var auth = message.author.id;
+	
     //send embed w/ quest status text
     quest_board.send("**QUEST STATUS: OPEN**", listing)
         .then((message) => {
@@ -480,10 +571,21 @@ var new_quest = function (args, message) {
             //grab ID of message, and title of embed
             var id = message.id;
             var title = message.embeds[0].title;
+			
+			var queryText = "INSERT INTO quest_data (quest_name, quest_DM, quest_lvl, size, message_id) VALUES (\'" + title + "\', \'" + auth + "\', " + lvl + ", " + size + ", \'" + message.id + "\');";
+			console.log(queryText);
+			con.query(queryText, function(err){
+				if(err) throw err ;
+				console.log("1 Record inserted");
+				
+			});
 
             //create a file with name "title.txt" and content of the quest posting ID
-            fs.writeFileSync(__dirname + '/' + title + ".txt", id);
+            //fs.writeFileSync(__dirname + '/' + title + ".txt", id);
         });
+		
+		
+	
 }
 
 var update_bot_status = function (args, message) {
@@ -758,12 +860,13 @@ var add_character = function (args, message) {
     con.query(sql, function (err, result) {
 		if (err) throw err;
 	    console.log("1 record inserted");
+		
 	});
     
 }
 
-//WHEN A QUEST IS COMPLETE, AWARD EXP TO CERTAIN PLAYERS
-var quest_complete = function (args, message) {
+//Manually add xp to certain players. Alerts Duncan when used as a failsafe against cheating.
+var manual_xp = function (args, message) {
 
     //Requires at least 2 arguments
     if (!args[2]) {
@@ -804,8 +907,27 @@ var quest_complete = function (args, message) {
 		message.author.send("Incorrect arguments, add players");
 		return;	
 	}
+
+	award_xp(players, xp, message);
 	
-    //builds query to search for all players to be awared exp		
+	//Sends duncan a message
+	var dunc = adv_guild.members.get(duncan_id);
+	dunc.send(message.author.username + " has just manually added XP. You may want to check in with them.");
+	
+}
+//Closes a quest, which does the following:
+// - Adds xp to all players on the quest in the amount specified
+// - Deletes the quest from the SQL storage
+var quest_complete = function(args, message) {
+	
+	
+	
+	
+}
+
+var award_xp = function(players, xp, message) {
+	
+	//builds query to search for all players to be awared exp		
 	var quer1 = "SELECT exp, level, charName, charPlayer FROM roster WHERE charName IN (\'";
 	for(var i = 0; i < players.length; i++){
 		quer1 += players[i] + "\'";
@@ -845,11 +967,12 @@ var quest_complete = function (args, message) {
 					if (err) throw err;
 					console.log("Level updated");
 				});
-				level_message(result[i].charName, result[i].charPlayer, result[i].level);
+				//level_message(result[i].charName, result[i].charPlayer, result[i].level);
 			}
 		}
 			
 	});
+	
 	
 }
 
@@ -858,7 +981,7 @@ var add_shards = function(args, message){
 
     //if Duncan isn't using the command, it is invalid
     console.log(message.author.username);
-	if(message.author.id != '188928848287498240'){
+	if(message.author.id != duncan_id){
 		message.author.send("You do not have permission to use this command!");
 		return;
 	}
@@ -923,14 +1046,13 @@ var add_shards = function(args, message){
 	
 }
 
-//GIVES ALL PLAYERS DOWNTIME HOURS AT THE END OF WEEK 
-//(CURRENTLY IS MANUAL INSTEAD OF AUTOMATIC)
-//TO BE CHANGED TO MATCH REGEX FORMAT OF QUEST_COMPLETE AND ADD_SHARDS
+//Manual addition of hours for testing purposes
 var add_hours = function(args, message){
+	
 
     //if not Duncan, fuck off
     console.log(message.author.username);
-	if(message.author.id != '188928848287498240'){
+	if(message.author.id != duncan_id){
 		message.author.send("You do not have permission to use this command!");
 		return;
 	}
@@ -978,15 +1100,15 @@ var add_hours = function(args, message){
 	con.query(sql, function (err, result) {
 	if (err) throw err;
 		console.log("Values updated");
+		
 	});
 	
 }
 
 var level_message = function(character, player, level){
-	//playerID = server.members.find(val => val.user.name == player);
+	var playerUser = adv_guild.members.get(player);
 	
-	//playerID.send(`Congratulations, your character ${character} has made it to level ${level}!`);
-	
+	playerUser.message.send("Congratulations, " + character + " has reached level " + level + "!");
 	
 }
 
@@ -1006,6 +1128,7 @@ var check_level = function(xp) {
 
 //CHECKS IF PLAYER HAS ENOUGH DTH FOR A THING AND THEN UPDATES DATABASE
 var spend_dth = function (args, message) {
+	
 
     //checks to make sure there are enough arguments
     if (!args[2]) {
@@ -1077,8 +1200,50 @@ var spend_dth = function (args, message) {
         con.query(update, function (err, result) {
             if (err) throw err;
             console.log("Updated");
+			
         });
-
+	
     });
 
 }
+
+//Checks if connection is open; if not, reopens it
+
+var check_connection = function(){
+	/*con.query("SELECT * FROM roster;", function(err, result){
+		if(err) {
+			console.log(err);
+			con.connect(function(error){
+				if(error) throw error;
+				console.log("Reconnected!");
+			});	
+		}
+		
+	});*/
+}
+
+//If the owner of the character or a DM asks, return the statistics
+var check_character = function(args, message) {
+	
+	//Get name from args
+	var character = args.splice(1).join(" ");
+	
+	con.query("SELECT * FROM roster WHERE charName=\'" + character + "\';", function(err, result) {
+		if(err) throw err ;
+		console.log(result);
+		if(result[0].charPlayer == message.author.id || adv_guild.members.get(message.author.id).roles.find("name", "Dungeon Master")){
+			message.author.send("Character: " + result[0].charName + "\n Level: " + result[0].level + "\n XP: " + result[0].exp + "\n Downtime hours: " + result[0].downHours + "\n Rift Shards: " + result[0].riftShards);
+			
+			
+		} else {
+			message.author.send("You do not have permission to view that character!");
+		}
+		
+	});
+	
+	
+	
+	
+}
+
+
