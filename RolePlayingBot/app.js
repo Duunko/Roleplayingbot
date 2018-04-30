@@ -16,8 +16,15 @@ const mysql = require('mysql');
 //bot token ***DO NOT SHARE***
 const token = package.token;
 
+//mubot's token, used for Beta development
+//const token = "MzYwMjEzNjU1MDA4MzEzMzU1.DL7GEg.n9ASGR38j8Q8hTNWW4L5anOxpRM";
+
 //prefix for bot commands
 const prefix = "~";
+
+//alt prefix used for mubot in Beta development
+//const prefix = "!";
+
 
 //create bot user and login
 var bot = new Discord.Client();
@@ -37,13 +44,15 @@ const xp_table = require('./level_xp.json');
 const loot_table = require('./loot_table.json').magicitems;
 
 var spell_list = []; 
-spell_list.push.apply(spell_list,require('./spells-phb.json').spell);
-spell_list.push.apply(spell_list,require('./spells-bols.json').spell);
+spell_list.push.apply(spell_list, require('./spells-phb.json').spell);
+spell_list.push.apply(spell_list, require('./spells-bols.json').spell);
 spell_list.push.apply(spell_list, require('./spells-scag.json').spell);
 spell_list.push.apply(spell_list, require('./spells-ua-mm.json').spell);
 spell_list.push.apply(spell_list, require('./spells-ua-ss.json').spell);
 spell_list.push.apply(spell_list, require('./spells-ua-tobm.json').spell);
 spell_list.push.apply(spell_list, require('./spells-xge.json').spell);
+
+var item_list = require('./items.json').item;
 
 
 const folder = './';
@@ -127,6 +136,12 @@ bot.on("message", function (message) {
 
             return;
 
+        case "item":
+
+            search_items(args, message);
+
+            return;
+
         case "loot":
 
             roll_loot(args, message);
@@ -142,7 +157,8 @@ bot.on("message", function (message) {
                 .setTitle("RPBot General Commands:")
                 .addField('~list [quest level]', 'Lists all quests that have level X.')
                 .addField('~join [quest title]', 'Sends a message to the DM that you want to join their quest, and adds your character to the quest.')
-                .addField('~spell [spell name]', 'Send you a message displaying the details of the requested spell (incomplete)')
+                .addField('~spell [spell name]', 'Send you a message displaying the details of the requested spell.')
+                .addField('~item [item name]', 'Send you a message displaying the details of the requested item(incomplete)')
                 .addField('~loot [shards spent]', 'Rolls you a magic item based on the shards used and updates your balance')
                 .addField('~roll [X]d[Y] [+Z]', "rolls XdY dice with an option for a modifier of +/-Z. Only supports one type of die per roll.")
                 .addField('~dth [char name], [hours spent/use]', 'spends DTH for a character. To get gold, make "hours spent" and integer value. You will get 15*hours gp. For proficiencies type the kind proficiency you want to learn. "skill" costs 120 hrs, "weapon" or "armor" costs 80 hours and "tool" or "language" costs 40 hours.')
@@ -508,9 +524,7 @@ var search_spells = function (args, message) {
     }
 
     //build spell name
-    var spell_name = args.splice(1).join(" ");
-
-    console.log(spell_name);
+    var spell_name = typeof (args) == "string" ? args : args.splice(1).join(" ");
 
     //search for spell by name in spell list
     for (spell in spell_list) {
@@ -523,7 +537,7 @@ var search_spells = function (args, message) {
                 .setTitle(current_spell.name)
                 .setThumbnail(bot.user.avatarURL);
 
-            spell_name_link = spell_name.replace(" ", "%20") + "_" + current_spell.source.replace(" ", "%20");
+            var spell_name_link = spell_name.replace(/ /g, "%20") + "_" + current_spell.source.replace(/ /g, "%20");
 
             //builds a string of basic information on the spell
             var spell_basics = "";
@@ -667,11 +681,10 @@ var search_spells = function (args, message) {
 
 }
 
-
 var roll_loot = function (args, message) {
 
     //CHOOSES WHAT TABLE TO ROLL LOOT FROM (SHOULD BE CHANGED TO REFLECT SHARDS USED)
-    var table_number = parseInt(Math.random() * 9);
+    var table_number = parseInt(Math.random() * 8);
     var table = loot_table[table_number].table;
 
     //ROLLS A D100 FOR LOOT
@@ -680,7 +693,33 @@ var roll_loot = function (args, message) {
     //FINDS THE RESULT ON CORRECT TABLE
     for (var i = 0; i < table.length; i++) {
         if (table[i].min <= d100 & table[i].max >= d100) {
-            message.channel.send(`The Collector gave you a ${table[i].item}`);
+
+            var rolled_item = table[i].item;
+
+            if (rolled_item.includes("Spell Scroll")) {
+
+                var lvl = 0;
+
+                if (!rolled_item.includes("Cantrip")) {
+                    for (var lvl = 0; lvl < 10; lvl++) {
+                        if (rolled_item.includes(lvl)) {
+                            break;
+                        }
+                    }
+                }
+                var rand_spell;
+                do {
+                    rand_spell = spell_list[parseInt(Math.random() * spell_list.length)];
+                } while (rand_spell.level != lvl);
+
+                rolled_item = rolled_item.replace(/\((.*?)\)/, `(${rand_spell.name})`);
+            }
+            
+            message.channel.send(`The Collector gave you a ${rolled_item}`);
+
+            search_spells(rand_spell.name, message);
+            search_items(table[i].item, message);
+
             return;
         }
     }
@@ -688,6 +727,8 @@ var roll_loot = function (args, message) {
 }
 
 var add_character = function (args, message) {
+
+    return;
 
     //return if no arguments
     if (!args[1]) {
@@ -1080,5 +1121,127 @@ var spend_dth = function (args, message) {
         });
 
     });
+
+}
+
+
+
+//searches database of spells and spits out description
+var search_items = function (args, message) {
+
+    //if no arguments, return
+    if (!args[1]) {
+        return message.channel.send("Please give a spell");
+    }
+
+    //build spell name
+    var item_name = typeof(args) == "string" ? args : args.splice(1).join(" ");
+
+    console.log(item_name);
+    
+    //search for spell by name in spell list
+    for (item in item_list) {
+        var current_item = item_list[item];
+
+        //if found, build spell description
+        if (current_item.name.toLowerCase() == item_name.toLowerCase()) {
+            var show_item = new Discord.RichEmbed()
+                .setColor([40, 110, 200])
+                .setTitle(current_item.name)
+                .setThumbnail(bot.user.avatarURL);
+
+            var item_name_link = item_name.replace(/ /g, "%20") + "_" + current_item.source.replace(/ /g, "%20");
+
+            //builds a string of basic information on the spell
+            var item_basics = "";
+
+            var item_type_abreviations = {
+                "$": "Precious Material",
+                "A": "Ammunition",
+                "AF": "Ammunition",
+                "AT": "Artisan Tool",
+                "EXP": "Explosive",
+                "G": "Adventuring Gear",
+                "GS": "Gaming Set",
+                "HA": "Heavy Armor",
+                "INS": "Instrument",
+                "LA": "Light Armor",
+                "M": "Melee Weapon",
+                "MA": "Medium Armor",
+                "MNT": "Mount",
+                "GV": "Generic Variant",
+                "P": "Potion",
+                "R": "Ranged Weapon",
+                "RD": "Rod",
+                "RG": "Ring",
+                "S": "Shield",
+                "SC": "Scroll",
+                "SCF": "Spellcasting Focus",
+                "T": "Tool",
+                "TAH": "Tack and Harness",
+                "TG": "Trade Good",
+                "VEH": "Vehicle",
+                "SHP": "Vehicle",
+                "WD": "Wand"
+            };
+
+            item_basics += current_item.wondrous ? `Type: *Wondrous Item` : `Type: *${item_type_abreviations[current_item.type]}`;
+            item_basics += current_item.tier ? `: ${current_item.tier}*\n` : '*\n';
+            item_basics += current_item.value ? `Price: **${current_item.value}**\n` : "";
+            item_basics += current_item.rarity ? `Rarity: ${current_item.rarity}\n` : "";
+            item_basics += current_item.weight ? `Weight: ${current_item.weight}\n` : "";
+            
+            show_item.addField(`https://5etools.com/items.html#${item_name_link}`, item_basics);
+
+            
+            var description = "";
+            var extras = {};
+
+            for (entry in current_item.entries) {
+
+                if (!current_item.entries[entry].type) {
+                    description += `${current_item.entries[entry]}\n`;
+                } else {
+                    extras[current_item.entries[entry].name] = current_item.entries[entry].entries;
+                }
+            }
+
+            if (description.length > 1000) {
+                var description_array = []
+                var i = 0;
+                while (description.length > 1000) {
+                    description_array[i] = description.substring(0, 1000);
+                    //console.log(description_array[i]);
+                    i++;
+                    description = description.substring(1000);
+                }
+                description_array[i] = description;
+                show_item.addField("Description", description_array[0]);
+
+                //console.log(description_array);
+
+                for (i = 1; i < description_array.length; i++) {
+                    show_item.addField("Description (cont.)", description_array[i]);
+                }
+
+            } else {
+                show_item.addField("Description", description);
+            }
+
+            for (extra in extras) {
+                if (extra != 'undefined') {
+                    show_item.addField(extra, extras[extra]);
+                }
+            }
+
+            message.channel.send(show_item);
+
+            return;
+
+        }
+
+    }
+
+    message.channel.send("Item not found. Please check spelling");
 
 }
