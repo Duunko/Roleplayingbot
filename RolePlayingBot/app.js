@@ -266,7 +266,19 @@ bot.on("message", function (message) {
 			
 				add_hours(args, message);
 				
-				break;
+                break;
+
+            case "viewshop":
+
+                view_shop(args, message);
+
+                break;
+
+            case "buyitem":
+
+                buy_item(args, message);
+
+                break;
 
 			//if not a valid command, note it
 			default:
@@ -600,8 +612,6 @@ var new_quest = function (args, message) {
             //fs.writeFileSync(__dirname + '/' + title + ".txt", id);
         });
 		
-		
-	
 }
 
 var update_bot_status = function (args, message) {
@@ -825,7 +835,6 @@ var roll_loot = function (args, message) {
             return;
         }
     }
-
 }
 
 var add_character = function (args, message) {
@@ -1405,5 +1414,73 @@ var search_items = function (args, message) {
     }
 
     message.channel.send("Item not found. Please check spelling");
+
+}
+
+
+var view_shop = function (args, message) {
+
+    var sql = "SELECT * FROM shop_inventory;";
+    con.query(sql, function (err, result) {
+        if (err) throw err;
+
+        var shop_inventory = new Discord.RichEmbed()
+            .setColor([40, 110, 200])
+            .setTitle("The Magic Shop")
+            .setThumbnail(bot.user.avatarURL);
+
+        var list = "";
+
+        for (var item in result) {
+            console.log(item);
+            list += `**${result[item].item_name}** : ${result[item].item_price} gp\n`;
+        }
+
+        if (list.length === 0) {
+            list = "No items";
+        }
+
+        shop_inventory.addField("Item Name : price (gp)", list);
+
+        message.author.send(shop_inventory);
+
+    });
+
+
+}
+
+
+var buy_item = function (args, message) {
+
+    var text = args.splice(1).join(" ");
+
+    //regEx to extract char names from 'text' string
+    var regEx = /\W*(.*?),\W(.*?)$/;
+    var match = regEx.exec(text);
+
+    var char_name = match[1];
+    var item_to_buy = match[2];
+
+    console.log(item_to_buy);
+
+    var sql = `SELECT * FROM shop_inventory WHERE item_name = '${item_to_buy}';`;
+    con.query(sql, function (err, result) {
+        if (err) throw err;
+
+        if (!result || result.length == 0) {
+            return message.channel.send("Item not found");
+        }
+
+        var remove_item_sql = `DELETE FROM shop_inventory WHERE item_name = '${item_to_buy}';`;        
+
+        con.query(remove_item_sql, function (err, delete_result) {
+            if (err) throw err;
+
+            return message.channel.send(`**${item_to_buy}** was bought by **${char_name}** for **${result[0].item_price} gp**`);
+
+        });
+
+
+    });
 
 }
