@@ -54,6 +54,7 @@ spell_list.push.apply(spell_list, require('./spells-ua-tobm.json').spell);
 spell_list.push.apply(spell_list, require('./spells-xge.json').spell);
 
 var item_list = require('./items.json').item;
+item_list.push.apply(item_list, require('./variant_items.json').variant);
 
 
 const folder = './';
@@ -1321,11 +1322,10 @@ var search_items = function (args, message) {
                 .setTitle(current_item.name)
                 .setThumbnail(bot.user.avatarURL);
 
-            var item_name_link = item_name.replace(/ /g, "%20") + "_" + current_item.source.replace(/ /g, "%20");
-
+            
             //builds a string of basic information on the spell
             var item_basics = "";
-
+            
             var item_type_abreviations = {
                 "$": "Precious Material",
                 "A": "Ammunition",
@@ -1357,6 +1357,14 @@ var search_items = function (args, message) {
             };
 
             item_basics += current_item.wondrous ? `Type: *Wondrous Item` : `Type: *${item_type_abreviations[current_item.type]}`;
+
+            if (current_item.type === "GV") {
+                current_item = current_item.inherits;
+            } 
+
+            var item_name_link = item_name.replace(/ /g, "%20") + "_" + current_item.source.replace(/ /g, "%20");
+            item_name_link = item_name_link.replace(/\+/g, "%2b");
+
             item_basics += current_item.tier ? `: ${current_item.tier}*\n` : '*\n';
             item_basics += current_item.value ? `Price: **${current_item.value}**\n` : "";
             item_basics += current_item.rarity ? `Rarity: ${current_item.rarity}\n` : "";
