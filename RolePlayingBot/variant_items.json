@@ -16,7 +16,7 @@
 				"page": "152",
 				"nameSuffix": " +1",
 				"entries": [
-					"You have a {@genericBonus} bonus to AC while wearing this armor."
+					"You have a +1 bonus to AC while wearing this armor."
 				],
 				"modifier": [{
 					"_category": "bonus",
@@ -44,7 +44,7 @@
 				"page": "152",
 				"nameSuffix": " +2",
 				"entries": [
-					"You have a {@genericBonus} bonus to AC while wearing this armor."
+					"You have a +2 bonus to AC while wearing this armor."
 				],
 				"modifier": [{
 					"_category": "bonus",
@@ -72,7 +72,7 @@
 				"page": "152",
 				"nameSuffix": " +3",
 				"entries": [
-					"You have a {@genericBonus} bonus to AC while wearing this armor."
+					"You have a +3 bonus to AC while wearing this armor."
 				],
 				"modifier": [{
 					"_category": "bonus",
@@ -100,7 +100,7 @@
 				"page": "200",
 				"nameSuffix": " +1",
 				"entries": [
-					"While holding this shield, you have a {@genericBonus} bonus to AC. This bonus is in addition to the shield's normal bonus to AC."
+					"While holding this shield, you have a +1 bonus to AC. This bonus is in addition to the shield's normal bonus to AC."
 				],
 				"modifier": [{
 					"_category": "bonus",
@@ -128,7 +128,7 @@
 				"page": "200",
 				"nameSuffix": " +2",
 				"entries": [
-					"While holding this shield, you have a {@genericBonus} bonus to AC. This bonus is in addition to the shield's normal bonus to AC."
+					"While holding this shield, you have a +2 bonus to AC. This bonus is in addition to the shield's normal bonus to AC."
 				],
 				"modifier": [{
 					"_category": "bonus",
@@ -156,7 +156,7 @@
 				"page": "200",
 				"nameSuffix": " +3",
 				"entries": [
-					"While holding this shield, you have a {@genericBonus} bonus to AC. This bonus is in addition to the shield's normal bonus to AC."
+					"While holding this shield, you have a +3 bonus to AC. This bonus is in addition to the shield's normal bonus to AC."
 				],
 				"modifier": [{
 					"_category": "bonus",
@@ -417,7 +417,7 @@
 				"stealth": false,
 				"namePrefix": "Mithral ",
 				"entries": [
-					"Mithral is a light, flexible metal. A mithral chain shirt or breastplate can be worn under normal clothes. If the armor normally imposes disadvantage on Dexterity ({@skill Stealth}) checks or has a Strength requirement, the mithral version of the armor doesn't."
+					"Mithral is a light, flexible metal. A mithral chain shirt or breastplate can be worn under normal clothes. If the armor normally imposes disadvantage on Dexterity (**Stealth**) checks or has a Strength requirement, the mithral version of the armor doesn't."
 				]
 			}
 		},
@@ -450,11 +450,11 @@
 			}
 		},
 		{
-			"name": "Arrow of Slaying (Generic)",
+			"name": "Arrow of Slaying",
 			"type": "GV",
 			"entries": [
-				"An {@italic arrow of slaying} is a magic weapon meant to slay a particular kind of creature. Some are more focused than others; for example, there are both {@italic arrows of dragon slaying} and {@italic arrows of blue dragon slaying}. If a creature belonging to the type, race, or group associated with an {@italic arrow of slaying} takes damage from the arrow, the creature must make a DC 17 Constitution saving throw, taking an extra 6d10 piercing damage on a failed save, or half as much extra damage on a successful one.",
-				"Once an {@italic arrow of slaying} deals its extra damage to a creature, it becomes a nonmagical arrow.",
+				"An **arrow of slaying** is a magic weapon meant to slay a particular kind of creature. Some are more focused than others; for example, there are both {@italic arrows of dragon slaying} and {@italic arrows of blue dragon slaying}. If a creature belonging to the type, race, or group associated with an {@italic arrow of slaying} takes damage from the arrow, the creature must make a DC 17 Constitution saving throw, taking an extra 6d10 piercing damage on a failed save, or half as much extra damage on a successful one.",
+				"Once an **italic arrow of slaying** deals its extra damage to a creature, it becomes a nonmagical arrow.",
 				"Other types of magic ammunition of this kind exist, such as bolts of slaying meant for a crossbow, though arrows are most common."
 			],
 			"inherits": {
@@ -464,8 +464,8 @@
 				"page": "152",
 				"nameSuffix": " of Slaying",
 				"entries": [
-					"A {@lowerName} of slaying is a magic weapon meant to slay a particular kind of creature. Some are more focused than others; for example, there are both <i>{@lowerName}s of dragon slaying</i> and <i>{@lowerName}s of blue dragon slaying</i>. If a creature belonging to the type, race, or group associated with a {@lowerName} of slaying takes damage from the {@lowerName}, the creature must make a DC 17 Constitution saving throw, taking an extra 6d10 piercing damage on a failed save, or half as much extra damage on a successful one.",
-					"Once a {@lowerName} of slaying deals its extra damage to a creature, it becomes a nonmagical {@lowerName}."
+					"An arrow of slaying is a magic weapon meant to slay a particular kind of creature. Some are more focused than others; for example, there are both arrows of dragon slaying and arrows of blue dragon slaying. If a creature belonging to the type, race, or group associated with an arrow of slaying takes damage from the arrow, the creature must make a DC 17 Constitution saving throw, taking an extra 6d10 piercing damage on a failed save, or half as much extra damage on a successful one.",
+					"Once an arrow of slaying deals its extra damage to a creature, it becomes a nonmagical arrow."
 				]
 			}
 		},
@@ -483,7 +483,7 @@
 				"page": "150",
 				"nameSuffix": " +1",
 				"entries": [
-					"You have a {@genericBonus} bonus to attack and damage rolls made with this piece of magic ammunition. Once it hits a target, the ammunition is no longer magical."
+					"You have a +1 bonus to attack and damage rolls made with this piece of magic ammunition. Once it hits a target, the ammunition is no longer magical."
 				],
 				"modifier": [{
 						"_category": "bonus",
@@ -516,7 +516,7 @@
 				"page": "150",
 				"nameSuffix": " +2",
 				"entries": [
-					"You have a {@genericBonus} bonus to attack and damage rolls made with this piece of magic ammunition. Once it hits a target, the ammunition is no longer magical."
+					"You have a +2 bonus to attack and damage rolls made with this piece of magic ammunition. Once it hits a target, the ammunition is no longer magical."
 				],
 				"modifier": [{
 						"_category": "bonus",
@@ -549,7 +549,7 @@
 				"page": "150",
 				"nameSuffix": " +3",
 				"entries": [
-					"You have a {@genericBonus} bonus to attack and damage rolls made with this piece of magic ammunition. Once it hits a target, the ammunition is no longer magical."
+					"You have a +3 bonus to attack and damage rolls made with this piece of magic ammunition. Once it hits a target, the ammunition is no longer magical."
 				],
 				"modifier": [{
 						"_category": "bonus",
@@ -578,7 +578,7 @@
 				"page": "139",
 				"namePrefix": "Walloping ",
 				"entries": [
-					" This ammunition packs a wallop. A creature hit by the ammunition must succeed on a DC 10 Strength saving throw or be knocked {@condition prone}."
+					" This ammunition packs a wallop. A creature hit by the ammunition must succeed on a DC 10 Strength saving throw or be knocked **prone**."
 				]
 			}
 		},
@@ -596,7 +596,7 @@
 				"page": "213",
 				"nameSuffix": " +1",
 				"entries": [
-					"You have a {@genericBonus} bonus to attack and damage rolls made with this weapon."
+					"You have a +1 bonus to attack and damage rolls made with this weapon."
 				]
 			}
 		},
@@ -614,7 +614,7 @@
 				"page": "213",
 				"nameSuffix": " +2",
 				"entries": [
-					"You have a {@genericBonus} bonus to attack and damage rolls made with this weapon."
+					"You have a +2 bonus to attack and damage rolls made with this weapon."
 				]
 			}
 		},
@@ -632,7 +632,7 @@
 				"page": "213",
 				"nameSuffix": " +3",
 				"entries": [
-					"You have a {@genericBonus} bonus to attack and damage rolls made with this weapon."
+					"You have a +3 bonus to attack and damage rolls made with this weapon."
 				]
 			}
 		},
@@ -647,7 +647,7 @@
 				"nameSuffix": " of Warning",
 				"reqAttune": "YES",
 				"entries": [
-					"This magic weapon warns you of danger. While the weapon is on your person, you have advantage on initiative rolls. In addition, you and any of your companions within 30 feet of you can't be surprised, except when {@condition incapacitated} by something other than nonmagical sleep. The weapon magically awakens you and your companions within range if any of you are sleeping naturally when combat begins."
+					"This magic weapon warns you of danger. While the weapon is on your person, you have advantage on initiative rolls. In addition, you and any of your companions within 30 feet of you can't be surprised, except when **incapacitated** by something other than nonmagical sleep. The weapon magically awakens you and your companions within range if any of you are sleeping naturally when combat begins."
 				]
 			}
 		},
@@ -796,7 +796,7 @@
 				"namePrefix": "Giant Slayer ",
 				"entries": [
 					"You gain a +1 bonus to attack and damage rolls made with this magic weapon.",
-					"When you hit a giant with it, the giant takes an extra 2d6 damage of the weapon's type and must succeed on a DC 15 Strength saving throw or fall {@condition prone}. For the purpose of this weapon, \"giant\" refers to any creature with the giant type, including ettins and trolls."
+					"When you hit a giant with it, the giant takes an extra 2d6 damage of the weapon's type and must succeed on a DC 15 Strength saving throw or fall **prone**. For the purpose of this weapon, \"giant\" refers to any creature with the giant type, including ettins and trolls."
 				],
 				"modifier": [{
 						"_category": "bonus",
@@ -825,7 +825,7 @@
 				"namePrefix": "Giant Slayer ",
 				"entries": [
 					"You gain a +1 bonus to attack and damage rolls made with this magic weapon.",
-					"When you hit a giant with it, the giant takes an extra 2d6 damage of the weapon's type and must succeed on a DC 15 Strength saving throw or fall {@condition prone}. For the purpose of this weapon, \"giant\" refers to any creature with the giant type, including ettins and trolls."
+					"When you hit a giant with it, the giant takes an extra 2d6 damage of the weapon's type and must succeed on a DC 15 Strength saving throw or fall **prone**. For the purpose of this weapon, \"giant\" refers to any creature with the giant type, including ettins and trolls."
 				],
 				"modifier": [{
 						"_category": "bonus",
@@ -895,7 +895,7 @@
 					"type": "entries",
 					"name": "Wish",
 					"entries": [
-						"The sword has 1d4-1 charges. While holding it, you can use an action to expend 1 charge and cast the {@spell wish|phb} spell from it. This property can't be used again until the next dawn. The sword loses this property if it has no charges."
+						"The sword has 1d4-1 charges. While holding it, you can use an action to expend 1 charge and cast the **wish** spell from it. This property can't be used again until the next dawn. The sword loses this property if it has no charges."
 					]
 				}
 			],
@@ -922,7 +922,7 @@
 						"type": "entries",
 						"name": "Wish",
 						"entries": [
-							"The sword has 1d4-1 charges. While holding it, you can use an action to expend 1 charge and cast the {@spell wish|phb} spell from it. This property can't be used again until the next dawn. The sword loses this property if it has no charges."
+							"The sword has 1d4-1 charges. While holding it, you can use an action to expend 1 charge and cast the **wish** spell from it. This property can't be used again until the next dawn. The sword loses this property if it has no charges."
 						]
 					}
 				],
@@ -1057,7 +1057,7 @@
 					"You gain a +1 bonus to attack and damage rolls made with this magic weapon.",
 					"Curse. This sword is cursed and possessed by a vengeful spirit. Becoming attuned to it extends the curse to you. As long as you remain cursed, you are unwilling to part with the sword, keeping it on your person at all times. While attuned to this weapon, you have disadvantage on attack rolls made with weapons other than this one.",
 					"In addition, while the sword is on your person, you must succeed on a DC 15 Wisdom saving throw whenever you take damage in combat. On a failed save you must attack the creature that damaged you until you drop to 0 hit points or it does, or until you can't reach the creature to make a melee attack against it.",
-					"You can break the curse in the usual ways. Alternatively, casting {@spell banishment|phb} on the sword forces the vengeful spirit to leave it. The sword then becomes a +1 weapon with no other properties."
+					"You can break the curse in the usual ways. Alternatively, casting **banishment** on the sword forces the vengeful spirit to leave it. The sword then becomes a +1 weapon with no other properties."
 				],
 				"modifier": [{
 						"_category": "bonus",
@@ -1091,7 +1091,7 @@
 				"reqAttune": "YES",
 				"entries": [
 					"Hit points lost to this weapon's damage can be regained only through a short or long rest, rather than by regeneration, magic, or any other means.",
-					"Once per turn, when you hit a creature with an attack using this magic weapon, you can wound the target. At the start of each of the wounded creature's turns, it takes 1d4 necrotic damage for each time you've wounded it, and it can then make a DC 15 Constitution saving throw, ending the effect of all such wounds on itself on a success. Alternatively, the wounded creature, or a creature within 5 feet of it, can use an action to make a DC 15 Wisdom ({@skill Medicine}) check, ending the effect of such wounds on it on a success."
+					"Once per turn, when you hit a creature with an attack using this magic weapon, you can wound the target. At the start of each of the wounded creature's turns, it takes 1d4 necrotic damage for each time you've wounded it, and it can then make a DC 15 Constitution saving throw, ending the effect of all such wounds on itself on a success. Alternatively, the wounded creature, or a creature within 5 feet of it, can use an action to make a DC 15 Wisdom (**Medicine**) check, ending the effect of such wounds on it on a success."
 				]
 			}
 		},
