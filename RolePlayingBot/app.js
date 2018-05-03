@@ -32,10 +32,12 @@ bot.login(token);
 
 //Channel Consts
 const quest_board_id = '438050640271507466';
+const archive_id = '438106323490570250';
 const complete_board_id = '438461335337172992';
 const server_id = '438048843150393366';
 const duncan_id = '188928848287498240';
 var quest_board;
+var archive;
 var adv_guild;
 var complete_board;
 var server;
@@ -65,6 +67,7 @@ var pool;
 bot.on("ready", () => {
 
     quest_board = bot.channels.get(quest_board_id);
+	archive = bot.channels.get(archive_id);
     adv_guild = quest_board.guild;
 	complete_board = bot.channels.get(complete_board_id);
     server = bot.guilds.get(server_id);
@@ -243,7 +246,7 @@ bot.on("message", function (message) {
 				
 				break;
 				
-			case "completequest":
+			case "complete":
 				//Does nothing currently
 				quest_complete(args, message);
 				
@@ -265,6 +268,12 @@ bot.on("message", function (message) {
 			case "addhours":
 			
 				add_hours(args, message);
+				
+				break;
+				
+			case "fire":
+				
+				fire_quest(args, message);
 				
 				break;
 
@@ -346,35 +355,61 @@ var join_quest = function (args, message) {
     var quest = match[1];
     var character = match[2];
 	
+	//Queries to find the quest
 	con.query("SELECT * FROM quest_data WHERE quest_name=\'" + quest + "\';", function(err, result) {
 		if (err) {
 			auth.send("No such quest with that title");
 		}
+		//If its open and inactive, query to find the player
 		if(result[0].quest_status != "CLOSED" && result[0].active != 1) {
 			con.query("SELECT * FROM roster WHERE charName=\'" + character + "\';", function(err, result2){
 				if(err) {
 					auth.send("Invalid player");
+				}				
+				//Make sure they own the character or are a DM
+				if(auth.id != result2[0].charPlayer && !adv_guild.members.get(auth.id).roles.find("name", "Dungeon Master")) {
+					
+					auth.send("That's not your character!");
+					return;
+					
 				}
+				//Set variables for the new values
 				var qPlayersNew;
-				console.log(result[0]);
-				console.log(result2[0]);
+				//Makes sure no undefined problems occur with player counts
 				if(result[0].active_players == '') {
 					qPlayersNew = result2[0].entryID;
 				} else {
+					var checkP = result[0].active_players.split(" ");
+					console.log(checkP);
+					for(var i = 0; i < checkP.length; i++) {
+						if(parseInt(checkP[i]) == result2[0].entryID) {
+							auth.send("That character is already on the quest!");
+							return;
+						}
+					}
 					qPlayersNew = result[0].active_players + " " + result2[0].entryID;
 				}
 				var qTotNew = result[0].total_players + 1;
 				var qStatNew;
+				//If all spots full, closes the quest
 				if (qTotNew == result[0].size) {
 					qStatNew = "CLOSED";
 				} else {
 					qStatNew = "OPEN ("+ qTotNew + "/" + result[0].size + ")";
 				}
+				//Updates the SQL
 				var upquer = "UPDATE quest_data SET quest_status=\'" + qStatNew + "\', active_players=\'" + qPlayersNew + "\', total_players=" + qTotNew + " WHERE quest_name=\'" + quest + "\';";
-				con.query(upquer, function(err, result) {
+				con.query(upquer, function(err, result3) {
 					if (err) throw err;
 					console.log("Quest updated");	
+					auth.send("You've successfully joined " + quest + " with " + character + "!");
+					var cDM = adv_guild.members.get(result[0].quest_DM);
+					cDM.send(auth.username + " has joined " + quest + " with the character " + character + ".");
+					quest_board.fetchMessage(result[0].message_id).then(message => {
+						message.edit("**QUEST STATUS: " + qStatNew + "**");
+					});
 				});
+				
 			});
 		}
 		
@@ -416,6 +451,68 @@ var join_quest = function (args, message) {
 }
 //Changes quest to active
 var fire_quest = function(args, message) {
+	
+	var quest = args.splice(1).join(" ");
+	
+	con.query("SELECT * FROM quest_data WHERE quest_name=\'" + quest + "\';", function(err, result) {
+		if(err) {
+			message.author.send("No quest by that title, sorry!");
+			console.log(err);
+		}
+		
+		if(message.author.id !== result[0].quest_DM) {
+			message.author.send("You can't fire someone else's quest!");
+			return;
+		}
+		
+		if(result[0].total_players === 0) {
+			message.author.send("No players on that quest, cannot fire!");
+			return;
+		}
+		
+		//first, update the quest
+		con.query("UPDATE quest_data SET active=1, quest_status='IN PROGRESS' WHERE quest_name=\'" + quest + "\';", function(err, result2) {
+			if(err) throw err ;
+			//Second, update all the characters
+			var cUP = result[0].active_players.split(" ");
+			var sql = "UPDATE roster SET numQuests=numQuests + 1 WHERE entryID=";
+			var sql2 = "SELECT * FROM roster WHERE entryID=";
+			for(var i = 0; i < cUP.length; i++) {
+				if(i == 0) {
+					sql += cUP[i];
+					sql2 += cUP[i];
+				} else {
+					sql+= " OR entryID=" + cUP[i];
+					sql2+= " OR entryID=" + cUP[i];
+				}
+			}
+			sql += ";";
+			con.query(sql, function(err, result3) {
+				if (err) {
+					console.log("How the fuck");
+					console.log(err);
+				}
+				con.query(sql2, function(err, result4) {
+					if (err) {
+						console.log(err);
+					}
+					message.author.send(quest + " has fired.");
+					for(entry in result4) {
+						var player = adv_guild.members.get(result4[entry].charPlayer);
+						player.send("The quest " + quest + " has fired!");
+					}
+					quest_board.fetchMessage(result[0].message_id).then(message => {
+						message.edit("**QUEST STATUS: IN PROGRESS**");
+					});
+				});
+				
+			});
+		});
+		
+		
+		
+		
+	});
 	
 	
 }
@@ -599,6 +696,11 @@ var new_quest = function (args, message) {
             //create a file with name "title.txt" and content of the quest posting ID
             //fs.writeFileSync(__dirname + '/' + title + ".txt", id);
         });
+		
+		archive.send("**ARCHIVE COPY**", listing);
+		
+		
+	
 		
 		
 	
@@ -830,11 +932,11 @@ var roll_loot = function (args, message) {
 
 var add_character = function (args, message) {
 
-    return;
 
     //return if no arguments
     if (!args[1]) {
         return message.author.send("Invalid number of arguments.");
+		return;
     }
 
     //INPUT FORM:
@@ -901,7 +1003,7 @@ var add_character = function (args, message) {
     con.query(sql, function (err, result) {
 		if (err) throw err;
 	    console.log("1 record inserted");
-		
+		message.author.send("Welcome to the guild, " + char_name + "!");
 	});
     
 }
@@ -962,13 +1064,76 @@ var manual_xp = function (args, message) {
 var quest_complete = function(args, message) {
 	
 	
+	//Format ~complete [xp], [quest name]
+	var xp = parseInt(args[1]);
+	var quest = args.splice(2).join(" ");
 	
+	con.query("SELECT * FROM quest_data WHERE quest_name=\'" + quest + "\';", function(err, result) {
+		if (err) {
+			auth.send("No such quest with that title");
+		}
+		
+		if(message.author.id !== result[0].quest_DM) {
+			message.author.send("You can't complete someone else's quest!");
+			return;
+		}
+		var auth = message.author;
+		
+		var cUP = result[0].active_players.split(" ");
+		
+		var sql = "UPDATE roster SET completeQuests=completeQuests + 1 WHERE entryID=";
+		var sql2 = "SELECT * FROM roster WHERE entryID=";
+		for(var i = 0; i < cUP.length; i++) {
+			if(i == 0) {
+				sql += cUP[i];
+				sql2 += cUP[i];
+			} else {
+				sql+= " OR entryID=" + cUP[i];
+				sql2+= " OR entryID=" + cUP[i];
+			}
+		}
+		sql += ";";
+		sql2 += ";";
+		con.query(sql, function(err, result2) {
+			if (err) {
+				console.log("HOW " + err);
+			}
+			
+			con.query(sql2, function(err, result3) {
+				if(err) {
+					console.log("WHAT FUCK");
+					
+				}
+				var players = [];
+				for(entry in result3) {
+					players.push(result3[entry].charName);
+				}
+				award_xp(players, xp, message);
+				
+				quest_board.fetchMessage(result[0].message_id).then(message => {
+						message.delete().then(msg => console.log("Message deleted")).catch(console.error);
+				});
+				
+				con.query("DELETE FROM quest_data WHERE quest_name=\'" + quest + "\';", function(err, result4) {
+					if(err) {
+						console.log(err);
+						
+					}
+					
+					auth.send("Quest completed successfully!");
+					
+				});
+				
+			});
+
+		});		
 	
+	});
 }
 
 var award_xp = function(players, xp, message) {
 	
-	//builds query to search for all players to be awared exp		
+	//builds query to search for all players to be awarded exp		
 	var quer1 = "SELECT exp, level, charName, charPlayer FROM roster WHERE charName IN (\'";
 	for(var i = 0; i < players.length; i++){
 		quer1 += players[i] + "\'";
@@ -1002,13 +1167,13 @@ var award_xp = function(players, xp, message) {
 		for(var i = 0; i < result.length; i++){
 			newLevel = check_level(parseInt(result[i].exp) + parseInt(xp));
             console.log(newLevel);
-            //if they leveld up, update database
+            //if they leveled up, update database
 			if (newLevel > parseInt(result[i].level)){
-				con.query("UPDATE roster SET level=" + newLevel + " WHERE charName=\'" + result[i].charName + "\';", function(err, result) {
+				con.query("UPDATE roster SET level=" + newLevel + " WHERE charName=\'" + result[i].charName + "\';", function(err, result2) {
 					if (err) throw err;
 					console.log("Level updated");
 				});
-				//level_message(result[i].charName, result[i].charPlayer, result[i].level);
+				level_message(result[i].charName, result[i].charPlayer, newLevel);
 			}
 		}
 			
@@ -1147,9 +1312,10 @@ var add_hours = function(args, message){
 }
 
 var level_message = function(character, player, level){
+	console.log(character + " " + " " + player + " " + level);
 	var playerUser = adv_guild.members.get(player);
 	
-	playerUser.message.send("Congratulations, " + character + " has reached level " + level + "!");
+	playerUser.send("Congratulations, " + character + " has reached level " + level + "!");
 	
 }
 
