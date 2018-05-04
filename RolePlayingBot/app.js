@@ -65,6 +65,7 @@ item_list.push.apply(item_list, require('./variant_items.json').variant);
 //Weekly xp tables
 const rest_thresholds = [[4,20], [8,15], [12, 10], [17, 8], [20, 5], [29, 1]];
 
+var homebrew_list = require('./approved-homebrew.json');
 
 const folder = './';
 
@@ -152,6 +153,15 @@ bot.on("ready", () => {
 
 });
 
+//Auto assigns new members to the "Guild Members" Role
+bot.on("guildMemberAdd", function (member) {
+
+    var guild_member_role = adv_guild.roles.find('name', 'Guild Member');
+
+    member.addRole(guild_member_role); 
+
+});
+
 //when message is posted in a chat, check to see how the bot should respond
 bot.on("message", function (message) {
 	
@@ -202,9 +212,11 @@ bot.on("message", function (message) {
 				return;
 
 			//List quests of particular level
-			case "list":
+            case "list":
 
-				list_quests(args, message);
+                list_quests(args, message);
+
+                return;
 				
 			case "item":
 
@@ -231,7 +243,13 @@ bot.on("message", function (message) {
 			
 				check_character(args, message);
 				
-				return;
+                return;
+
+            case "homebrew":
+
+                show_homebrew(args, message);
+
+                return;
 			
 
 			//creates an embed displaying the list of commands and sends it
@@ -245,7 +263,8 @@ bot.on("message", function (message) {
 					.addField('~join [quest title]', 'Sends a message to the DM that you want to join their quest, and adds your character to the quest.')
 					.addField('~spell [spell name]', 'Send you a message displaying the details of the requested spell (incomplete)')
 					.addField('~loot [shards spent]', 'Rolls you a magic item based on the shards used and updates your balance')
-					.addField('~roll [X]d[Y] [+Z]', "rolls XdY dice with an option for a modifier of +/-Z. Only supports one type of die per roll.")
+                    .addField('~roll [X]d[Y] [+Z]', "rolls XdY dice with an option for a modifier of +/-Z. Only supports one type of die per roll.")
+                    .addField('~homebrew', 'Uploads most recent version of Homebrew JSON and lists currently approved homebrews.')
 					.addField('~dth [char name], [hours spent/use]', 'spends DTH for a character. To get gold, make "hours spent" and integer value. You will get 15*hours gp. For proficiencies type the kind proficiency you want to learn. "skill" costs 120 hrs, "weapon" or "armor" costs 80 hours and "tool" or "language" costs 40 hours.')
 					.setThumbnail(bot.user.avatarURL);
 				message.author.send(commands);
@@ -1968,5 +1987,32 @@ var buy_item = function (args, message) {
 
 
     });
+
+}
+
+var show_homebrew = function (args, message) {
+
+
+    var homebrew_embed = new Discord.RichEmbed()
+        .setColor([40, 110, 200])
+        .setTitle("Approved Homebrew")
+        .setThumbnail(bot.user.avatarURL);
+
+    homebrew_embed.addField("Version", homebrew_list["_meta"]["sources"][0].version);
+
+    for (var type in homebrew_list) {
+        if (type !== "_meta") {
+            console.log(type);
+            var items = "";
+
+            for (var item in homebrew_list[type]) {
+
+                items += `${homebrew_list[type][item].name} \n`
+            }
+            homebrew_embed.addField(type, items);
+        }
+
+    }
+    message.author.send("Add the json file to 5etools homebrew to see the following approved homebrews.", { embed: homebrew_embed, file: './approved-homebrew.json' });
 
 }
