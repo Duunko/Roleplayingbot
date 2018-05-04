@@ -1,0 +1,341 @@
+{
+  "_meta": {
+    "sources": [
+      {
+        "json": "ColRabbit",
+        "abbreviation": "Brew",
+        "full": "Adventurer's Guild Homebrew",
+        "authors": [
+          "Colonel Rabbit",
+          "Duunko"
+        ],
+        "version": "1.0.0"
+      }
+    ]
+  },
+  "race": [
+    {
+      "name": "Half-Elf (Eladrin Descent)",
+      "source": "ColRabbit",
+      "ability": {
+        "cha": 2,
+        "choose": [
+          {
+            "from": [
+              "str",
+              "dex",
+              "con",
+              "int",
+              "wis"
+            ],
+            "count": 2
+          }
+        ]
+      },
+      "size": "M",
+      "speed": 30,
+      "darkvision": 60,
+      "entries": [
+        {
+          "name": "Age",
+          "type": "entries",
+          "entries": [
+            "Half-elves mature at the same rate humans do and reach adulthood around the age of 20. They live much longer than humans, however, often exceeding 180 years."
+          ]
+        },
+        {
+          "name": "Alignment",
+          "type": "entries",
+          "entries": [
+            "Half-elves share the chaotic bent of their elven heritage. They value both personal freedom and creative expression, demonstrating neither love of leaders nor desire for followers. They chafe at rules, resent others' demands, and sometimes prove unreliable, or at least unpredictable."
+          ]
+        },
+        {
+          "name": "Ability Score Increase",
+          "entries": [
+            "Two different ability scores of your choice increase by 1."
+          ],
+          "type": "entries"
+        },
+        {
+          "name": "Darkvision",
+          "entries": [
+            "Thanks to your elf blood, you have superior vision in dark and dim conditions. You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it were dim light. You can't discern color in darkness, only shades of gray."
+          ],
+          "type": "entries"
+        },
+        {
+          "name": "Fey Ancestry",
+          "entries": [
+            "You have advantage on saving throws against being {@condition charmed}, and magic can't put you to sleep."
+          ],
+          "type": "entries"
+        },
+        {
+          "type": "inset",
+          "name": "Variant Feature (Choose 1)",
+          "entries": [
+            {
+              "name": "Skill Versatility",
+              "entries": [
+                "You gain proficiency in two skills of your choice."
+              ],
+              "type": "entries"
+            },
+            {
+              "name": "Keen Senses",
+              "entries": [
+                "You have proficiency in the Perception skill."
+              ],
+              "type": "entries"
+            },
+            {
+              "name": "Elf Weapon Training",
+              "entries": [
+                "You have proficiency with the longsword, shortsword, shortbow, and longbow."
+              ],
+              "type": "entries"
+            },
+            {
+              "name": "Fey Step",
+              "entries": [
+                "As a bonus action, you can magically teleport up to 30 feet to an unoccupied space you can see. Once you use this trait, you can't do so again until you finish a short or long rest."
+              ],
+              "type": "entries"
+            },
+            {
+              "name": "Shifting Seasons",
+              "entries": [
+                "At the end of each short or long rest, you can align yourself with the magic of one season, regardless of the season that is dominating your personality. Doing so allows you to cast a certain cantrip, as shown in the Shifting Seasons Cantrips table. When you align yourself with a season's magic, you lose the cantrip associated with the previous season and gain the cantrip associated with the new season.",
+                "Your spellcasting ability for these cantrips is Intelligence or Charisma, whichever is higher.",
+                {
+                  "type": "table",
+                  "caption": "Shifting Seasons Cantrips",
+                  "colLabels": [
+                    "Season",
+                    "Cantrip"
+                  ],
+                  "colStyles": [
+                    "col-xs-6 text-align-center",
+                    "col-xs-6 text-align-center"
+                  ],
+                  "rows": [
+                    [
+                      "Autumn",
+                      "{@spell Friends}"
+                    ],
+                    [
+                      "Winter",
+                      "{@spell Chill touch}"
+                    ],
+                    [
+                      "Spring",
+                      "{@spell Minor illusion}"
+                    ],
+                    [
+                      "Summer",
+                      "{@spell Fire bolt}"
+                    ]
+                  ]
+                }
+              ],
+              "type": "entries"
+            }
+
+          ]
+        },
+        {
+          "name": "Languages",
+          "entries": [
+            "You can speak, read, and write Common, Elvish, and one extra language of your choice."
+          ],
+          "type": "entries"
+        }
+      ]
+    },
+    {
+			"name": "Half-Elf (Avariel Descent)",
+			"source": "ColRabbit",
+			"ability": {
+				"cha": 2,
+        "choose": [
+        					{
+        						"from": [
+        							"str",
+        							"dex",
+        							"con",
+        							"int",
+        							"wis"
+        						],
+        						"count": 1
+        					}
+        				]
+			},
+			"size": "M",
+			"speed": {
+        "walk": 30,
+        "fly": 30
+      },
+			"darkvision": 60,
+      "entries": [
+				{
+					"name": "Age",
+					"type": "entries",
+					"entries": [
+						"Half-elves mature at the same rate humans do and reach adulthood around the age of 20. They live much longer than humans, however, often exceeding 180 years."
+					]
+				},
+				{
+					"name": "Alignment",
+					"type": "entries",
+					"entries": [
+						"Half-elves share the chaotic bent of their elven heritage. They value both personal freedom and creative expression, demonstrating neither love of leaders nor desire for followers. They chafe at rules, resent others' demands, and sometimes prove unreliable, or at least unpredictable."
+					]
+				},
+				{
+					"name": "Ability Score Increase",
+					"entries": [
+						"One ability scores of your choice increase by 1."
+					],
+					"type": "entries"
+				},
+				{
+					"name": "Darkvision",
+					"entries": [
+						"Thanks to your elf blood, you have superior vision in dark and dim conditions. You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it were dim light. You can't discern color in darkness, only shades of gray."
+					],
+					"type": "entries"
+				},
+				{
+					"name": "Fey Ancestry",
+					"entries": [
+						"You have advantage on saving throws against being {@condition charmed}, and magic can't put you to sleep."
+					],
+					"type": "entries"
+				},
+				{
+					"name": "Skill Versatility",
+					"entries": [
+						"You gain proficiency in two skills of your choice."
+					],
+					"type": "entries"
+				},
+				{
+					"name": "Languages",
+					"entries": [
+						"You can speak, read, and write Common, Elvish, and one extra language of your choice."
+					],
+					"type": "entries"
+				}
+			]
+		},
+    {
+      "name": "Half-Elf (Shadar-Kai Descent)",
+      "source": "ColRabbit",
+      "ability": {
+        "cha": 2,
+        "choose": [
+          {
+            "from": [
+              "str",
+              "dex",
+              "con",
+              "int",
+              "wis"
+            ],
+            "count": 2
+          }
+        ]
+      },
+      "size": "M",
+      "speed": 30,
+      "darkvision": 60,
+      "entries": [
+        {
+          "name": "Age",
+          "type": "entries",
+          "entries": [
+            "Half-elves mature at the same rate humans do and reach adulthood around the age of 20. They live much longer than humans, however, often exceeding 180 years."
+          ]
+        },
+        {
+          "name": "Alignment",
+          "type": "entries",
+          "entries": [
+            "Half-elves share the chaotic bent of their elven heritage. They value both personal freedom and creative expression, demonstrating neither love of leaders nor desire for followers. They chafe at rules, resent others' demands, and sometimes prove unreliable, or at least unpredictable."
+          ]
+        },
+        {
+          "name": "Ability Score Increase",
+          "entries": [
+            "Two different ability scores of your choice increase by 1."
+          ],
+          "type": "entries"
+        },
+        {
+          "name": "Darkvision",
+          "entries": [
+            "Thanks to your elf blood, you have superior vision in dark and dim conditions. You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it were dim light. You can't discern color in darkness, only shades of gray."
+          ],
+          "type": "entries"
+        },
+        {
+          "name": "Fey Ancestry",
+          "entries": [
+            "You have advantage on saving throws against being {@condition charmed}, and magic can't put you to sleep."
+          ],
+          "type": "entries"
+        },
+        {
+          "type": "inset",
+          "name": "Variant Feature (Choose 1)",
+          "entries": [
+            {
+              "name": "Skill Versatility",
+              "entries": [
+                "You gain proficiency in two skills of your choice."
+              ],
+              "type": "entries"
+            },
+            {
+              "name": "Keen Senses",
+              "entries": [
+                "You have proficiency in the Perception skill."
+              ],
+              "type": "entries"
+            },
+            {
+              "name": "Elf Weapon Training",
+              "entries": [
+                "You have proficiency with the longsword, shortsword, shortbow, and longbow."
+              ],
+              "type": "entries"
+            },
+            {
+              "name": "Cantrip",
+              "entries": [
+                "You know one of the following cantrips of your choice: {@spell chill touch}, {@spell spare the dying}, or {@spell thaumaturgy}. Charisma is your spellcasting ability for it."
+              ],
+              "type": "entries"
+            },
+            {
+              "name": "Blessing of the Raven Queen",
+              "entries": [
+                "As a bonus action, you can magically teleport up to 15 feet to an unoccupied space you can see, and you gain resistance to all damage until the start of your next turn. During that time, you appear ghostly and translucent. Once you use this ability, you can't use it again until you finish a short or long rest."
+              ],
+              "type": "entries"
+            }
+
+          ]
+        },
+        {
+          "name": "Languages",
+          "entries": [
+            "You can speak, read, and write Common, Elvish, and one extra language of your choice."
+          ],
+          "type": "entries"
+        }
+      ]
+    }
+  ]
+}

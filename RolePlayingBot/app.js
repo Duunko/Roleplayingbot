@@ -58,6 +58,7 @@ spell_list.push.apply(spell_list, require('./spells-xge.json').spell);
 var item_list = require('./items.json').item;
 item_list.push.apply(item_list, require('./variant_items.json').variant);
 
+var homebrew_list = require('./approved-homebrew.json');
 
 const folder = './';
 
@@ -130,9 +131,11 @@ bot.on("message", function (message) {
 				return;
 
 			//List quests of particular level
-			case "list":
+            case "list":
 
-				list_quests(args, message);
+                list_quests(args, message);
+
+                return;
 				
 			case "item":
 
@@ -159,7 +162,13 @@ bot.on("message", function (message) {
 			
 				check_character(args, message);
 				
-				return;
+                return;
+
+            case "homebrew":
+
+                show_homebrew(args, message);
+
+                return;
 			
 
 			//creates an embed displaying the list of commands and sends it
@@ -1652,5 +1661,32 @@ var buy_item = function (args, message) {
 
 
     });
+
+}
+
+var show_homebrew = function (args, message) {
+
+
+    var homebrew_embed = new Discord.RichEmbed()
+        .setColor([40, 110, 200])
+        .setTitle("Approved Homebrew")
+        .setThumbnail(bot.user.avatarURL);
+
+    homebrew_embed.addField("Version", homebrew_list["_meta"]["sources"][0].version);
+
+    for (var type in homebrew_list) {
+        if (type !== "_meta") {
+            console.log(type);
+            var items = "";
+
+            for (var item in homebrew_list[type]) {
+
+                items += `${homebrew_list[type][item].name} \n`
+            }
+            homebrew_embed.addField(type, items);
+        }
+
+    }
+    message.author.send("Add the json file to 5etools homebrew to see the following approved homebrews.", { embed: homebrew_embed, file: './approved-homebrew.json' });
 
 }
