@@ -612,6 +612,10 @@ var message_members = function(args, message) {
 		if(err) {
 			console.log("Invalid quest");
 		}
+		if(result[0] == undefined) { 
+                    message.channel.send("No such quest sith that title");
+                    return;
+                }
 		console.log(result);
 		if(message.author.id != result[0].quest_DM) {
 			message.author.send("You are not the DM of that quest, and can't message the players.");
@@ -706,6 +710,10 @@ var join_quest = function (args, message) {
 	con.query("SELECT * FROM quest_data WHERE quest_name=\'" + quest + "\';", function(err, result) {
 		if (err) {
 			auth.send("No such quest with that title");
+		}
+		if(result[0] == undefined) {
+			auth.send("No such quest sith that title");
+			return;
 		}
 		//If its open and inactive, query to find the player
 		if(result[0].quest_status != "CLOSED" && result[0].active != 1) {
@@ -806,7 +814,10 @@ var fire_quest = function(args, message) {
 			message.author.send("No quest by that title, sorry!");
 			console.log(err);
 		}
-		
+		if(result[0] == undefined) { 
+                        message.channel.send("No such quest sith that title");
+                        return;
+                }
 		if(message.author.id !== result[0].quest_DM) {
 			message.author.send("You can't fire someone else's quest!");
 			return;
@@ -1411,8 +1422,12 @@ var quest_complete = function(args, message) {
 	
 	con.query("SELECT * FROM quest_data WHERE quest_name=\'" + quest + "\';", function(err, result) {
 		if (err) {
-			auth.send("No such quest with that title");
+			message.channel.send("No such quest with that title");
 		}
+		if(result[0] == undefined) { 
+                        auth.send("No such quest sith that title");
+                        return;
+                }
 		
 		if(message.author.id !== result[0].quest_DM) {
 			message.author.send("You can't complete someone else's quest!");
