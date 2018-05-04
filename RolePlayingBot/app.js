@@ -34,15 +34,15 @@ bot.login(token);
 const quest_board_id = '438050640271507466';
 const archive_id = '438106323490570250';
 const complete_board_id = '438461335337172992';
-const server_id = '438048843150393366';
 const duncan_id = '188928848287498240';
 const announcement_id = '438049253969887253';
+const bot_commands_id = '441609746475122688';
 var quest_board;
 var archive;
-var adv_guild;
-var complete_board;
 var server;
+var complete_board;
 var announcement_board;
+var bot_commands;
 
 var lockout = false;
 
@@ -80,9 +80,9 @@ bot.on("ready", () => {
     quest_board = bot.channels.get(quest_board_id);
 	announcement_board = bot.channels.get(announcement_id);
 	archive = bot.channels.get(archive_id);
-    adv_guild = quest_board.guild;
+    server = quest_board.guild;
 	complete_board = bot.channels.get(complete_board_id);
-    server = bot.guilds.get(server_id);
+    bot_commands = bot.channels.get(bot_commands_id);
 
 	pool = mysql.createPool({
 		connectionLimit: 10,
@@ -156,7 +156,7 @@ bot.on("ready", () => {
 //Auto assigns new members to the "Guild Members" Role
 bot.on("guildMemberAdd", function (member) {
 
-    var guild_member_role = adv_guild.roles.find('name', 'Guild Member');
+    var guild_member_role = server.roles.find('name', 'Guild Member');
 
     member.addRole(guild_member_role); 
 
@@ -164,14 +164,8 @@ bot.on("guildMemberAdd", function (member) {
 
 //when message is posted in a chat, check to see how the bot should respond
 bot.on("message", function (message) {
-	
-	if(lockout == true){ 
-		
-		message.author.send("The bot is currently unavailable. Check the announcements board for more information.");
-		return;
-	}
-	
-	
+
+    
 	pool.getConnection(function(err,connection) {
 		if (err) throw err ;
 		con = connection;
@@ -183,6 +177,17 @@ bot.on("message", function (message) {
 
 		//if message doesn't start with proper prefix, ignore
 		if (!message.content.startsWith(prefix)) return;
+
+        if (lockout == true) {
+
+            message.channel.send("The bot is currently unavailable. Check the announcements board for more information.");
+            return;
+        }
+
+        if (message.channel != bot_commands && message.channel.type != 'dm') {
+            return message.author.send("You need to DM me or use the #bot-commands channel.");
+        }
+
 
 		//seperate message into array based on spaces (get rid of prefix)
 		var args = message.content.substring(prefix.length).split(" ");
@@ -250,6 +255,13 @@ bot.on("message", function (message) {
                 show_homebrew(args, message);
 
                 return;
+
+
+            case "viewshop":
+
+                view_shop(args, message);
+
+                break;
 			
 
 			//creates an embed displaying the list of commands and sends it
@@ -264,14 +276,12 @@ bot.on("message", function (message) {
 					.addField('~spell [spell name]', 'Send you a message displaying the details of the requested spell (incomplete)')
 					.addField('~loot [shards spent]', 'Rolls you a magic item based on the shards used and updates your balance')
                     .addField('~roll [X]d[Y] [+Z]', "rolls XdY dice with an option for a modifier of +/-Z. Only supports one type of die per roll.")
+                    .addField('~check [character name]', 'Checks the stats and resources of character name. Only for the character\'s owner and DMs.')
+                    .addField('~viewshop', 'Allows you to view the current stock of magic items. Let a DM know if you want to buy one and they will help you.')
                     .addField('~homebrew', 'Uploads most recent version of Homebrew JSON and lists currently approved homebrews.')
 					.addField('~dth [char name], [hours spent/use]', 'spends DTH for a character. To get gold, make "hours spent" and integer value. You will get 15*hours gp. For proficiencies type the kind proficiency you want to learn. "skill" costs 120 hrs, "weapon" or "armor" costs 80 hours and "tool" or "language" costs 40 hours.')
 					.setThumbnail(bot.user.avatarURL);
-				message.author.send(commands);
-
-				if (message.channel.type != "dm") {
-					message.channel.send("The help menu was PM'ed to you.");
-				}
+				message.channel.send(commands);
 
 				break;
 				
@@ -279,7 +289,7 @@ bot.on("message", function (message) {
 			default:
 
 				//if a quest giver, not check that the command isn't valid
-				if (adv_guild.members.get(message.author.id).roles.find("name", "Dungeon Master")) {
+				if (server.members.get(message.author.id).roles.find("name", "Dungeon Master")) {
 					break;
 				}
 
@@ -291,7 +301,7 @@ bot.on("message", function (message) {
 		
 
 		//if message sender isn't a "Dungeon Master", stop (QG commands below)
-		if (!adv_guild.members.get(message.author.id).roles.find("name", "Dungeon Master")) {
+		if (!server.members.get(message.author.id).roles.find("name", "Dungeon Master")) {
 			return;
 		}
 
@@ -327,7 +337,7 @@ bot.on("message", function (message) {
 			//command to test bot responsiveness, sends a response to the log
 			case "test":
 
-				message.author.send("ping!");
+				message.channel.send("ping!");
 				console.log("PING");
 				break;
 				
@@ -369,11 +379,6 @@ bot.on("message", function (message) {
 				
                 break;
 
-            case "viewshop":
-
-                view_shop(args, message);
-
-                break;
 
             case "buyitem":
 
@@ -393,8 +398,10 @@ bot.on("message", function (message) {
 				
 				if(message.author.id == duncan_id) {
 					weekly_progress();
-				}
-				
+				} else {
+                    message.channel.send("You are not Duncan, heathen!");
+                }
+
 				break;
 
 			//if not a valid command, note it
@@ -410,13 +417,15 @@ bot.on("message", function (message) {
 				var commands = new Discord.RichEmbed()
 					.setColor([40, 110, 200])
 					.setTitle("RPBot Dungeon Master Commands:")
-					.addField('~test', 'PMs a "ping!" to the sender to confirm the bot is working.')
-					.addField('~completequest [xp awarded], [char 1], [char 2]', 'awards exp to the specified players at the end of a quest')
-					.addField('~quest', '"title" TITLE \n "header1" TEXT1 \n "header2" TEXT2 \n\n*Make sure all quests have a "title", \n"party level", and "party size". To make a test quest, make the \ntitle test.*')
-					.addField('~update [quest title], [new status]', 'Updates the status of a quest. \n\n*When the quest is done, set status to "complete" but it will make it so that quest status cannot be changed any further.*')
+                    .addField('~quest', '"title" TITLE \n "header1" TEXT1 \n "header2" TEXT2 \n\n*Make sure all quests have a "title", \n"party level", and "party size". To make a test quest, make the \ntitle test.*')
+                    .addField('~update [quest title], [new status]', 'Updates the status of a quest. \n\n*When the quest is done, set status to "complete" but it will make it so that quest status cannot be changed any further.*')
+                    .addField('~fire [quest name]', 'Launches the specified quest and notifies players on the quest.')
+                    .addField('~completequest [xp awarded], [char 1], [char 2]', 'awards exp to the specified players at the end of a quest')
+                    .addField('~buyitem [char buying], [item name]', 'Lets the player buy the item at price and removes it from the shop')
 					.addField('~botstatus [new status]', 'sets the status of the bot.')
+                    .addField('~test', 'PMs a "ping!" to the sender to confirm the bot is working.')
 					.setThumbnail(bot.user.avatarURL);
-				message.author.send(commands);
+				message.channel.send(commands);
 
 		}
 	con.release();
@@ -482,7 +491,7 @@ var weekly_progress = function() {
 							//Adds to the list of people getting full dth
 							fullHours.push(result[entry].entryID);
 							//Messages the player
-							var play = adv_guild.members.get(result[entry].charPlayer);
+							var play = server.members.get(result[entry].charPlayer);
 							play.send(result[entry].charName + " got " + xpTotal + " experience and 20 Downtime Hours for their restful week.");
 							award_xp(player, xpTotal);
 							
@@ -512,7 +521,7 @@ var weekly_progress = function() {
 							//Adds to the list of people getting half dth
 							halfHours.push(result[entry].entryID);
 							//Messages the player
-							var play = adv_guild.members.get(result[entry].charPlayer);
+							var play = server.members.get(result[entry].charPlayer);
 							play.send(result[entry].charName + " got " + xpTotal + " experience and 10 Downtime Hours for their restful moments this week.");
 							award_xp(player, xpTotal);
 							
@@ -521,8 +530,8 @@ var weekly_progress = function() {
 							
 						
 						default:
-							var play = adv_guild.members.get(result[entry].charPlayer);
-							play.send("No downtime for " + result[entry].charName + " this week, you've been on too many quests!");
+							var play = server.members.get(result[entry].charPlayer);
+							play.send("No downtime or passive experience for " + result[entry].charName + " this week, you've been on too many quests!");
 							
 							break;		
 					}
@@ -618,7 +627,7 @@ var message_members = function(args, message) {
                 }
 		console.log(result);
 		if(message.author.id != result[0].quest_DM) {
-			message.author.send("You are not the DM of that quest, and can't message the players.");
+			message.channel.send("You are not the DM of that quest, and can't message the players.");
 			return;
 			
 		}
@@ -643,7 +652,7 @@ var message_members = function(args, message) {
 			}
 			
 			for(entry in result2) {
-				var playerUser = adv_guild.members.get(result2[entry].charPlayer);
+				var playerUser = server.members.get(result2[entry].charPlayer);
 				var DMName = message.author.username;
 				playerUser.send("Message from " + DMName + " about the quest " + result[0].quest_name + ":\n" + mesText);
 			}
@@ -687,7 +696,7 @@ var roll_dice = function (args, message) {
     output += rolls.reduce((x, y) => x + " + " + y) + " = " + rolls.reduce((x, y) => x + y);
 
     //sends result as a reply to sender
-    message.author.send(output);
+    message.channel.send(output);
     
 }
 
@@ -722,7 +731,7 @@ var join_quest = function (args, message) {
 					auth.send("Invalid player");
 				}				
 				//Make sure they own the character or are a DM
-				if(auth.id != result2[0].charPlayer && !adv_guild.members.get(auth.id).roles.find("name", "Dungeon Master")) {
+				if(auth.id != result2[0].charPlayer && !server.members.get(auth.id).roles.find("name", "Dungeon Master")) {
 					
 					auth.send("That's not your character!");
 					return;
@@ -758,7 +767,7 @@ var join_quest = function (args, message) {
 					if (err) throw err;
 					console.log("Quest updated");	
 					auth.send("You've successfully joined " + quest + " with " + character + "!");
-					var cDM = adv_guild.members.get(result[0].quest_DM);
+					var cDM = server.members.get(result[0].quest_DM);
 					cDM.send(auth.username + " has joined " + quest + " with the character " + character + ".");
 					quest_board.fetchMessage(result[0].message_id).then(message => {
 						message.edit("**QUEST STATUS: " + qStatNew + "**");
@@ -783,7 +792,7 @@ var join_quest = function (args, message) {
                 if (message) {
                     //get the quest's dm and search the guild members for them
                     var questmaker = message.embeds[0].author.name;
-                    adv_guild.members.forEach(member => {
+                    server.members.forEach(member => {
                         //when dm is found...
                         if (member.user.username == questmaker) {
                             //send them a message that someone wants to join that quest
@@ -811,7 +820,7 @@ var fire_quest = function(args, message) {
 	
 	con.query("SELECT * FROM quest_data WHERE quest_name=\'" + quest + "\';", function(err, result) {
 		if(err) {
-			message.author.send("No quest by that title, sorry!");
+			message.channel.send("No quest by that title, sorry!");
 			console.log(err);
 		}
 		if(result[0] == undefined) { 
@@ -819,12 +828,12 @@ var fire_quest = function(args, message) {
                         return;
                 }
 		if(message.author.id !== result[0].quest_DM) {
-			message.author.send("You can't fire someone else's quest!");
+			message.channel.send("You can't fire someone else's quest!");
 			return;
 		}
 		
 		if(result[0].total_players === 0) {
-			message.author.send("No players on that quest, cannot fire!");
+			message.channel.send("No players on that quest, cannot fire!");
 			return;
 		}
 		
@@ -855,9 +864,9 @@ var fire_quest = function(args, message) {
 					if (err) {
 						console.log(err);
 					}
-					message.author.send(quest + " has fired.");
+					message.channel.send(quest + " has fired.");
 					for(entry in result4) {
-						var player = adv_guild.members.get(result4[entry].charPlayer);
+						var player = server.members.get(result4[entry].charPlayer);
 						player.send("The quest " + quest + " has fired!");
 					}
 					quest_board.fetchMessage(result[0].message_id).then(message => {
@@ -867,9 +876,6 @@ var fire_quest = function(args, message) {
 				
 			});
 		});
-		
-		
-		
 		
 	});
 	
@@ -1011,7 +1017,7 @@ var new_quest = function (args, message) {
 				}
             } catch (e) {
                 console.log(e);
-                message.author.send("Error posting quest, check console for details; likely a field exceeded 1024 characters.");
+                message.channel.send("Error posting quest, check console for details; likely a field exceeded 1024 characters.");
                 return;
             }
         }
@@ -1019,7 +1025,7 @@ var new_quest = function (args, message) {
 
     //if a title wasn't provided, don't post the quest
     if (!listing.title) {
-        message.author.send("Your quest needs a title, please remake the quest.");
+        message.channel.send("Your quest needs a title, please remake the quest.");
         return;
     }
 
@@ -1027,7 +1033,7 @@ var new_quest = function (args, message) {
 
     //allows for "test" quests
     if (listing.title.toLowerCase() == "test") {
-        message.author.send("**QUEST STATUS: OPEN**", listing);
+        message.channel.send("**QUEST STATUS: OPEN**", listing);
         return;
     }
 
@@ -1240,46 +1246,127 @@ var search_spells = function (args, message) {
 
 var roll_loot = function (args, message) {
 
-    //CHOOSES WHAT TABLE TO ROLL LOOT FROM (SHOULD BE CHANGED TO REFLECT SHARDS USED)
-    var table_number = parseInt(Math.random() * 8);
-    var table = loot_table[table_number].table;
+    //checks to make sure there are enough arguments
+    if (!args[2]) {
+        return message.channel.send("Too few arguments");
+    }
 
-    //ROLLS A D100 FOR LOOT
-    var d100 = parseInt(Math.random() * 100 + 1);
+    //input form:
+    //~loot [player name], [quantity of shards] 
+    //doesn't care about line breaks. you can use them or not use them and the regex will be fine
 
-    //FINDS THE RESULT ON CORRECT TABLE
-    for (var i = 0; i < table.length; i++) {
-        if (table[i].min <= d100 & table[i].max >= d100) {
+    var text = args.splice(1).join(" ");
 
-            var rolled_item = table[i].item;
+    //regEx to extract char names from 'text' string
+    var regEx = /\W*(.*?),\W(.*?)$/;
+    var match = regEx.exec(text);
 
-            if (rolled_item.includes("Spell Scroll")) {
+    var char_name = match[1];
+    var shards_used = parseInt(match[2]);
 
-                var lvl = 0;
+    if (!char_name || !shards_used) {
+        return message.channel.send("Syntax or arguments error.");
+    }
+    
+    var tier;
 
-                if (!rolled_item.includes("Cantrip")) {
-                    for (var lvl = 0; lvl < 10; lvl++) {
-                        if (rolled_item.includes(lvl)) {
-                            break;
+    if (shards_used > 40) {
+        shards_used = 40;
+        tier = 6;
+    } else if (shards_used > 30) {
+        shards_used = 30;
+        tier = 5;
+    } else if (shards_used > 22) {
+        shards_used = 22;
+        tier = 4;
+    } else if (shards_used > 14) {
+        shards_used = 14;
+        tier = 3;
+    } else if (shards_used > 8) {
+        shards_used = 8;
+        tier = 2;
+    } else if (shards_used > 4) {
+        shards_used = 4;
+        tier = 1;
+    } else if (shards_used >= 2) {
+        shards_used = 2;
+        tier = 0;
+    } else {
+        return message.channel.send("You need to spend at least 2 shards");
+    }
+    
+    var player = message.author.id;
+    
+    //SQL call to verify they have neough, and then update quantity if they do
+    var sql = "SELECT `riftShards` FROM `roster` WHERE `charPlayer`= '" + player + "' AND `charName` = '" + char_name + "'";
+
+    con.query(sql, function (err, result) {
+        if (err) throw err;
+        if (result.length == 0) {
+            return message.channel.send("no character/player found");
+        }
+        //gets characters DTH from results
+        var shards_available = result[0].riftShards;
+
+        //if they are trying to use too many, return
+        if (shards_used > shards_available) {
+            return message.channel.send("You don't have enough Rift Shards to do that.")
+        }
+
+
+        //CHOOSES WHAT TABLE TO ROLL LOOT FROM (SHOULD BE CHANGED TO REFLECT SHARDS USED)
+        var table = loot_table[tier].table;
+
+        //ROLLS A D100 FOR LOOT
+        var d100 = parseInt(Math.random() * 100 + 1);
+
+        //FINDS THE RESULT ON CORRECT TABLE
+        for (var i = 0; i < table.length; i++) {
+            if (table[i].min <= d100 & table[i].max >= d100) {
+
+                var rolled_item = table[i].item;
+
+                if (rolled_item.includes("Spell Scroll")) {
+
+                    var lvl = 0;
+
+                    if (!rolled_item.includes("Cantrip")) {
+                        for (var lvl = 0; lvl < 10; lvl++) {
+                            if (rolled_item.includes(lvl)) {
+                                break;
+                            }
                         }
                     }
+                    var rand_spell;
+                    do {
+                        rand_spell = spell_list[parseInt(Math.random() * spell_list.length)];
+                    } while (rand_spell.level != lvl);
+
+                    rolled_item = rolled_item.replace(/\((.*?)\)/, `(${rand_spell.name})`);
+
                 }
-                var rand_spell;
-                do {
-                    rand_spell = spell_list[parseInt(Math.random() * spell_list.length)];
-                } while (rand_spell.level != lvl);
 
-                rolled_item = rolled_item.replace(/\((.*?)\)/, `(${rand_spell.name})`);
+                message.channel.send(`You spent ${shards_used} Rift Shards and The Curator gave you a ${rolled_item}`);
+
+                search_items(table[i].item, message);
+                if (rand_spell) {
+                    search_spells(rand_spell.name, message);
+                }
+                break;
             }
-            
-            message.channel.send(`The Collector gave you a ${rolled_item}`);
-
-            search_spells(rand_spell.name, message);
-            search_items(table[i].item, message);
-
-            return;
         }
-    }
+
+        //SQL to update character's dth
+        var update = "UPDATE roster SET riftShards=riftShards - " + shards_used + " WHERE charName= '" + char_name + "'";
+        con.query(update, function (err, result) {
+            if (err) throw err;
+            console.log("Updated");
+
+        });
+
+    });
+    
+
 }
 
 var add_character = function (args, message) {
@@ -1287,7 +1374,7 @@ var add_character = function (args, message) {
 
     //return if no arguments
     if (!args[1]) {
-        return message.author.send("Invalid number of arguments.");
+        return message.channel.send("Invalid number of arguments.");
 		return;
     }
 
@@ -1310,7 +1397,7 @@ var add_character = function (args, message) {
                 outCats.push(match);
         } catch (e) {
                 console.log(e);
-                message.author.send("Error adding character, check console for details.");
+                message.channel.send("Error adding character, check console for details.");
                 return;
         }
         
@@ -1318,7 +1405,7 @@ var add_character = function (args, message) {
 
     //if not enough arguments, return
 	if(outCats.length !== 3) {
-		message.author.send("Syntax error");
+		message.channel.send("Syntax error");
 		return;
 		
 	}
@@ -1332,8 +1419,8 @@ var add_character = function (args, message) {
     var player_id;
     var found_player_id = false;
 
-    //searches for player's discord id in adv_guild members
-    adv_guild.members.forEach(member => {
+    //searches for player's discord id in server members
+    server.members.forEach(member => {
         //if player match is found, get the ID
         if (member.user.username == player_name) {
             player_id = member.user.id;
@@ -1345,7 +1432,7 @@ var add_character = function (args, message) {
 
     //if no player match was found, return
     if (!found_player_id) {
-        return message.author.send("no player found");
+        return message.channel.send("no player found");
     }
 
     //build SQl string
@@ -1355,7 +1442,7 @@ var add_character = function (args, message) {
     con.query(sql, function (err, result) {
 		if (err) throw err;
 	    console.log("1 record inserted");
-		message.author.send("Welcome to the guild, " + char_name + "!");
+		message.channel.send("Welcome to the guild, " + char_name + "!");
 	});
     
 }
@@ -1365,7 +1452,7 @@ var manual_xp = function (args, message) {
 
     //Requires at least 2 arguments
     if (!args[2]) {
-        return message.author.send("Not enough arguments");
+        return message.channel.send("Not enough arguments");
     }
 
     //input form:
@@ -1377,7 +1464,7 @@ var manual_xp = function (args, message) {
 
     //if an int value couldn't be parsed return
     if (!xp) {
-        return message.author.send("The experience value was incorrect");
+        return message.channel.send("The experience value was incorrect");
     }
 
     //starts at args[2] to ignore the experience value in args[1]
@@ -1399,14 +1486,14 @@ var manual_xp = function (args, message) {
 
     //if no players, return
 	if(players.length === 0){
-		message.author.send("Incorrect arguments, add players");
+		message.channel.send("Incorrect arguments, add players");
 		return;	
 	}
 
 	award_xp(players, xp);
 	
 	//Sends duncan a message
-	var dunc = adv_guild.members.get(duncan_id);
+	var dunc = server.members.get(duncan_id);
 	dunc.send(message.author.username + " has just manually added XP. You may want to check in with them.");
 	
 }
@@ -1430,7 +1517,7 @@ var quest_complete = function(args, message) {
                 }
 		
 		if(message.author.id !== result[0].quest_DM) {
-			message.author.send("You can't complete someone else's quest!");
+			message.channel.send("You can't complete someone else's quest!");
 			return;
 		}
 		var auth = message.author;
@@ -1544,13 +1631,13 @@ var add_shards = function(args, message){
     //if Duncan isn't using the command, it is invalid
     console.log(message.author.username);
 	if(message.author.id != duncan_id){
-		message.author.send("You do not have permission to use this command!");
+		message.channel.send("You do not have permission to use this command!");
 		return;
 	}
 
     //checks to make sure there are enough arguments
     if (!args[2]) {
-        return message.author.send("Too few arguments");
+        return message.channel.send("Too few arguments");
     }
 
     //input form:
@@ -1562,7 +1649,7 @@ var add_shards = function(args, message){
 
     //if an int value couldn't be parsed return
     if (!shards) {
-        return message.author.send("The experience value was incorrect");
+        return message.channel.send("The experience value was incorrect");
     }
 
     //starts at args[2] to ignore the experience value in args[1]
@@ -1584,7 +1671,7 @@ var add_shards = function(args, message){
 
     //if no players, return
 	if(players.length === 0){
-		message.author.send("Incorrect arguments, add players");
+		message.channel.send("Incorrect arguments, add players");
 		return;	
 	}
 
@@ -1613,9 +1700,9 @@ var add_hours = function(args, message){
 	
 
     //if not Duncan, fuck off
-    console.log(message.author.username);
+
 	if(message.author.id != duncan_id){
-		message.author.send("You do not have permission to use this command!");
+		message.channel.send("You do not have permission to use this command!");
 		return;
 	}
 	
@@ -1624,7 +1711,7 @@ var add_hours = function(args, message){
 
     //if an int value couldn't be parsed return
     if (!hours) {
-        return message.author.send("The experience value was incorrect");
+        return message.channel.send("The experience value was incorrect");
     }
 
     //starts at args[2] to ignore the experience value in args[1]
@@ -1643,7 +1730,7 @@ var add_hours = function(args, message){
     }
 	
 	if(players.length === 0){
-		message.author.send("Incorrect arguments, add players");
+		message.channel.send("Incorrect arguments, add players");
 		return;	
 	}
 	
@@ -1669,7 +1756,7 @@ var add_hours = function(args, message){
 
 var level_message = function(character, player, level){
 	console.log(character + " " + " " + player + " " + level);
-	var playerUser = adv_guild.members.get(player);
+	var playerUser = server.members.get(player);
 	
 	playerUser.send("Congratulations, " + character + " has reached level " + level + "!");
 	
@@ -1695,7 +1782,7 @@ var spend_dth = function (args, message) {
 
     //checks to make sure there are enough arguments
     if (!args[2]) {
-        return message.author.send("Too few arguments");
+        return message.channel.send("Too few arguments");
     }
 
     //input form:
@@ -1712,7 +1799,7 @@ var spend_dth = function (args, message) {
     var dth_use = match[2];
 
     if (!char_name || !dth_use) {
-        return message.author.send("Syntax or arguments error.");
+        return message.channel.send("Syntax or arguments error.");
     }
     
     //checks intent of player and sets expected DTH useage 
@@ -1741,14 +1828,14 @@ var spend_dth = function (args, message) {
     con.query(sql, function (err, result) {
         if (err) throw err;
         if (result.length == 0) {
-            return message.author.send("no character/player found");
+            return message.channel.send("no character/player found");
         }
         //gets characters DTH from results
         var dth_available = result[0].downHours;
 
         //if they are trying to use too many, return
         if (dth_quantity > dth_available) {
-            return message.author.send("You don't have enough DTH to do that.")
+            return message.channel.send("You don't have enough DTH to do that.")
         }
 
         if (parseInt(dth_use)) {
@@ -1794,12 +1881,12 @@ var check_character = function(args, message) {
 	con.query("SELECT * FROM roster WHERE charName=\'" + character + "\';", function(err, result) {
 		if(err) throw err ;
 		console.log(result);
-		if(result[0].charPlayer == message.author.id || adv_guild.members.get(message.author.id).roles.find("name", "Dungeon Master")){
-			message.author.send("Character: " + result[0].charName + "\n Level: " + result[0].level + "\n XP: " + result[0].exp + "\n Downtime hours: " + result[0].downHours + "\n Rift Shards: " + result[0].riftShards);
+		if(result[0].charPlayer == message.author.id || server.members.get(message.author.id).roles.find("name", "Dungeon Master")){
+			message.channel.send("Character: " + result[0].charName + "\n Level: " + result[0].level + "\n XP: " + result[0].exp + "\n Downtime hours: " + result[0].downHours + "\n Rift Shards: " + result[0].riftShards);
 			
 			
 		} else {
-			message.author.send("You do not have permission to view that character!");
+			message.channel.send("You do not have permission to view that character!");
 		}
 		
 	});
@@ -1962,7 +2049,7 @@ var view_shop = function (args, message) {
 
         shop_inventory.addField("Item Name : price (gp)", list);
 
-        message.author.send(shop_inventory);
+        message.channel.send(shop_inventory);
 
     });
 
@@ -2028,6 +2115,6 @@ var show_homebrew = function (args, message) {
         }
 
     }
-    message.author.send("Add the json file to 5etools homebrew to see the following approved homebrews.", { embed: homebrew_embed, file: './approved-homebrew.json' });
+    message.channel.send("Add the json file to 5etools homebrew to see the following approved homebrews.", { embed: homebrew_embed, file: './approved-homebrew.json' });
 
 }
