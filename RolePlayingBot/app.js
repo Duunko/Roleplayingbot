@@ -36,11 +36,15 @@ const archive_id = '438106323490570250';
 const complete_board_id = '438461335337172992';
 const server_id = '438048843150393366';
 const duncan_id = '188928848287498240';
+const announcement_id = '438049253969887253';
 var quest_board;
 var archive;
 var adv_guild;
 var complete_board;
 var server;
+var announcement_board;
+
+var lockout = false;
 
 //data JSON files
 const xp_table = require('./level_xp.json');
@@ -58,16 +62,22 @@ spell_list.push.apply(spell_list, require('./spells-xge.json').spell);
 var item_list = require('./items.json').item;
 item_list.push.apply(item_list, require('./variant_items.json').variant);
 
+//Weekly xp tables
+const rest_thresholds = [[4,20], [8,15], [12, 10], [17, 8], [20, 5], [29, 1]];
+
 
 const folder = './';
 
 var con;
 var pool;
 
+var dateA;
+
 //when ready, log in console
 bot.on("ready", () => {
 
     quest_board = bot.channels.get(quest_board_id);
+	announcement_board = bot.channels.get(announcement_id);
 	archive = bot.channels.get(archive_id);
     adv_guild = quest_board.guild;
 	complete_board = bot.channels.get(complete_board_id);
@@ -80,6 +90,61 @@ bot.on("ready", () => {
 		password: "Adventurer123",
 		database: "guildrosterdata"
 	});
+	//Get the date
+	dateA = new Date(); 
+	
+	var months30 = [4, 6, 9, 11];
+	//Add to this if time goes on and we need to
+	var leapYears = [2020];
+	
+	var currentDay = dateA.getDay();
+	var currentDate = dateA.getDate();
+	var currentMonth = dateA.getMonth();
+	var currentYear = dateA.getFullYear();
+	var dayAdjust = 2-currentDay;
+	if(dayAdjust < 0) {
+		dayAdjust = 7 + dayAdjust;
+	}
+	var dateAdjust = currentDate + dayAdjust;
+	var monthAdjust = currentMonth;
+	var yearAdjust = currentYear;
+	if(dateAdjust > 28) {
+		if(currentMonth == 2) {
+			if(leapYears.includes(currentYear)){
+				if(dateAdjust > 29) {
+					dateAdjust -= 29;
+					monthAdjust += 1;
+				}
+			} else {
+				dateAdjust -= 28;
+				monthAdjust += 1;
+			}
+			
+		} else if (months30.includes(currentMonth)) {
+			if(dateAdjust > 30) {
+				dateAdjust -= 30;
+				monthAdjust += 1;
+			}
+		} else {
+			if(dateAdjust > 31) {
+				dateAdjust -= 31;
+				monthAdjust += 1;
+			}
+		}
+	}
+	if(monthAdjust > 11) {
+		monthAdjust = 1;
+		yearAdjust +=1;
+	}
+	
+	var dateB = new Date(yearAdjust, monthAdjust, dateAdjust, 5, 0, 0, 0);
+	
+	console.log("weekly timed generation fires " + dateB);
+	
+	var adjustedTime = dateB.getTime() - dateA.getTime();
+	setTimeout(lockout_warning, adjustedTime - (30 * 60 * 1000));	
+	setTimeout(weekly_progress, adjustedTime);	
+	
 	
 	
     console.log("Ready");
@@ -89,6 +154,13 @@ bot.on("ready", () => {
 
 //when message is posted in a chat, check to see how the bot should respond
 bot.on("message", function (message) {
+	
+	if(lockout == true){ 
+		
+		message.author.send("The bot is currently unavailable. Check the announcements board for more information.");
+		return;
+	}
+	
 	
 	pool.getConnection(function(err,connection) {
 		if (err) throw err ;
@@ -289,11 +361,28 @@ bot.on("message", function (message) {
                 buy_item(args, message);
 
                 break;
+				
+			//messages the members on the quest
+			//Format ~messagequest [Title], [Message]
+			case "messagequest":
+			
+				message_members(args, message);
+				
+				break;
+			//Fires the weekly progress function. For testing purposes
+			case "progress":
+				
+				if(message.author.id == duncan_id) {
+					weekly_progress();
+				}
+				
+				break;
 
 			//if not a valid command, note it
 			default:
 
 				message.channel.send(message.content + " is not a valid command. Use ~help for a list of commands.");
+				
 				break;
 
 			case "help":
@@ -304,9 +393,7 @@ bot.on("message", function (message) {
 					.setTitle("RPBot Dungeon Master Commands:")
 					.addField('~test', 'PMs a "ping!" to the sender to confirm the bot is working.')
 					.addField('~completequest [xp awarded], [char 1], [char 2]', 'awards exp to the specified players at the end of a quest')
-					.addField('~addshards [shards awarded], [char 1], [char 2]', 'gives shards to specified players (Duncan only).')
-					.addField('~addhours [DTH awarded], [char 1], [char 2]', 'gives DTH hours to specified players (Duncan only).')
-					.addField('~quest', '"title" TITLE \n "header1" TEXT1 \n "header2" TEXT2 \n\n*Make sure all quests have a "title". To make a test quest, make the title test.*')
+					.addField('~quest', '"title" TITLE \n "header1" TEXT1 \n "header2" TEXT2 \n\n*Make sure all quests have a "title", \n"party level", and "party size". To make a test quest, make the \ntitle test.*')
 					.addField('~update [quest title], [new status]', 'Updates the status of a quest. \n\n*When the quest is done, set status to "complete" but it will make it so that quest status cannot be changed any further.*')
 					.addField('~botstatus [new status]', 'sets the status of the bot.')
 					.setThumbnail(bot.user.avatarURL);
@@ -316,6 +403,234 @@ bot.on("message", function (message) {
 	con.release();
 	});
 });
+
+
+var lockout_warning = function() {
+	
+	announcement_board.send("Weekly downtime in 30 minutes. Make sure that all finished quests have been closed with ~complete or you may lose downtime rewards.");
+	bot.user.setGame("Lockout 4AM PST");
+	
+	
+}
+
+var weekly_progress = function() {
+	lockout = true;
+	var fullHours = [];
+	var halfHours = [];
+	pool.getConnection(function(err,connection) {
+		if (err) throw err ;
+		con = connection;
+		var con2;
+		pool.getConnection(function(err, connection2) {
+			if(err) {
+				console.log(err);
+				return;
+			}
+			con2 = connection2;
+			con2.query("SELECT * FROM roster", function(err, result) {
+				if (err) {
+					console.log(err);
+					return;
+				}
+			
+				for(entry in result) {
+					if(result[entry].dead == 1) {
+						continue;
+					}
+					switch(result[entry].numQuests) {
+						
+						case 0:
+							//Gets the xp percentage based on level
+							var percentage = 25;
+							var xpTotal;
+							for(var i = 0; i < rest_thresholds.length; i++) {
+								if(rest_thresholds[i][0] < result[entry].level) {
+									percentage = rest_thresholds[i][1];
+								} else {
+									break;
+								}
+							}
+							var levelIndex = result[entry].level - 2;
+							if(result[entry].level == 1) {
+								xpTotal = 75;
+							}else {
+								xpTotal = Math.floor(((xp_table[levelIndex + 1][0] - xp_table[levelIndex][0])/100)*percentage);
+							}
+							
+							//Adds player to an array because award_xp is a bitch like that
+							var player = [];
+							player.push(result[entry].charName);
+							//Adds to the list of people getting full dth
+							fullHours.push(result[entry].entryID);
+							//Messages the player
+							var play = adv_guild.members.get(result[entry].charPlayer);
+							play.send(result[entry].charName + " got " + xpTotal + " experience and 20 Downtime Hours for their restful week.");
+							award_xp(player, xpTotal);
+							
+							break;
+							
+						case 1:
+							//Gets the xp percentage based on level
+							//Gets the xp percentage based on level
+							var percentage = 25;
+							var xpTotal;
+							for(var i = 0; i < rest_thresholds.length; i++) {
+								if(rest_thresholds[i][0] < result[entry].level) {
+									percentage = rest_thresholds[i][1];
+								} else {
+									break;
+								}
+							}
+							var levelIndex = result[entry].level - 2;
+							if(result[entry].level == 1) {
+								xpTotal = 37;
+							}else {
+								xpTotal = Math.floor((((xp_table[levelIndex + 1][0] - xp_table[levelIndex][0])/100)*percentage)/2);
+							}
+							//Adds player to an array because award_xp is a bitch like that
+							var player = [];
+							player.push(result[entry].charName);
+							//Adds to the list of people getting half dth
+							halfHours.push(result[entry].entryID);
+							//Messages the player
+							var play = adv_guild.members.get(result[entry].charPlayer);
+							play.send(result[entry].charName + " got " + xpTotal + " experience and 10 Downtime Hours for their restful moments this week.");
+							award_xp(player, xpTotal);
+							
+							break;
+							
+							
+						
+						default:
+							var play = adv_guild.members.get(result[entry].charPlayer);
+							play.send("No downtime for " + result[entry].charName + " this week, you've been on too many quests!");
+							
+							break;		
+					}
+				}
+				var sql = "UPDATE roster SET downHours=downHours+20 WHERE entryID=\'";
+				for(var i = 0; i < fullHours.length; i++) {
+					if(i == 0) {
+						sql+= fullHours[i];
+					} else {
+						sql+= " OR entryID=" + fullHours[i];
+					}
+					
+				}
+				sql = ";"
+				var sql2 = "UPDATE roster SET downHours=downHours+20 WHERE entryID=\'";
+				for(var i = 0; i < fullHours.length; i++) {
+					if(i == 0) {
+						sql2+= fullHours[i];
+					} else {
+						sql2+= " OR entryID=" + fullHours[i];
+					}
+					
+				}
+				sql2 = ";"
+				con2.query(sql, function(err, result2) {
+					if(err) {
+						console.log(err);
+					}
+					console.log("Fullhours updated");
+					
+					con2.query(sql2, function(err, result3) {
+						if(err) {
+							console.log(err);
+						}
+						console.log("Halfhours updated");
+						
+						con2.query("UPDATE roster SET numQuests= numQuests - completeQuests, completeQuests = 0", function(err, result4) {
+							if (err) {
+								console.log("Oops");
+							}
+							
+							console.log("numQuests updated");
+							
+						});
+					});
+					
+					
+				});
+			});
+			con2.release();
+		});
+		con.release();
+	});
+	lockout = false;
+	announcement_board.send("Weekly downtime Complete.");
+	bot.user.setGame("Lockout Complete");
+	
+	
+	
+	
+}
+
+
+
+var message_members = function(args, message) {
+	
+	var text = args.splice(1).join(" ");
+
+    //regEx to extract char names from 'text' string
+    var regEx = /\W*(.*?)(?:,|$)/g;
+    var match;
+
+    console.log(text);
+	var quest;
+	var mesText = "";
+	var counter = 0;
+	while ((match = regEx.exec(text)[1]) != '') {
+		if (counter == 0){
+			quest = match;
+		} else {
+			mesText += (match + "\n");
+		}		
+		counter++;
+    }
+	console.log(quest);
+	con.query("SELECT * FROM quest_data WHERE quest_name=\'" + quest + "\';", function(err, result) {
+		if(err) {
+			console.log("Invalid quest");
+		}
+		console.log(result);
+		if(message.author.id != result[0].quest_DM) {
+			message.author.send("You are not the DM of that quest, and can't message the players.");
+			return;
+			
+		}
+		
+		if(result[0] == undefined) {
+			return;
+		}
+		var cUP = result[0].active_players.split(" ");
+		var sql = "SELECT * FROM roster WHERE entryID=";
+		for(var i = 0; i < cUP.length; i++) {
+			if(i == 0) {
+				sql += cUP[i];
+			} else {
+				sql+= " OR entryID=" + cUP[i];
+			}
+		}
+		sql += ";";
+		
+		con.query(sql, function(err, result2) {
+			if(err) {
+				console.log("Idiocy");
+			}
+			
+			for(entry in result2) {
+				var playerUser = adv_guild.members.get(result2[entry].charPlayer);
+				var DMName = message.author.username;
+				playerUser.send("Message from " + DMName + " about the quest " + result[0].quest_name + ":\n" + mesText);
+			}
+			
+		});
+		
+	});
+
+
+}
 
 var roll_dice = function (args, message) {
     //if no input return
@@ -500,6 +815,7 @@ var fire_quest = function(args, message) {
 				}
 			}
 			sql += ";";
+			sql2 += ";";
 			con.query(sql, function(err, result3) {
 				if (err) {
 					console.log("How the fuck");
@@ -1057,7 +1373,7 @@ var manual_xp = function (args, message) {
 		return;	
 	}
 
-	award_xp(players, xp, message);
+	award_xp(players, xp);
 	
 	//Sends duncan a message
 	var dunc = adv_guild.members.get(duncan_id);
@@ -1114,7 +1430,7 @@ var quest_complete = function(args, message) {
 				for(entry in result3) {
 					players.push(result3[entry].charName);
 				}
-				award_xp(players, xp, message);
+				award_xp(players, xp);
 				
 				quest_board.fetchMessage(result[0].message_id).then(message => {
 						message.delete().then(msg => console.log("Message deleted")).catch(console.error);
@@ -1137,7 +1453,7 @@ var quest_complete = function(args, message) {
 	});
 }
 
-var award_xp = function(players, xp, message) {
+var award_xp = function(players, xp) {
 	
 	//builds query to search for all players to be awarded exp		
 	var quer1 = "SELECT exp, level, charName, charPlayer FROM roster WHERE charName IN (\'";
