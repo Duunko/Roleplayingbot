@@ -14,16 +14,16 @@ const package = require('./package.json');
 const mysql = require('mysql');
 
 //bot token ***DO NOT SHARE***
-//const token = package.token;
+const token = package.token;
 
 //mubot's token, used for Beta development
-const token = "MzYwMjEzNjU1MDA4MzEzMzU1.DL7GEg.n9ASGR38j8Q8hTNWW4L5anOxpRM";
+//const token = "MzYwMjEzNjU1MDA4MzEzMzU1.DL7GEg.n9ASGR38j8Q8hTNWW4L5anOxpRM";
 
 //prefix for bot commands
-//const prefix = "~";
+const prefix = "~";
 
 //alt prefix used for mubot in Beta development
-const prefix = "!";
+//const prefix = "!";
 
 
 //create bot user and login
