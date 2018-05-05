@@ -37,12 +37,14 @@ const complete_board_id = '438461335337172992';
 const duncan_id = '188928848287498240';
 const announcement_id = '438049253969887253';
 const bot_commands_id = '441609746475122688';
+const general_id = '438048843674943498';
 var quest_board;
 var archive;
 var server;
 var complete_board;
 var announcement_board;
 var bot_commands;
+var general_chat;
 
 var lockout = false;
 
@@ -83,6 +85,7 @@ bot.on("ready", () => {
     server = quest_board.guild;
 	complete_board = bot.channels.get(complete_board_id);
     bot_commands = bot.channels.get(bot_commands_id);
+    general_chat = bot.channels.get(general_id);
 
 	pool = mysql.createPool({
 		connectionLimit: 10,
@@ -160,6 +163,9 @@ bot.on("guildMemberAdd", function (member) {
 
     member.addRole(guild_member_role); 
 
+    general_chat.send(`<@${member.id}> has joined the Guild, welcome!`);
+
+
 });
 
 //when message is posted in a chat, check to see how the bot should respond
@@ -225,7 +231,7 @@ bot.on("message", function (message) {
             case "list":
 
                 list_quests(args, message);
-		con.release();
+		        con.release();
                 return;
 				
 			case "item":
@@ -253,25 +259,32 @@ bot.on("message", function (message) {
 			
 				check_character(args, message);
 				con.release();	
-                		return;
+                return;
 
             case "homebrew":
 
                 show_homebrew(args, message);
-		con.release();
+		        con.release();
                 return;
 
 
             case "viewshop":
 
                 view_shop(args, message);
-                break;
-			
+                con.release();
+                return;
+
+            case "rollchar":
+
+                roll_char(args, message);
+                con.release();
+                return;
 
 			//creates an embed displaying the list of commands and sends it
 			case "help":
 
 				//embed of bot commands
+
 				var commands = new Discord.RichEmbed()
 					.setColor([40, 110, 200])
 					.setTitle("RPBot General Commands:")
@@ -280,6 +293,7 @@ bot.on("message", function (message) {
 					.addField('~spell [spell name]', 'Send you a message displaying the details of the requested spell (incomplete)')
 					.addField('~loot [character], [shards spent]', 'Rolls you a magic item based on the shards used and updates your balance')
                     .addField('~roll [X]d[Y] [+Z]', "rolls XdY dice with an option for a modifier of +/-Z. Only supports one type of die per roll.")
+                    .addField('~rollchar', 'rolls a stat array for a character based on the Guild\'s rules for rolling stats.')
                     .addField('~check [character name]', 'Checks the stats and resources of character name. Only for the character\'s owner and DMs.')
                     .addField('~viewshop', 'Allows you to view the current stock of magic items. Let a DM know if you want to buy one and they will help you.')
                     .addField('~homebrew', 'Uploads most recent version of Homebrew JSON and lists currently approved homebrews.')
@@ -2047,13 +2061,15 @@ var search_items = function (args, message) {
 
 }
 
-
+//views the magic item shop inventory
 var view_shop = function (args, message) {
 
+    //selects all items from shop inventory
     var sql = "SELECT * FROM shop_inventory;";
     con.query(sql, function (err, result) {
         if (err) throw err;
 
+        //preps output embed
         var shop_inventory = new Discord.RichEmbed()
             .setColor([40, 110, 200])
             .setTitle("The Magic Shop")
@@ -2061,17 +2077,19 @@ var view_shop = function (args, message) {
 
         var list = "";
 
+        //adds all items a var for embed
         for (var item in result) {
             console.log(item);
             list += `**${result[item].item_name}** : ${result[item].item_price} gp\n`;
         }
 
+        //if there were no items, say that
         if (list.length === 0) {
             list = "No items";
         }
 
+        //adds list to embed and prints
         shop_inventory.addField("Item Name : price (gp)", list);
-
         message.channel.send(shop_inventory);
 
     });
@@ -2079,7 +2097,7 @@ var view_shop = function (args, message) {
 
 }
 
-
+//DM command to buy an item from shop
 var buy_item = function (args, message) {
 
     var text = args.splice(1).join(" ");
@@ -2088,11 +2106,11 @@ var buy_item = function (args, message) {
     var regEx = /\W*(.*?),\W(.*?)$/;
     var match = regEx.exec(text);
 
+    //form of [char buying item], [item to buy]
     var char_name = match[1];
     var item_to_buy = match[2];
 
-    console.log(item_to_buy);
-
+    //looks for item in shop inventory
     var sql = `SELECT * FROM shop_inventory WHERE item_name = '${item_to_buy}';`;
     con.query(sql, function (err, result) {
         if (err) throw err;
@@ -2101,43 +2119,101 @@ var buy_item = function (args, message) {
             return message.channel.send("Item not found");
         }
 
+        //if item is there, remove it from the inventory
         var remove_item_sql = `DELETE FROM shop_inventory WHERE item_name = '${item_to_buy}';`;        
 
         con.query(remove_item_sql, function (err, delete_result) {
             if (err) throw err;
 
+            //message that the item was bought for expected price
             return message.channel.send(`**${item_to_buy}** was bought by **${char_name}** for **${result[0].item_price} gp**`);
 
         });
-
 
     });
 
 }
 
+//Shows a list of approved homebrews and uploads the JSON file
 var show_homebrew = function (args, message) {
 
-
+    //create embed
     var homebrew_embed = new Discord.RichEmbed()
         .setColor([40, 110, 200])
         .setTitle("Approved Homebrew")
         .setThumbnail(bot.user.avatarURL);
 
+    //JSON version number
     homebrew_embed.addField("Version", homebrew_list["_meta"]["sources"][0].version);
 
+    //For all types of homebrew (race, class, ect)
     for (var type in homebrew_list) {
+        //ignore the _meta heading
         if (type !== "_meta") {
-            console.log(type);
-            var items = "";
 
+            var items = "";
+            //get all items of the specified type of homebrew
             for (var item in homebrew_list[type]) {
 
                 items += `${homebrew_list[type][item].name} \n`
             }
+            //add type of homebrew to embed
             homebrew_embed.addField(type, items);
         }
-
     }
-    message.channel.send("Add the json file to 5etools homebrew to see the following approved homebrews.", { embed: homebrew_embed, file: './approved-homebrew.json' });
+    //Sends message with embed, basic instructions and JSON file
+    message.channel.send("Add the json file to 5etools homebrew to see the following approved homebrews. Detailed instructions in FAQ.", { embed: homebrew_embed, file: './approved-homebrew.json' });
+
+}
+
+//rolls a character stat array with guild rules
+var roll_char = function (args, message) {
+
+    //creates array to hold stats
+    var stats = [];
+
+    //rolls until there are 6 stats with scores 7 or greater
+    while (stats.length < 6) {
+
+        var roll = []
+        for (var i = 0; i < 4; i++) {
+            roll.push(parseInt(Math.random() * 6 + 1));
+        }
+        var stat = roll.reduce((prev_value, curr_value) => prev_value + curr_value) - Math.min.apply(null, roll);
+
+        console.log(stat);
+
+        if (stat > 6) {
+            stats.push(stat);
+        }
+    }
+
+    //sorts the stats
+    stats.sort((a, b) => b - a);
+
+    //rerolls the greatest 4 stats until they are 10 or greater
+    for (var i = 0; i < 4; i++) {
+
+        while (stats[i] < 10) {
+
+            var roll = []
+            for (var j = 0; j < 4; j++) {
+                roll.push(parseInt(Math.random() * 6 + 1));
+            }
+            var stat = roll.reduce((prev_value, curr_value) => prev_value + curr_value) - Math.min.apply(null, roll);
+
+            stats[i] = stat;   
+        }
+    }
+
+    //resorts the stats
+    stats.sort((a, b) => b - a);
+
+    //preps output and sends message
+    var output = `<@${message.author.id}> rolled a character and got:\n`;
+    for (var i = 0; i < 6; i++) {
+        output += `**${(i+1)}:** ${stats[i]} \n`;
+    }
+    message.channel.send(output);
 
 }
