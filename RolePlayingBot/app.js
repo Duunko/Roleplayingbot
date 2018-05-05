@@ -172,19 +172,24 @@ bot.on("message", function (message) {
 	
 		//if bot sent the message, check to see if it was a quest posting, else return
 		if (message.author.equals(bot.user)) {
+			con.release();
 			return;
 		}
 
 		//if message doesn't start with proper prefix, ignore
-		if (!message.content.startsWith(prefix)) return;
+		if (!message.content.startsWith(prefix)) {
+			con.release();
+			return;
+		}
 
         if (lockout == true) {
-
+		con.release();
             message.channel.send("The bot is currently unavailable. Check the announcements board for more information.");
             return;
         }
 
         if (message.channel != bot_commands && message.channel.type != 'dm') {
+		con.release();
             return message.author.send("You need to DM me or use the #bot-commands channel.");
         }
 
@@ -198,7 +203,7 @@ bot.on("message", function (message) {
 			case "dth":
 
 				spend_dth(args, message);
-
+				con.release();
 				return;
 
 			//rolls X dice with Y sides
@@ -206,61 +211,60 @@ bot.on("message", function (message) {
 			case "roll":
 
 				roll_dice(args, message);
-
+				con.release();
 				return;
 
 			//PM's the DM to join their quest
 			case "join":
 				//IN PROGRESS
 				join_quest(args, message);
-
+				con.release();
 				return;
 
 			//List quests of particular level
             case "list":
 
                 list_quests(args, message);
-
+		con.release();
                 return;
 				
 			case "item":
 
 				search_items(args, message);
-
+				con.release();
 				return;
 
 			case "loot":
 
 				roll_loot(args, message);
 
-				
+				con.release();
 				return;
 
 			case "spell":
 				
 				//IN PROGRESS, POTENTIALLY ERRORS
 				search_spells(args, message);
-
+				con.release();
 				return;
 	
 				
 			case "check":
 			
 				check_character(args, message);
-				
-                return;
+				con.release();	
+                		return;
 
             case "homebrew":
 
                 show_homebrew(args, message);
-
+		con.release();
                 return;
 
 
             case "viewshop":
 
                 view_shop(args, message);
-
                 break;
 			
 
@@ -666,7 +670,7 @@ var message_members = function(args, message) {
 
 var roll_dice = function (args, message) {
     //if no input return
-    if (args[1] != /\dd\d/) {
+    if (args[1] != (!/\dd\d/.test(args[1]))) {
         message.channel.send("Give a dice value, XdY");
         return;
     }
@@ -1012,7 +1016,7 @@ var new_quest = function (args, message) {
                 listing.addField(match[1], match[2], false);
 				if(match[1].toLowerCase() == "party level" || match[1].toLowerCase() == "recommended level" || match[1].toLowerCase() == "level") {
 					lvl = parseInt(match[2]);
-				} else if(match[1].toLowerCase() == "party size"){
+				} else if(match[1].toLowerCase() == "party size" || match[1].toLowerCase() == "size"){
 					size = match[2];
 				}
             } catch (e) {
@@ -1036,6 +1040,11 @@ var new_quest = function (args, message) {
         message.channel.send("**QUEST STATUS: OPEN**", listing);
         return;
     }
+
+	if(lvl == undefined || size == undefined ) {
+		message.channel.send("Your quest needs a \"party size\" and \"party level\" field, or needs to have the title \"TEST\".");
+		return;
+	}
 
 	var auth = message.author.id;
 	
