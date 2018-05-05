@@ -996,7 +996,7 @@ var new_quest = function (args, message) {
     var text = args.splice(1).join(" ");
 
     //searches for new lines and seperates headers from texts
-    var regEx = /^(?:"|“)(.*?)\W*(?:"|”) (.*?)$/gm;
+    var regEx = /^\W*(?:"|“)(.*?)\W*(?:"|”) (.*?)$/gm;
     var match;
 	
 	
@@ -1014,9 +1014,9 @@ var new_quest = function (args, message) {
         else {
             try {
                 listing.addField(match[1], match[2], false);
-				if(match[1].toLowerCase() == "party level" || match[1].toLowerCase() == "recommended level" || match[1].toLowerCase() == "level") {
+				if(match[1].toLowerCase().trim() == "party level" || match[1].toLowerCase().trim() == "recommended level" || match[1].toLowerCase().trim() == "level") {
 					lvl = parseInt(match[2]);
-				} else if(match[1].toLowerCase() == "party size" || match[1].toLowerCase() == "size"){
+				} else if(match[1].toLowerCase().trim() == "party size" || match[1].toLowerCase().trim() == "size"){
 					size = match[2];
 				}
             } catch (e) {
@@ -1036,7 +1036,7 @@ var new_quest = function (args, message) {
     console.log(listing.title);
 
     //allows for "test" quests
-    if (listing.title.toLowerCase() == "test") {
+    if (listing.title.toLowerCase().trim() == "test") {
         message.channel.send("**QUEST STATUS: OPEN**", listing);
         return;
     }
