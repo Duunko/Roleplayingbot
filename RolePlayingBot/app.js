@@ -276,9 +276,9 @@ bot.on("message", function (message) {
 					.setColor([40, 110, 200])
 					.setTitle("RPBot General Commands:")
 					.addField('~list [quest level]', 'Lists all quests that have level X.')
-					.addField('~join [quest title]', 'Sends a message to the DM that you want to join their quest, and adds your character to the quest.')
+					.addField('~join [quest title], [character name]', 'Sends a message to the DM that you want to join their quest, and adds your character to the quest.')
 					.addField('~spell [spell name]', 'Send you a message displaying the details of the requested spell (incomplete)')
-					.addField('~loot [shards spent]', 'Rolls you a magic item based on the shards used and updates your balance')
+					.addField('~loot [character], [shards spent]', 'Rolls you a magic item based on the shards used and updates your balance')
                     .addField('~roll [X]d[Y] [+Z]', "rolls XdY dice with an option for a modifier of +/-Z. Only supports one type of die per roll.")
                     .addField('~check [character name]', 'Checks the stats and resources of character name. Only for the character\'s owner and DMs.')
                     .addField('~viewshop', 'Allows you to view the current stock of magic items. Let a DM know if you want to buy one and they will help you.')
@@ -422,9 +422,9 @@ bot.on("message", function (message) {
 					.setColor([40, 110, 200])
 					.setTitle("RPBot Dungeon Master Commands:")
                     .addField('~quest', '"title" TITLE \n "header1" TEXT1 \n "header2" TEXT2 \n\n*Make sure all quests have a "title", \n"party level", and "party size". To make a test quest, make the \ntitle test.*')
-                    .addField('~update [quest title], [new status]', 'Updates the status of a quest. \n\n*When the quest is done, set status to "complete" but it will make it so that quest status cannot be changed any further.*')
                     .addField('~fire [quest name]', 'Launches the specified quest and notifies players on the quest.')
-                    .addField('~completequest [xp awarded], [char 1], [char 2]', 'awards exp to the specified players at the end of a quest')
+		    .addField('~addxp [xp awarded], [character 1], [character2]', 'awards exp to the specified players. Only use this command if you mess up. Alerts Duunko whenever you use it.')
+                    .addField('~complete [xp awarded], [quest name]', 'awards exp to the players on a quest and closes the quest.')
                     .addField('~buyitem [char buying], [item name]', 'Lets the player buy the item at price and removes it from the shop')
 					.addField('~botstatus [new status]', 'sets the status of the bot.')
                     .addField('~test', 'PMs a "ping!" to the sender to confirm the bot is working.')
@@ -1270,8 +1270,18 @@ var roll_loot = function (args, message) {
     var regEx = /\W*(.*?),\W(.*?)$/;
     var match = regEx.exec(text);
 
+    if(match[2] == null || match[2] == undefined) {
+	message.channel.send("Invalid number of arguments.");
+	return;
+    }
+
     var char_name = match[1];
     var shards_used = parseInt(match[2]);
+
+    if(shards_used == NaN) {
+        message.channel.send("Invalid number of shards.");
+	return;
+    }
 
     if (!char_name || !shards_used) {
         return message.channel.send("Syntax or arguments error.");
@@ -1890,6 +1900,10 @@ var check_character = function(args, message) {
 	con.query("SELECT * FROM roster WHERE charName=\'" + character + "\';", function(err, result) {
 		if(err) throw err ;
 		console.log(result);
+		if(result[0] == undefined) {
+			message.channel.send("No such character by that name!");
+			return;
+		}
 		if(result[0].charPlayer == message.author.id || server.members.get(message.author.id).roles.find("name", "Dungeon Master")){
 			message.channel.send("Character: " + result[0].charName + "\n Level: " + result[0].level + "\n XP: " + result[0].exp + "\n Downtime hours: " + result[0].downHours + "\n Rift Shards: " + result[0].riftShards);
 			
