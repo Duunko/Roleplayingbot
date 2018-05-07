@@ -50,7 +50,7 @@ var lockout = false;
 
 //data JSON files
 const xp_table = require('./level_xp.json');
-const loot_table = require('./loot_table.json').magicitems;
+//const loot_table = require('./loot_table.json').magicitems;
 
 var spell_list = []; 
 spell_list.push.apply(spell_list, require('./spells-phb.json').spell);
@@ -1005,7 +1005,7 @@ var new_quest = function (args, message) {
 				if(match[1].toLowerCase().trim() == "party level" || match[1].toLowerCase().trim() == "recommended level" || match[1].toLowerCase().trim() == "level") {
 					lvl = parseInt(match[2]);
 				} else if(match[1].toLowerCase().trim() == "party size" || match[1].toLowerCase().trim() == "size"){
-					if(parseInt(match[2] == NaN) {
+					if(parseInt(match[2] == NaN)) {
 						var numbers = match[2].match(/\d+/g).map(Number);
 						size = numbers[numbers.length - 1];
 					} else {
