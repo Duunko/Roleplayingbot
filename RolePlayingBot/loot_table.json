@@ -11,45 +11,253 @@
 				},
 				{
 					"min": 21,
-					"max": 30,
+					"max": 39,
 					"item": "Spell Scroll (Cantrip)"
 				},
 				{
-					"min": 31,
-					"max": 41,
+					"min": 40,
+					"max": 53,
 					"item": "Spell Scroll (1st Level)"
 				},
 				{
-					"min": 42,
-					"max": 42,
+					"min": 54,
+					"max": 54,
 					"item": "Armor of Gleaming"
 				},
 				{
-					"min": 43,
-					"max": 43,
+					"min": 55,
+					"max": 55,
 					"item": "Bead of Nourishment"
 				},
 				{
-					"min": 44,
-					"max": 44,
+					"min": 56,
+					"max": 56,
 					"item": "Bead of Refreshment"
 				},
 				{
-					"min": 45,
-					"max": 45,
+					"min": 57,
+					"max": 57,
 					"item": "Boots of False Tracks"
 				},
 				{
-					"min": 46,
-					"max": 46,
+					"min": 58,
+					"max": 58,
 					"item": "Candle of the Deep"
-				}
+				},
+				{
+					"min": 59,
+					"max": 59,
+					"item": "Cast-off Armor"
+				},
+				{
+					"min": 60,
+					"max": 60,
+					"item": "Charlatan's Die"
+				},
+				{
+					"min": 61,
+					"max": 61,
+					"item": "Cloak of Billowing"
+				},
+				{
+					"min": 62,
+					"max": 62,
+					"item": "Cloak of Many Fashions"
+				},
+				{
+					"min": 63,
+					"max": 63,
+					"item": "Clockwork Amulet"
+				},
+				{
+					"min": 64,
+					"max": 64,
+					"item": "Clothes of Mending"
+				},
+				{
+					"min": 65,
+					"max": 65,
+					"item": "Dark Shard Amulet"
+				},
+				{
+					"min": 66,
+					"max": 66,
+					"item": "Dread Helm"
+				},
+				{
+					"min": 67,
+					"max": 67,
+					"item": "Ear Horn of Hearing"
+				},
+				{
+					"min": 68,
+					"max": 68,
+					"item": "Enduring Spellbook"
+				},
+				{
+					"min": 69,
+					"max": 69,
+					"item": "Ersatz Eye"
+				},
+				{
+					"min": 70,
+					"max": 70,
+					"item": "Hat of Vermin"
+				},
+				{
+					"min": 71,
+					"max": 71,
+					"item": "Hat of Wizardry"
+				},
+				{
+					"min": 72,
+					"max": 72,
+					"item": "Hewards Handy Spice Pouch"
+				},
+				{
+					"min": 73,
+					"max": 73,
+					"item": "Horn of Silent Alarm"
+				},
+				{
+					"min": 74,
+					"max": 74,
+					"item": "Instrument of Illusions"
+				},
+				{
+					"min": 75,
+					"max": 75,
+					"item": "Instrument of Scribing"
+				},
+				{
+					"min": 76,
+					"max": 76,
+					"item": "Lock of Trickery"
+				},
+				{
+					"min": 77,
+					"max": 77,
+					"item": "Moon Touched Sword"
+				},
+				{
+					"min": 78,
+					"max": 78,
+					"item": "Mystery Key"
+				},
+				{
+					"min": 79,
+					"max": 79,
+					"item": "Orb of Direction"
+				},
+				{
+					"min": 80,
+					"max": 80,
+					"item": "Orb of Time"
+				},
+				{
+					"min": 81,
+					"max": 81,
+					"item": "Perfume of Bewitching"
+				},
+				{
+					"min": 82,
+					"max": 82,
+					"item": "Pipe of Smoke Monsters"
+				},
+				{
+					"min": 83,
+					"max": 83,
+					"item": "Pole of Angling"
+				},
+				{
+					"min": 84,
+					"max": 84,
+					"item": "Pole of Collapsing"
+				},
+				{
+					"min": 85,
+					"max": 85,
+					"item": "Pot of Awakening"
+				},
+				{
+					"min": 86,
+					"max": 86,
+					"item": "Rope of Mending"
+				},
+				{
+					"min": 87,
+					"max": 87,
+					"item": "Ruby of the War Mage"
+				},
+				{
+					"min": 88,
+					"max": 88,
+					"item": "Shield of Expression"
+				},
+				{
+					"min": 89,
+					"max": 89,
+					"item": "Smoldering Armor"
+				},
+				{
+					"min": 90,
+					"max": 90,
+					"item": "Staff of Adornment"
+				},
+				{
+					"min": 91,
+					"max": 91,
+					"item": "Staff of Birdcalls"
+				},
+				{
+					"min": 92,
+					"max": 92,
+					"item": "Staff of Flowers"
+				},
+				{
+					"min": 93,
+					"max": 93,
+					"item": "Talking Doll"
+				},
+				{
+					"min": 94,
+					"max": 94,
+					"item": "Tankard of Sobriety"
+				},
+				{
+					"min": 95,
+					"max": 95,
+					"item": "Unbreakable Arrow"
+				},
+				{
+					"min": 96,
+					"max": 96,
+					"item": "Veteran's Cane"
+				},
+				{
+					"min": 97,
+					"max": 97,
+					"item": "Wand of Conducting"
+				},
+				{
+					"min": 98,
+					"max": 98,
+					"item": "Wand of Pyrotechnics"
+				},
+				{
+					"min": 99,
+					"max": 99,
+					"item": "Wand of Scowls"
+				},
+				{
+					"min": 100,
+					"max": 100,
+					"item": "Wand of Smiles"
+				},
 			]
 		},
 		{
 			"name": "Magic Item Table B",
-			"source": "DMG",
-			"page": 144,
 			"type": "B",
 			"table": [
 				{

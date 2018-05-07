@@ -1005,7 +1005,13 @@ var new_quest = function (args, message) {
 				if(match[1].toLowerCase().trim() == "party level" || match[1].toLowerCase().trim() == "recommended level" || match[1].toLowerCase().trim() == "level") {
 					lvl = parseInt(match[2]);
 				} else if(match[1].toLowerCase().trim() == "party size" || match[1].toLowerCase().trim() == "size"){
-					size = match[2];
+					if(parseInt(match[2] == NaN) {
+						var numbers = match[2].match(/\d+/g).map(Number);
+						size = numbers[numbers.length - 1];
+					} else {
+						size = match[2];
+					}
+					
 				}
             } catch (e) {
                 console.log(e);
@@ -1572,7 +1578,7 @@ var quest_complete = function(args, message) {
 						message.delete().then(msg => console.log("Message deleted")).catch(console.error);
 				});
 				
-				con.query("UPDATE quest_data SET quest_status=\'Quest Complete\' WHERE quest_name=\'" + quest + "\';", function(err, result4) {
+				con.query("DELETE FROM quest_data WHERE quest_name=\'" + quest + "\';", function(err, result4) {
 					if(err) {
 						console.log(err);
 						
