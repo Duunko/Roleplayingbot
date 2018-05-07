@@ -294,12 +294,6 @@ var on_message = bot.on("message", function (message) {
                     .addField('~item [item name]', 'Sends you a message displaying the details of the requested item.')
                     .addField('~shards [character], [shards spent]', 'Rolls you a magic item based on the shards used and updates your balance of shards.')
                     .addField('~roll [X]d[Y] [+Z]', "rolls XdY dice with an option for a modifier of +/-Z. Only supports one type of die per roll. Spacing is important.")
-                    .addField('~rollchar', 'rolls a stat array for a character based on the Guild\'s rules for rolling stats.')
-                    .addField('~check [character]', 'Checks the stats and resources of character name. Only for the character\'s owner and DMs.')
-                    .addField('~viewshop', 'Allows you to view the current stock of magic items. Let a DM know if you want to buy one and they will help you.')
-                    .addField('~homebrew', 'Uploads most recent version of Homebrew JSON and lists currently approved homebrews.')
-					.addField('~dth [character], [hours spent/use]', 'spends DTH for a character. To get gold, make "hours spent" and integer value. You will get 15*hours gp. For proficiencies type the kind proficiency you want to learn. "skill" costs 120 hrs, "weapon" or "armor" costs 80 hours and "tool" or "language" costs 40 hours.')
-					.setThumbnail(bot.user.avatarURL);
 				message.channel.send(commands);
 
 				break;
@@ -441,8 +435,13 @@ var on_message = bot.on("message", function (message) {
                     .addField('~fire [quest name]', 'Launches the specified quest, sets its status to IN PROGRESS, and notifies players on the quest.')
                     .addField('~complete [quest name], [xp awarded]', 'Closes a quest and awards experience to players on the quest')
                     .addField('~character [new character name], [player\'s username], [starting xp]','Makes a new character for the specified player.')
-                     .addField('~addxp [xp awarded], [char 1], [char 2]', 'Manually adds experience to a group of players. Notifies Duncan')
+                    .addField('~addxp [xp awarded], [char 1], [char 2]', 'Manually adds experience to a group of players. Notifies Duncan')
                     .addField('~buyitem [char buying], [item name]', 'Lets the player buy the item at price and removes it from the shop. Players cannot buy items without DM permission')
+                    .addField('~quest', '"title" TITLE \n "header1" TEXT1 \n "header2" TEXT2 \n\n*Make sure all quests have a "title", \n"party level", and "party size". To make a test quest, make the \ntitle test.*')
+                    .addField('~fire [quest name]', 'Launches the specified quest and notifies players on the quest.')
+        		    .addField('~addxp [xp awarded], [character 1], [character2]', 'awards exp to the specified players. Only use this command if you mess up. Alerts Duunko whenever you use it.')
+                    .addField('~complete [xp awarded], [quest name]', 'awards exp to the players on a quest and closes the quest.')
+                    .addField('~buyitem [char buying], [item name]', 'Lets the player buy the item at price and removes it from the shop')
 					.addField('~botstatus [new status]', 'sets the status of the bot.')
                     .addField('~test', 'Prints a "ping!" to confirm the bot is working.')
 					.setThumbnail(bot.user.avatarURL);
@@ -1259,8 +1258,18 @@ var roll_loot = function (args, message) {
     var regEx = /\W*(.*?),\W(.*?)$/;
     var match = regEx.exec(text);
 
+    if(match[2] == null || match[2] == undefined) {
+	message.channel.send("Invalid number of arguments.");
+	return;
+    }
+
     var char_name = match[1];
     var shards_used = parseInt(match[2]);
+
+    if(shards_used == NaN) {
+        message.channel.send("Invalid number of shards.");
+	return;
+    }
 
     if (!char_name || !shards_used) {
         return message.channel.send("Syntax or arguments error.");
@@ -1878,6 +1887,10 @@ var check_character = function(args, message) {
 	con.query("SELECT * FROM roster WHERE charName=\'" + character + "\';", function(err, result) {
 		if(err) throw err ;
 		console.log(result);
+		if(result[0] == undefined) {
+			message.channel.send("No such character by that name!");
+			return;
+		}
 		if(result[0].charPlayer == message.author.id || server.members.get(message.author.id).roles.find("name", "Dungeon Master")){
 			message.channel.send("Character: " + result[0].charName + "\n Level: " + result[0].level + "\n XP: " + result[0].exp + "\n Downtime hours: " + result[0].downHours + "\n Rift Shards: " + result[0].riftShards);
 			
