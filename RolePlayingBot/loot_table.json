@@ -278,7 +278,7 @@
 				{
 					"min": 30,
 					"max": 34,
-					"item": "Ammunition +1|dmg"
+					"item": "Ammunition +1"
 				},
 				{
 					"min": 35,
@@ -343,7 +343,7 @@
 				{
 					"min": 80,
 					"max": 81,
-					"item": "Elemental Gem, Red Corundum|dmg|Elemental Gem"
+					"item": "Elemental Gem, Red"
 				},
 				{
 					"min": 82,
@@ -454,7 +454,7 @@
 				{
 					"min": 15,
 					"max": 16,
-					"item": "Ammunition +2|dmg"
+					"item": "Ammunition +2"
 				},
 				{
 					"min": 17,
@@ -525,7 +525,7 @@
 					"min": 33,
 					"max": 33,
 					"item": "Bag of Beans"
-				},				
+				},
 				{
 					"min": 34,
 					"max": 34,
@@ -659,7 +659,7 @@
 				{
 					"min": 60,
 					"max": 60,
-					"item": "Figurine of Wonderous Power (silver raven)"
+					"item": "Figurine of Wonderous Power, silver raven"
 				},
 				{
 					"min": 61,
@@ -704,17 +704,17 @@
 				{
 					"min": 69,
 					"max": 69,
-					"item": "Instrument of the Bards (Doss Lute)"
+					"item": "Instrument of the Bards, Doss Lute"
 				},
 				{
 					"min": 70,
 					"max": 70,
-					"item": "Instrument of the Bards (Fochlucan bandore)"
+					"item": "Instrument of the Bards, Fochlucan bandore"
 				},
 				{
 					"min": 71,
 					"max": 71,
-					"item": "Instrument of the Bards (Mac-Fuirmidh Cittern)"
+					"item": "Instrument of the Bards, Mac-Fuirmidh Cittern"
 				},
 				{
 					"min": 72,
@@ -774,7 +774,7 @@
 				{
 					"min": 83,
 					"max": 83,
-					"item": "Rod of the Pact Keeper (+1)"
+					"item": "Rod of the Pact Keeper, +1"
 				},
 				{
 					"min": 84,
@@ -829,7 +829,7 @@
 				{
 					"min": 94,
 					"max": 94,
-					"item": "Wand of the War Mage (+1)"
+					"item": "Wand of the War Mage, +1"
 				},
 				{
 					"min": 95,
@@ -854,7 +854,7 @@
 				{
 					"min": 99,
 					"max": 100,
-					"item": "Weapon (+1)"
+					"item": "Weapon +1"
 				},
 			]
 		},
@@ -890,7 +890,7 @@
 				{
 					"min": 6,
 					"max": 6,
-					"item": "Ammunition +3|dmg"
+					"item": "Ammunition +3"
 				},
 				{
 					"min": 7,
@@ -950,7 +950,7 @@
 				{
 					"min": 18,
 					"max": 18,
-					"item": "Armor (+1)"
+					"item": "Armor +1"
 				},
 				{
 					"min": 19,
@@ -1050,37 +1050,37 @@
 				{
 					"min": 38,
 					"max": 38,
-					"item": "Figurine of Wonderous Power (Bronze Griffin)"
+					"item": "Figurine of Wonderous Power, Bronze Griffin"
 				},
 				{
 					"min": 39,
 					"max": 39,
-					"item": "Figurine of Wonderous Power (Ebony Fly)"
+					"item": "Figurine of Wonderous Power, Ebony Fly"
 				},
 				{
 					"min": 40,
 					"max": 40,
-					"item": "Figurine of Wonderous Power (Golden Lions)"
+					"item": "Figurine of Wonderous Power, Golden Lions"
 				},
 				{
 					"min": 41,
 					"max": 41,
-					"item": "Figurine of Wonderous Power (Ivory Goats)"
+					"item": "Figurine of Wonderous Power, Ivory Goats"
 				},
 				{
 					"min": 42,
 					"max": 42,
-					"item": "Figurine of Wonderous Power (Marble Elephant)"
+					"item": "Figurine of Wonderous Power, Marble Elephant"
 				},
 				{
 					"min": 43,
 					"max": 43,
-					"item": "Figurine of Wonderous Power (Onyx Dog)"
+					"item": "Figurine of Wonderous Power, Onyx Dog"
 				},
 				{
 					"min": 44,
 					"max": 44,
-					"item": "Figurine of Wonderous Power (Serpentine Owl)"
+					"item": "Figurine of Wonderous Power, Serpentine Owl"
 				},
 				{
 					"min": 45,
@@ -1115,37 +1115,37 @@
 				{
 					"min": 51,
 					"max": 51,
-					"item": "Horn of Valhalla (Silver or Brass)"
+					"item": "Horn of Valhalla, Silver or Brass"
 				},
 				{
 					"min": 52,
 					"max": 52,
-					"item": "Instrument of the Bards (Canaith Mandolin)"
+					"item": "Instrument of the Bards, Canaith Mandolin"
 				},
 				{
 					"min": 53,
 					"max": 53,
-					"item": "Instrument of the Bards (Cli Lyre)"
+					"item": "Instrument of the Bards, Cli Lyre"
 				},
 				{
 					"min": 54,
 					"max": 54,
-					"item": "Ioun Stone (awareness)"
+					"item": "Ioun Stone, awareness"
 				},
 				{
 					"min": 55,
 					"max": 55,
-					"item": "Ioun Stone (protection)"
+					"item": "Ioun Stone, protection"
 				},
 				{
 					"min": 56,
 					"max": 56,
-					"item": "Ioun Stone (reserve)"
+					"item": "Ioun Stone, reserve"
 				},
 				{
 					"min": 57,
 					"max": 57,
-					"item": "Ioun Stone (sustenence)"
+					"item": "Ioun Stone, sustenence"
 				},
 				{
 					"min": 58,
@@ -1240,7 +1240,7 @@
 				{
 					"min": 76,
 					"max": 76,
-					"item": "Rod of the Pact Keeper (+2)"
+					"item": "Rod of the Pact Keeper, +2"
 				},
 				{
 					"min": 77,
@@ -1255,7 +1255,7 @@
 				{
 					"min": 79,
 					"max": 79,
-					"item": "Shield (+2)"
+					"item": "Shield +2"
 				},
 				{
 					"min": 80,
@@ -1345,7 +1345,7 @@
 				{
 					"min": 97,
 					"max": 97,
-					"item": "Wand of the War Mage (+2)"
+					"item": "Wand of the War Mage, +2"
 				},
 				{
 					"min": 98,
@@ -1355,7 +1355,7 @@
 				{
 					"min": 99,
 					"max": 99,
-					"item": "Weapon (+2)"
+					"item": "Weapon +2"
 				},
 				{
 					"min": 100,
@@ -1396,12 +1396,287 @@
 				{
 					"min": 42,
 					"max": 42,
-					"item": ""
+					"item": "Animated shield"
+				},
+				{
+					"min": 43,
+					"max": 44,
+					"item": "Armor +2"
+				},
+				{
+					"min": 45,
+					"max": 45,
+					"item": "Belt of Fire Giant Strength"
+				},
+				{
+					"min": 46,
+					"max": 46,
+					"item": "Belt of Frost Giant Strength"
+				},
+				{
+					"min": 47,
+					"max": 47,
+					"item": "Candle of Invocation"
+				},
+				{
+					"min": 48,
+					"max": 48,
+					"item": "Carpet of Flying"
+				},
+				{
+					"min": 49,
+					"max": 49,
+					"item": "Cloak of Arachnida"
+				},
+				{
+					"min": 50,
+					"max": 50,
+					"item": "Crystal Ball"
+				},
+				{
+					"min": 51,
+					"max": 51,
+					"item": "Dancing sword"
+				},
+				{
+					"min": 52,
+					"max": 52,
+					"item": "Demon armor"
+				},
+				{
+					"min": 53,
+					"max": 53,
+					"item": "Dragon Scale Mail"
+				},
+				{
+					"min": 54,
+					"max": 54,
+					"item": "Dwarven Plate"
+				},
+				{
+					"min": 55,
+					"max": 55,
+					"item": "Dwarven thrower"
+				},
+				{
+					"min": 56,
+					"max": 56,
+					"item": "Efreeti Bottle"
+				},
+				{
+					"min": 57,
+					"max": 57,
+					"item": "Figurine of Wondrous Power, Obsidian Steed"
+				},
+				{
+					"min": 58,
+					"max": 58,
+					"item": "Frost Brand"
+				},
+				{
+					"min": 59,
+					"max": 59,
+					"item": "Helm of Brilliance"
+				},
+				{
+					"min": 60,
+					"max": 60,
+					"item": "Horn of Valhalla, bronze"
+				},
+				{
+					"min": 61,
+					"max": 61,
+					"item": "Instrument of the Bards, Anstruth Harp"
+				},
+				{
+					"min": 62,
+					"max": 62,
+					"item": "Ioun Stone, Absorption"
+				},
+				{
+					"min": 63,
+					"max": 63,
+					"item": "Ioun Stone, Agility"
+				},
+				{
+					"min": 64,
+					"max": 64,
+					"item": "Ioun Stone, Fortitude"
+				},
+				{
+					"min": 65,
+					"max": 65,
+					"item": "Ioun Stone, Insight"
+				},
+				{
+					"min": 66,
+					"max": 66,
+					"item": "Ioun Stone, Intellect"
+				},
+				{
+					"min": 67,
+					"max": 67,
+					"item": "Ioun Stone, Leadership"
+				},
+				{
+					"min": 68,
+					"max": 68,
+					"item": "Ioun Stone, Strength"
+				},
+				{
+					"min": 69,
+					"max": 69,
+					"item": "Manual of Bodily Health"
+				},
+				{
+					"min": 70,
+					"max": 70,
+					"item": "Manual of Gainful Exercise"
+				},
+				{
+					"min": 71,
+					"max": 71,
+					"item": "Manual of Golems"
+				},
+				{
+					"min": 72,
+					"max": 72,
+					"item": "Manual of Quickness of Action"
+				},
+				{
+					"min": 73,
+					"max": 73,
+					"item": "Mirror of Life Trapping"
+				},
+				{
+					"min": 74,
+					"max": 74,
+					"item": "Nine Lives Stealer"
+				},
+				{
+					"min": 75,
+					"max": 75,
+					"item": "Oathbow"
+				},
+				{
+					"min": 76,
+					"max": 76,
+					"item": "Ring of Regeneration"
+				},
+				{
+					"min": 77,
+					"max": 77,
+					"item": "Ring of Shooting Stars"
+				},
+				{
+					"min": 78,
+					"max": 78,
+					"item": "Ring of Telekinesis"
+				},
+				{
+					"min": 79,
+					"max": 79,
+					"item": "Robe of Scintillating Colors"
+				},
+				{
+					"min": 80,
+					"max": 80,
+					"item": "Robe of Stars"
+				},
+				{
+					"min": 81,
+					"max": 81,
+					"item": "Rod of Absorption"
+				},
+				{
+					"min": 82,
+					"max": 82,
+					"item": "Rod of Alertness"
+				},
+				{
+					"min": 83,
+					"max": 83,
+					"item": "Rod of Security"
+				},
+				{
+					"min": 84,
+					"max": 84,
+					"item": "Rod of the Pact Keeper, +3"
+				},
+				{
+					"min": 85,
+					"max": 85,
+					"item": "Scimitar of Speed"
+				},
+				{
+					"min": 86,
+					"max": 86,
+					"item": "Shield +3"
+				},
+				{
+					"min": 87,
+					"max": 87,
+					"item": "Spellguard Shield"
+				},
+				{
+					"min": 88,
+					"max": 88,
+					"item": "Staff of Fire"
+				},
+				{
+					"min": 89,
+					"max": 89,
+					"item": "Staff of Frost"
+				},
+				{
+					"min": 90,
+					"max": 90,
+					"item": "Staff of Power"
+				},
+				{
+					"min": 91,
+					"max": 91,
+					"item": "Staff of Striking"
+				},
+				{
+					"min": 92,
+					"max": 92,
+					"item": "Staff of Thunder and Lightning"
+				},
+				{
+					"min": 93,
+					"max": 93,
+					"item": "Sword of Sharpness"
+				},
+				{
+					"min": 94,
+					"max": 94,
+					"item": "Tome of Clear Thought"
+				},
+				{
+					"min": 95,
+					"max": 95,
+					"item": "Tome of Leadership and Influence"
+				},
+				{
+					"min": 96,
+					"max": 96,
+					"item": "Tome of Understanding"
+				},
+				{
+					"min": 97,
+					"max": 97,
+					"item": "Wand of Polymorph"
+				},
+				{
+					"min": 98,
+					"max": 98,
+					"item": "Wand of the War Mage, +3"
 				},
 				{
 					"min": 99,
 					"max": 100,
-					"item": "Sovereign Glue"
+					"item": "Weapon +3"
 				}
 			]
 		},
@@ -1411,305 +1686,225 @@
 			"table": [
 				{
 					"min": 1,
-					"max": 15,
-					"item": "Weapon +1|dmg"
+					"max": 2,
+					"item": "Apparatus of Kwalish"
 				},
 				{
-					"min": 16,
+					"min": 3,
+					"max": 4,
+					"item": "Armor of Invulnerability"
+				},
+				{
+					"min": 5,
+					"max": 12,
+					"item": "Armor +3"
+				},
+				{
+					"min": 13,
 					"max": 18,
-					"item": "Shield +1|dmg"
+					"item": "Belt of Cloud Giant Strength"
 				},
 				{
 					"min": 19,
-					"max": 21,
-					"item": "Sentinel Shield"
+					"max": 22,
+					"item": "Belt of Storm Giant Strength"
 				},
 				{
-					"min": 22,
-					"max": 23,
-					"item": "Amulet of Proof Against Detection and Location"
+					"min": 23,
+					"max": 24,
+					"item": "Crystal Ball of True Seeing"
 				},
 				{
-					"min": 24,
-					"max": 25,
-					"item": "Boots of Elvenkind"
+					"min": 25,
+					"max": 26,
+					"item": "Crystal Ball of Telepathy"
 				},
 				{
-					"min": 26,
-					"max": 27,
-					"item": "Boots of Striding and Springing"
+					"min": 27,
+					"max": 28,
+					"item": "Crystal Ball of Mind Reading"
 				},
 				{
-					"min": 28,
-					"max": 29,
-					"item": "Bracers of Archery"
+					"min": 29,
+					"max": 30,
+					"item": "Cloak of Invisibility"
 				},
 				{
-					"min": 30,
-					"max": 31,
-					"item": "Brooch of Shielding"
+					"min": 31,
+					"max": 32,
+					"item": "Cubic Gate"
 				},
 				{
-					"min": 32,
-					"max": 33,
-					"item": "Broom of Flying"
+					"min": 33,
+					"max": 34,
+					"item": "Deck of Many Things"
 				},
 				{
-					"min": 34,
-					"max": 35,
-					"item": "Cloak of Elvenkind"
+					"min": 35,
+					"max": 36,
+					"item": "Defender"
 				},
 				{
-					"min": 36,
-					"max": 37,
-					"item": "Cloak of Protection"
+					"min": 37,
+					"max": 38,
+					"item": "Efreeti Chain"
 				},
 				{
-					"min": 38,
-					"max": 39,
-					"item": "Gauntlets of Ogre Power"
+					"min": 39,
+					"max": 40,
+					"item": "Hammer of Thunderbolts"
 				},
 				{
-					"min": 40,
-					"max": 41,
-					"item": "Hat of Disguise"
+					"min": 41,
+					"max": 42,
+					"item": "Holy Avenger"
 				},
 				{
-					"min": 42,
-					"max": 43,
-					"item": "Javelin of Lightning"
+					"min": 43,
+					"max": 44,
+					"item": "Horn of Valhalla, Iron"
 				},
 				{
-					"min": 44,
-					"max": 45,
-					"item": "Pearl of Power"
+					"min": 45,
+					"max": 46,
+					"item": "Instrument of the Bards, Ollamh Harp"
 				},
 				{
-					"min": 46,
-					"max": 47,
-					"item": "Rod of the Pact Keeper, +1|dmg"
+					"min": 47,
+					"max": 48,
+					"item": "Ioun Stone, Greater Absorption"
 				},
 				{
-					"min": 48,
-					"max": 49,
-					"item": "Slippers of Spider Climbing"
+					"min": 49,
+					"max": 50,
+					"item": "Ioun Stone, Mastery"
 				},
 				{
-					"min": 50,
-					"max": 51,
-					"item": "Staff of the Adder"
+					"min": 51,
+					"max": 52,
+					"item": "Ioun Stone, Regeneration"
 				},
 				{
-					"min": 52,
-					"max": 53,
-					"item": "Staff of the Python"
+					"min": 53,
+					"max": 54,
+					"item": "Iron Flask"
 				},
 				{
-					"min": 54,
-					"max": 55,
-					"item": "Sword of Vengeance"
+					"min": 55,
+					"max": 56,
+					"item": "Luck Blade"
 				},
 				{
-					"min": 56,
-					"max": 57,
-					"item": "Trident of Fish Command"
+					"min": 57,
+					"max": 58,
+					"item": "Plate Armor of Etherealness"
 				},
 				{
-					"min": 58,
-					"max": 59,
-					"item": "Wand of Magic Missiles"
+					"min": 59,
+					"max": 60,
+					"item": "Ring of Air Elemental Command"
 				},
 				{
-					"min": 60,
-					"max": 61,
-					"item": "Wand of the War Mage, +1|dmg"
+					"min": 61,
+					"max": 62,
+					"item": "Ring of Djinni Summoning"
 				},
 				{
-					"min": 62,
-					"max": 63,
-					"item": "Wand of Web"
+					"min": 63,
+					"max": 64,
+					"item": "Ring of Earth Elemental Command"
 				},
 				{
-					"min": 64,
-					"max": 65,
-					"item": "Weapon of Warning"
-				},
-				{
-					"min": 66,
+					"min": 65,
 					"max": 66,
-					"item": "Adamantine Chain Mail"
+					"item": "Ring of Fire Elemental Command"
 				},
 				{
 					"min": 67,
-					"max": 67,
-					"item": "Adamantine Chain Shirt"
-				},
-				{
-					"min": 68,
 					"max": 68,
-					"item": "Adamantine Scale Mail"
+					"item": "Ring of Invisibility"
 				},
 				{
 					"min": 69,
-					"max": 69,
-					"item": "Bag of Tricks, Gray|dmg"
-				},
-				{
-					"min": 70,
 					"max": 70,
-					"item": "Bag of Tricks, Rust|dmg"
+					"item": "Ring of Spell Turning"
 				},
 				{
 					"min": 71,
-					"max": 71,
-					"item": "Bag of Tricks, Tan|dmg"
-				},
-				{
-					"min": 72,
 					"max": 72,
-					"item": "Boots of the Winterlands"
+					"item": "Ring of Three Wishes"
 				},
 				{
 					"min": 73,
-					"max": 73,
-					"item": "Circlet of Blasting"
-				},
-				{
-					"min": 74,
 					"max": 74,
-					"item": "Deck of Illusions"
+					"item": "Ring of Water Elemental Command"
 				},
 				{
 					"min": 75,
-					"max": 75,
-					"item": "Eversmoking Bottle"
-				},
-				{
-					"min": 76,
 					"max": 76,
-					"item": "Eyes of Charming"
+					"item": "Robe of the Archmagi"
 				},
 				{
 					"min": 77,
-					"max": 77,
-					"item": "Eyes of the Eagle"
-				},
-				{
-					"min": 78,
 					"max": 78,
-					"item": "Figurine of Wondrous Power, Silver Raven|dmg"
+					"item": "Rod of Lordly Might"
 				},
 				{
 					"min": 79,
-					"max": 79,
-					"item": "Gem of Brightness"
-				},
-				{
-					"min": 80,
 					"max": 80,
-					"item": "Gloves of Missile Snaring"
+					"item": "Rod of Resurrection"
 				},
 				{
 					"min": 81,
-					"max": 81,
-					"item": "Gloves of Swimming and Climbing"
-				},
-				{
-					"min": 82,
 					"max": 82,
-					"item": "Gloves of Thievery"
+					"item": "Scarab of Protection"
 				},
 				{
 					"min": 83,
-					"max": 83,
-					"item": "Headband of Intellect"
-				},
-				{
-					"min": 84,
 					"max": 84,
-					"item": "Helm of Telepathy"
+					"item": "Sphere of Annihilation"
 				},
 				{
 					"min": 85,
-					"max": 85,
-					"item": "Instrument of the Bards, Doss Lute|dmg"
-				},
-				{
-					"min": 86,
 					"max": 86,
-					"item": "Instrument of the Bards, Fochlucan Bandore|dmg"
+					"item": "Staff of the Magi"
 				},
 				{
 					"min": 87,
-					"max": 87,
-					"item": "Instrument of the Bards, Mac-Fuirmidh Cittern|dmg"
-				},
-				{
-					"min": 88,
 					"max": 88,
-					"item": "Medallion of Thoughts"
+					"item": "Sword of Answering"
 				},
 				{
 					"min": 89,
-					"max": 89,
-					"item": "Necklace of Adaptation"
-				},
-				{
-					"min": 90,
 					"max": 90,
-					"item": "Periapt of Wound Closure"
+					"item": "Talisman of Pure Good"
 				},
 				{
 					"min": 91,
-					"max": 91,
-					"item": "Pipes of Haunting"
-				},
-				{
-					"min": 92,
 					"max": 92,
-					"item": "Pipes of the Sewers"
+					"item": "Talisman of the Sphere"
 				},
 				{
 					"min": 93,
-					"max": 93,
-					"item": "Ring of Jumping"
-				},
-				{
-					"min": 94,
 					"max": 94,
-					"item": "Ring of Mind Shielding"
+					"item": "Talisman of Ultimate Evil"
 				},
 				{
 					"min": 95,
-					"max": 95,
-					"item": "Ring of Warmth"
-				},
-				{
-					"min": 96,
 					"max": 96,
-					"item": "Ring of Water Walking"
+					"item": "Tome of the Stilled Tongue"
 				},
 				{
 					"min": 97,
-					"max": 97,
-					"item": "Quiver of Ehlonna"
-				},
-				{
-					"min": 98,
 					"max": 98,
-					"item": "Stone of Good Luck"
+					"item": "Vorpal Sword"
 				},
 				{
 					"min": 99,
-					"max": 99,
-					"item": "Wind Fan"
-				},
-				{
-					"min": 100,
 					"max": 100,
-					"item": "Winged Boots"
+					"item": "Well of Many Worlds"
 				}
 			]
-		}                                                                                                   
+		}
 	]
 }
