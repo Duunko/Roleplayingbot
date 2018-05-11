@@ -3,7 +3,7 @@ Title: RP Bot
 Description: Posts quest listings for a D&D adventurers guild campaign
 Version: 3.0.2
 Author: Colonel Rabbit, Duunko
-Requires: node, discord.js, fs
+Requires: node, discord.js, fs, mysql
 */
 
 //dependencies
