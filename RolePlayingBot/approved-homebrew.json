@@ -9,7 +9,7 @@
           "Colonel Rabbit",
           "Duunko"
         ],
-        "version": "1.2.1"
+        "version": "1.3.0"
       }
     ]
   },
@@ -1608,6 +1608,92 @@
 		}
   ],
   "race": [
+    {
+			"name": "Centaur (Rework)",
+			"source": "Adventurer's Guild Homebrew",
+			"page": 1,
+			"size": "M",
+			"speed": 35,
+			"ability": {
+				"str": 1,
+				"choose": [
+					{
+						"from": [
+							"str",
+							"dex",
+							"wis"
+						],
+						"count": 1,
+						"amount": 1
+					}
+				]
+			},
+			"entries": [
+				{
+					"name": "Age",
+					"type": "entries",
+					"entries": [
+						"Centaurs enter adulthood at around the age of 17 and can live up to 150 years."
+					]
+				},
+				{
+					"name": "Alignment",
+					"type": "entries",
+					"entries": [
+						"Centaurs are inclined toward neutrality."
+					]
+				},
+				{
+					"name": "Nature's Virtue",
+					"entries": [
+						"From a young age, you focused on one of the three virtues of strength, agility, or cunning. Your choice of your Strength, Dexterity, or Wisdom score increases by 1."
+					],
+					"type": "entries"
+				},
+				{
+					"name": "Hooves",
+					"entries": [
+						"You are never unarmed. You are proficient with your hooves, which are a melee weapon that deals 1d6 bludgeoning damage. Your equine strength grant you advantage on all checks made to shove a creature, but not to avoid being shoved yourself."
+					],
+					"type": "entries"
+				},
+				{
+					"name": "Charge",
+					"entries": [
+						"When you use the Dash action during your turn and move at least 20 ft in a straight line, you can make a melee attack as a bonus action. If you choose, the attack has disadvantage, but the target cannot make an attack of opportunity against you on that turn."
+					],
+					"type": "entries"
+				},
+        {
+          "name": "Equine Build",
+          "entries": [
+            "You count as one size larger when determining your carrying capacity and the weight you can push or drag. In addition, any climb that requires hands and feet is especially difficult for you because of your hooves. When you make such a climb, each foot of movement costs you 4 extra feet, instead of the normal 1 extra foot. Finally, a Medium or smaller creature can ride on your equine back if you allow it. In such a situation, you continue to act independently, not as a controlled mount but cannot take actions on your turn."
+          ],
+          "type": "entries"
+        },
+				{
+					"name": "Plains Nomad",
+					"entries": [
+						"You gain advantage in Wisdom (survival) checks while in a plain."
+					],
+					"type": "entries"
+				},
+				{
+					"name": "Languages",
+					"entries": [
+						"You can speak, read, and write Common and Sylvan."
+					],
+					"type": "entries"
+				},
+        {
+          "name": "DM Note",
+          "entries": [
+            "While we are making this race playable because we want to give players the opportunity to play a centaur if they are set on it, the DMs of the Guild would not enjoy DMing for a centaur. So if you are considering making a centaur, please be sure that it is *very* important for your character to have them be this race."
+          ],
+          "type": "entries"
+        }
+			]
+		},
     {
       "name": "Half-Elf (Eladrin Descent)",
       "source": "Adventurer's Guild Homebrew",
