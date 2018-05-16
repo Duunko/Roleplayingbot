@@ -293,6 +293,7 @@ var on_message = bot.on("message", function (message) {
                     .addField('~list [quest level]', 'Lists all quests that have level X.')
                     .addField('~join [quest title]', 'Sends a message to the DM that you want to join their quest, and adds your character to the quest.')
                     .addField('~spell [spell name]', 'Sends you a message displaying the details of the requested spell')
+                    .addField('~shards [character], [shards spent]', 'Rolls loot for you on the Shard Loot table based on the shards spent. The breakpoints for each table are 2, 4, 8, 14, 22, 30 and 40 shards. The bot will automatically round you down to the closest table breakpoint.')
                     .addField('~item [item name]', 'Sends you a message displaying the details of the requested item.')
                     .addField('~shards [character], [shards spent]', 'Rolls you a magic item based on the shards used and updates your balance of shards.')
                     .addField('~roll [X]d[Y] [+Z]', "rolls XdY dice with an option for a modifier of +/-Z. Only supports one type of die per roll. Spacing is important.")
@@ -1307,22 +1308,22 @@ var roll_loot = function (args, message) {
     
     var tier;
 
-    if (shards_used > 40) {
+    if (shards_used >= 40) {
         shards_used = 40;
         tier = 6;
-    } else if (shards_used > 30) {
+    } else if (shards_used >= 30) {
         shards_used = 30;
         tier = 5;
-    } else if (shards_used > 22) {
+    } else if (shards_used >= 22) {
         shards_used = 22;
         tier = 4;
-    } else if (shards_used > 14) {
+    } else if (shards_used >= 14) {
         shards_used = 14;
         tier = 3;
-    } else if (shards_used > 8) {
+    } else if (shards_used >= 8) {
         shards_used = 8;
         tier = 2;
-    } else if (shards_used > 4) {
+    } else if (shards_used >= 4) {
         shards_used = 4;
         tier = 1;
     } else if (shards_used >= 2) {
