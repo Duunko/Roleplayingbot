@@ -3,7 +3,7 @@ Title: RP Bot
 Description: Posts quest listings for a D&D adventurers guild campaign
 Version: 3.0.2
 Author: Colonel Rabbit, Duunko
-Requires: node, discord.js, fs
+Requires: node, discord.js, fs, mysql
 */
 
 //dependencies
@@ -417,7 +417,13 @@ var on_message = bot.on("message", function (message) {
                     message.channel.send("You are not Duncan, heathen!");
                 }
 
-				break;
+                break;
+
+            case "roster":
+
+                list_guild(args, message);
+                break;
+
 
 			//if not a valid command, note it
 			default:
@@ -443,6 +449,7 @@ var on_message = bot.on("message", function (message) {
         		    .addField('~addxp [xp awarded], [character 1], [character2]', 'awards exp to the specified players. Only use this command if you mess up. Alerts Duunko whenever you use it.')
                     .addField('~complete [xp awarded], [quest name]', 'awards exp to the players on a quest and closes the quest.')
                     .addField('~buyitem [char buying], [item name]', 'Lets the player buy the item at price and removes it from the shop')
+                    .addField('~roster', 'Lists the entire guild roster and each character\'s level.')
 					.addField('~botstatus [new status]', 'sets the status of the bot.')
                     .addField('~test', 'Prints a "ping!" to confirm the bot is working.')
 					.setThumbnail(bot.user.avatarURL);
@@ -1990,6 +1997,7 @@ var search_items = function (args, message) {
             } 
 
             var item_name_link = item_name.replace(/ /g, "%20") + "_" + current_item.source.replace(/ /g, "%20");
+            item_name_link = item_name_link.replace(/\,/g, "%2c");
             item_name_link = item_name_link.replace(/\+/g, "%2b");
 
             item_basics += current_item.tier ? `: ${current_item.tier}*\n` : '*\n';
@@ -2206,5 +2214,25 @@ var roll_char = function (args, message) {
         output += `**${(i+1)}:** ${stats[i]} \n`;
     }
     bot_commands.send(output);
+
+}
+
+
+var list_guild = function (args, message) {
+
+    var sql = `SELECT * FROM roster WHERE 1`;
+
+    con.query(sql, function (err, result) {
+        if (err) throw err;
+
+        var output = "**__GUILD ROSTER__**\n__**Character**, level__\n";
+
+        for (var i = 0; i < result.length; i++) {
+            output += `**${result[i].charName}**, ${result[i].level}\n`;
+        }
+        message.channel.send(output);
+
+    });
+
 
 }
