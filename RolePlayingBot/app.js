@@ -22,6 +22,7 @@ const token = package.token;
 //prefix for bot commands
 const prefix = "~";
 
+
 //alt prefix used for mubot in Beta development
 //const prefix = "!";
 
@@ -911,7 +912,6 @@ var fire_quest = function(args, message) {
 	
 }
 
-
 //Lists quests of a particular level
 var list_quests = function (args, message) {
     //set author of message
@@ -941,6 +941,7 @@ var list_quests = function (args, message) {
 		
 	});
 }
+
 //Deprecated. Functionality now automatic.
 var update_quest = function (args, message) {
     //combines input into a string
@@ -1333,7 +1334,6 @@ var roll_loot = function (args, message) {
             return message.channel.send("You don't have enough Rift Shards to do that.")
         }
 
-
         //CHOOSES WHAT TABLE TO ROLL LOOT FROM (SHOULD BE CHANGED TO REFLECT SHARDS USED)
         var table = loot_table[tier].table;
 
@@ -1386,7 +1386,6 @@ var roll_loot = function (args, message) {
 
     });
     
-
 }
 
 var add_character = function (args, message) {
@@ -2076,8 +2075,7 @@ var view_shop = function (args, message) {
         message.channel.send(shop_inventory);
 
     });
-
-
+    
 }
 
 //DM command to buy an item from shop
@@ -2217,6 +2215,5 @@ var list_guild = function (args, message) {
         message.channel.send(output);
 
     });
-
-
+    
 }
