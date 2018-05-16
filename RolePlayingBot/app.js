@@ -142,13 +142,14 @@ var on_ready = bot.on("ready", () => {
 		yearAdjust +=1;
 	}
 	
-	var dateB = new Date(yearAdjust, monthAdjust, dateAdjust, 5, 0, 0, 0);
+	var dateB = new Date(yearAdjust, monthAdjust, dateAdjust, 12, 0, 0, 0);
 	
 	console.log("weekly timed generation fires " + dateB);
 	
 	var adjustedTime = dateB.getTime() - dateA.getTime();
 	setTimeout(lockout_warning, adjustedTime - (30 * 60 * 1000));	
-	setTimeout(weekly_progress, adjustedTime);	
+	setTimeout(weekly_progress, adjustedTime);
+	setTimeout(keepAlive, 2*60*60*1000);	
 	
     console.log("Ready");
 
@@ -452,6 +453,19 @@ var on_message = bot.on("message", function (message) {
 	});
 });
 
+var keepAlive = function(){
+  pool.getConnection(function(err, connection){
+    if(err) { return; }
+    connection.query( "SELECT 1", function(err, rows) {
+        connection.release();
+        if (err) {
+            console.log("QUERY ERROR: " + err);
+        }
+      });
+  });
+  setTimeout(keepAlive, 6*60*60*1000);
+}
+
 
 var lockout_warning = function() {
 	
@@ -607,6 +621,8 @@ var weekly_progress = function() {
 	lockout = false;
 	announcement_board.send("Weekly downtime Complete.");
 	bot.user.setGame("Lockout Complete");
+	setTimeout(lockout_warning, 7*24*60*60*1000); 
+	setTimeout(weekly_progress, (7*24*60*60*1000) - (30*60*1000));
 	
 	
 	
