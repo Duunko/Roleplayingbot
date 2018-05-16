@@ -51,7 +51,7 @@ var lockout = false;
 
 //data JSON files
 const xp_table = require('./level_xp.json');
-//const loot_table = require('./loot_table.json').magicitems;
+const loot_table = require('./loot_table.json').magicitems;
 
 var spell_list = []; 
 spell_list.push.apply(spell_list, require('./spells-phb.json').spell);
