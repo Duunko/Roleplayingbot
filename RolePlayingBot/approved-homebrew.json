@@ -9,10 +9,62 @@
           "Colonel Rabbit",
           "Duunko"
         ],
-        "version": "1.2.0"
+        "version": "1.2.1"
       }
     ]
   },
+  "spell": [
+    {
+			"name": "Flame Water (rework of BoLS)",
+			"source": "BoLS 3pp",
+			"page": 59,
+			"level": 1,
+			"school": "T",
+			"time": [
+				{
+					"number": 1,
+					"unit": "action"
+				}
+			],
+			"range": {
+				"type": "point",
+				"distance": {
+					"type": "touch"
+				}
+			},
+			"components": {
+				"v": true,
+				"s": true
+			},
+			"duration": [
+				{
+					"type": "day",
+					"amount": 1
+				}
+			],
+			"classes": {
+				"fromClassList": [
+					{
+						"name": "Warlock",
+						"source": "PHB"
+					},
+					{
+						"name": "Wizard",
+						"source": "PHB"
+					}
+				]
+			},
+			"entries": [
+				"You transmute up to 1 pint of water in a container into a flammable liquid akin to alcohol. It ignites if it is exposed to fire. If a container of burning flame water is thrown against a creature or shattered against the ground, all creatures within 5 feet of it take **2d6** fire damage, or half damage with a successful Dexterity saving throw. The liquid burns out in 1 round."
+			],
+			"damageInflict": [
+				"fire"
+			],
+			"savingThrow": [
+				"dexterity"
+			]
+		}
+  ],
   "class": [
 		{
 			"name": "Blood Hunter",
