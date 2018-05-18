@@ -1383,7 +1383,7 @@ var roll_loot = function (args, message) {
 
                 }
 
-                message.channel.send(`You spent ${shards_used} Rift Shards and The Curator gave you a ${rolled_item}`);
+                message.bot_commands.send(`You spent ${shards_used} Rift Shards and The Curator gave you a ${rolled_item}`);
 
                 search_items(table[i].item, message);
                 if (rand_spell) {

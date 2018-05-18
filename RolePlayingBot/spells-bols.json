@@ -15984,7 +15984,8 @@
 			},
 			"duration": [
 				{
-					"type": "permanent"
+					"type": "day",
+					"amount": 1
 				}
 			],
 			"classes": {
