@@ -291,9 +291,10 @@ var on_message = bot.on("message", function (message) {
                     .setColor([40, 110, 200])
                     .setTitle("RPBot General Commands:")
                     .addField('~list [quest level]', 'Lists all quests that have level X.')
-                    .addField('~join [quest title]', 'Sends a message to the DM that you want to join their quest, and adds your character to the quest.')
+                    .addField('~join [quest title], [character]', 'Sends a message to the DM that you want to join their quest, and adds your character to the quest.')
                     .addField('~spell [spell name]', 'Sends you a message displaying the details of the requested spell')
-                    .addField('~shards [character], [shards spent]', 'Rolls loot for you on the Shard Loot table based on the shards spent. The breakpoints for each table are 2, 4, 8, 14, 22, 30 and 40 shards. The bot will automatically round you down to the closest table breakpoint.')
+                    .addField('~dth [character name], [use/number]', 'Spends downtime hours for either a use or a number for professions. Check the FAQ for details.')
+		    .addField('~shards [character], [shards spent]', 'Rolls loot for you on the Shard Loot table based on the shards spent. The breakpoints for each table are 2, 4, 8, 14, 22, 30 and 40 shards. The bot will automatically round you down to the closest table breakpoint.')
                     .addField('~item [item name]', 'Sends you a message displaying the details of the requested item.')
                     .addField('~shards [character], [shards spent]', 'Rolls you a magic item based on the shards used and updates your balance of shards.')
                     .addField('~roll [X]d[Y] [+Z]', "rolls XdY dice with an option for a modifier of +/-Z. Only supports one type of die per roll. Spacing is important.")
@@ -446,10 +447,10 @@ var on_message = bot.on("message", function (message) {
                     .addField('~character [new character name], [player\'s username], [starting xp]','Makes a new character for the specified player.')
                     .addField('~addxp [xp awarded], [char 1], [char 2]', 'Manually adds experience to a group of players. Notifies Duncan')
                     .addField('~buyitem [char buying], [item name]', 'Lets the player buy the item at price and removes it from the shop. Players cannot buy items without DM permission')
-                    .addField('~quest', '"title" TITLE \n "header1" TEXT1 \n "header2" TEXT2 \n\n*Make sure all quests have a "title", \n"party level", and "party size". To make a test quest, make the \ntitle test.*')
                     .addField('~fire [quest name]', 'Launches the specified quest and notifies players on the quest.')
-        		    .addField('~addxp [xp awarded], [character 1], [character2]', 'awards exp to the specified players. Only use this command if you mess up. Alerts Duunko whenever you use it.')
-                    .addField('~complete [xp awarded], [quest name]', 'awards exp to the players on a quest and closes the quest.')
+        	    .addField('~addxp [xp awarded], [character 1], [character2]', 'awards exp to the specified players. Only use this command if you mess up. Alerts Duunko whenever you use it.')
+                    .addField('~messagequest [quest name], [message]', 'for the author of a quest only. Messages every player currently on the quest.') 
+		    .addField('~complete [xp awarded], [quest name]', 'awards exp to the players on a quest and closes the quest.')
                     .addField('~buyitem [char buying], [item name]', 'Lets the player buy the item at price and removes it from the shop')
                     .addField('~roster', 'Lists the entire guild roster and each character\'s level.')
 					.addField('~botstatus [new status]', 'sets the status of the bot.')
@@ -771,8 +772,9 @@ var join_quest = function (args, message) {
 		//If its open and inactive, query to find the player
 		if(result[0].quest_status != "CLOSED" && result[0].active != 1) {
 			con.query("SELECT * FROM roster WHERE charName=\'" + character + "\';", function(err, result2){
-				if(err) {
-					auth.send("Invalid player");
+				if(err || result2.length == 0) {
+					auth.send("Invalid character");
+					return;
 				}				
 				//Make sure they own the character or are a DM
 				if(auth.id != result2[0].charPlayer && !server.members.get(auth.id).roles.find("name", "Dungeon Master")) {
@@ -1030,12 +1032,8 @@ var new_quest = function (args, message) {
 				if(match[1].toLowerCase().trim() == "party level" || match[1].toLowerCase().trim() == "recommended level" || match[1].toLowerCase().trim() == "level") {
 					lvl = parseInt(match[2]);
 				} else if(match[1].toLowerCase().trim() == "party size" || match[1].toLowerCase().trim() == "size"){
-					if(parseInt(match[2] == NaN)) {
-						var numbers = match[2].match(/\d+/g).map(Number);
-						size = numbers[numbers.length - 1];
-					} else {
-						size = match[2];
-					}
+					var numbers = match[2].match(/\d+/g).map(Number);
+					size = numbers[numbers.length - 1];
 					
 				}
             } catch (e) {
@@ -1479,7 +1477,7 @@ var add_character = function (args, message) {
 		if (err) throw err;
         console.log("1 record inserted");
         console.log(result);
-        server.members.get(player_id).send(`${char_name} was added to the gulid`);
+        server.members.get(player_id).send(`${char_name} was added to the guild`);
         general_chat.send(player_name + " has made a new character. Welcome to the guild, " + char_name + "!");
 	});
     
