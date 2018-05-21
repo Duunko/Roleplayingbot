@@ -249,7 +249,7 @@ var on_message = bot.on("message", function (message) {
 			//Lists the information about a particular quest
 			case "checkquest":
 			
-				check_quest(args_message);
+				check_quest(args, message);
 				con.release();
 				return;
 
@@ -665,8 +665,8 @@ var weekly_progress = function() {
 
 var check_quest = function(args, message) {
 	var quest = args.splice(1).join(" ");
-	
-	con.query("SELECT * FROM quest_data WHERE quest_name=${quest};", function(err, result) {
+	console.log(`SELECT * FROM quest_data WHERE quest_name=\'${quest}\'`);
+	con.query(`SELECT * FROM quest_data WHERE quest_name=\'${quest}\';`, function(err, result) {
 		if(err) {
 			message.author.send("Something went wrong. Try again in a couple of minutes.");
 		}
@@ -676,7 +676,7 @@ var check_quest = function(args, message) {
 		}
 		
 		if(result[0].active_players == '') {
-			message.author.send("${quest}\nQuest DM: ${cDM}\nQuest Level: ${result[0].quest_lvl}\nQuest Status: ${result[0].quest_status}\nActive Players: None");
+			message.author.send(`${quest}\nQuest DM: ${cDM}\nQuest Level: ${result[0].quest_lvl}\nQuest Status: ${result[0].quest_status}\nActive Players: None`);
 			return;
 			
 		}
@@ -705,7 +705,7 @@ var check_quest = function(args, message) {
 			}
 				
 			
-			message.author.send("${quest}\nQuest DM: ${cDM}\nQuest Level: ${result[0].quest_lvl}\nQuest Status: ${result[0].quest_status}\nActive Players: characterNames");
+			message.author.send(`${quest}\nQuest DM: ${cDM}\nQuest Level: ${result[0].quest_lvl}\nQuest Status: ${result[0].quest_status}\nActive Players: ${characterNames}`);
 		});
 	});
 }
@@ -914,7 +914,7 @@ var leave_quest = function(args, message) {
     var quest = match[1];
     var character = match[2];
 	
-	con.query("SELECT * FROM quest_data WHERE quest_name=${quest};", function(err, result) {
+	con.query(`SELECT * FROM quest_data WHERE quest_name=\'${quest}\';`, function(err, result) {
 		if(err) {
 			auth.send("Something went wrong. Try again in a couple of minutes.");
 			return;
@@ -924,7 +924,7 @@ var leave_quest = function(args, message) {
 			return;
 		}
 		
-		con.query("SELECT * FROM roster WHERE charName=${character};", function(err, result2) {
+		con.query(`SELECT * FROM roster WHERE charName=\'${character}\';`, function(err, result2) {
 			
 			if(err) {
 				auth.send("Something went wrong. Try again in a couple of minutes.");
@@ -960,7 +960,7 @@ var leave_quest = function(args, message) {
 			if(result[0].total_players == result[0].size) {
 				reopened = true;
 			}
-			qStatNew = "OPEN (${qTotNew}/${result[0].size})"
+			qStatNew = `OPEN (${qTotNew}/${result[0].size})`;
 			
 			//Updates the SQL
 			var upquer = "UPDATE quest_data SET quest_status=\'" + qStatNew + "\', active_players=\'" + qPlayersNew + "\', total_players=" + qTotNew + " WHERE quest_name=\'" + quest + "\';";
