@@ -39,6 +39,7 @@ const duncan_id = '188928848287498240';
 const announcement_id = '438049253969887253';
 const bot_commands_id = '441609746475122688';
 const general_id = '438048843674943498';
+const party_channels = ['438107822149074979', '438107859553746950', '438107902683643917'];
 var quest_board;
 var archive;
 var server;
@@ -193,15 +194,23 @@ var on_message = bot.on("message", function (message) {
             message.channel.send("The bot is currently unavailable. Check the announcements board for more information.");
             return;
         }
+		//seperate message into array based on spaces (get rid of prefix)
+		var args = message.content.substring(prefix.length).split(" ");
 
         if (message.channel != bot_commands && message.channel.type != 'dm') {
-		con.release();
-            return message.author.send("You need to DM me or use the #bot-commands channel.");
+			if(args[0].toLowerCase() !== "roll") {
+				con.release();
+				return message.author.send("You need to DM me or use the #bot-commands channel.");
+			} else {
+				if(!party_channels.includes(message.channel)) {
+					con.release();
+					return message.author.send("You can only roll in #bot-commands or the party channels.");
+				}
+			}
         }
 
 
-		//seperate message into array based on spaces (get rid of prefix)
-		var args = message.content.substring(prefix.length).split(" ");
+		
 
 		//read message arguments
         switch (args[0].toLowerCase()) {
@@ -222,8 +231,12 @@ var on_message = bot.on("message", function (message) {
 
 			//PM's the DM to join their quest
 			case "join":
-				//IN PROGRESS
 				join_quest(args, message);
+				con.release();
+				return;
+				
+			case "leave":
+				leave_quest(args,message);
 				con.release();
 				return;
 
@@ -233,6 +246,12 @@ var on_message = bot.on("message", function (message) {
                 list_quests(args, message);
 		        con.release();
                 return;
+			//Lists the information about a particular quest
+			case "checkquest":
+			
+				check_quest(args_message);
+				con.release();
+				return;
 
             //Displays information about an item
 			case "item":
@@ -270,7 +289,7 @@ var on_message = bot.on("message", function (message) {
                 return;
 
             //Prints a list of the shops current stock
-            case "viewshop":
+            case "shop":
 
                 view_shop(args, message);
                 con.release();
@@ -291,11 +310,15 @@ var on_message = bot.on("message", function (message) {
                     .setColor([40, 110, 200])
                     .setTitle("RPBot General Commands:")
                     .addField('~list [quest level]', 'Lists all quests that have level X.')
+					.addField('checkquest [quest title]', 'Sends you the name, level, DM, and active players on a given quest.')
                     .addField('~join [quest title], [character]', 'Sends a message to the DM that you want to join their quest, and adds your character to the quest.')
-                    .addField('~spell [spell name]', 'Sends you a message displaying the details of the requested spell')
-                    .addField('~dth [character name], [use/number]', 'Spends downtime hours for either a use or a number for professions. Check the FAQ for details.')
-		    .addField('~shards [character], [shards spent]', 'Rolls loot for you on the Shard Loot table based on the shards spent. The breakpoints for each table are 2, 4, 8, 14, 22, 30 and 40 shards. The bot will automatically round you down to the closest table breakpoint.')
+                    .addField('~leave [quest title], [character]', 'Removes your character from a quest that they\'re on and notifies the DM.')
+					.addField('~spell [spell name]', 'Sends you a message displaying the details of the requested spell')
+					.addField('~homebrew', 'Posts the current approved homebrew json file. Use the manage homebrew option on 5etools to view it.')
+                    .addField('~dth [character], [use/number]', 'Spends downtime hours for either a use or a number for professions. Check the FAQ for details.')
+					.addField('~shards [character], [shards spent]', 'Rolls loot for you on the Shard Loot table based on the shards spent. The breakpoints for each table are 2, 4, 8, 14, 22, 30 and 40 shards. The bot will automatically round you down to the closest table breakpoint.')
                     .addField('~item [item name]', 'Sends you a message displaying the details of the requested item.')
+					.addField('~shop', 'Shows you the current inventory of Soots\'s Shop')
                     .addField('~shards [character], [shards spent]', 'Rolls you a magic item based on the shards used and updates your balance of shards.')
                     .addField('~roll [X]d[Y] [+Z]', "rolls XdY dice with an option for a modifier of +/-Z. Only supports one type of die per roll. Spacing is important.")
 				message.channel.send(commands);
@@ -310,7 +333,7 @@ var on_message = bot.on("message", function (message) {
 					break;
 				}
 
-				message.channel.send(message.content + " is not a valid command. Use ~help for a list of commands.");
+				message.channel.send("~" + args[0] + " is not a valid command. Use ~help for a list of commands.");
 
 				break;
 
@@ -431,7 +454,7 @@ var on_message = bot.on("message", function (message) {
 			//if not a valid command, note it
 			default:
 
-				message.channel.send(message.content + " is not a valid command. Use ~help for a list of commands.");
+				mmessage.channel.send("~" + args[0] + " is not a valid command. Use ~help for a list of commands.");
 				
 				break;
 
@@ -448,10 +471,11 @@ var on_message = bot.on("message", function (message) {
                     .addField('~addxp [xp awarded], [char 1], [char 2]', 'Manually adds experience to a group of players. Notifies Duncan')
                     .addField('~buyitem [char buying], [item name]', 'Lets the player buy the item at price and removes it from the shop. Players cannot buy items without DM permission')
                     .addField('~fire [quest name]', 'Launches the specified quest and notifies players on the quest.')
-        	    .addField('~addxp [xp awarded], [character 1], [character2]', 'awards exp to the specified players. Only use this command if you mess up. Alerts Duunko whenever you use it.')
+					.addField('~addxp [xp awarded], [character 1], [character2]', 'awards exp to the specified players. Only use this command if you mess up. Alerts Duunko whenever you use it.')
                     .addField('~messagequest [quest name], [message]', 'for the author of a quest only. Messages every player currently on the quest.') 
-		    .addField('~complete [xp awarded], [quest name]', 'awards exp to the players on a quest and closes the quest.')
+					.addField('~complete [quest name], [xp awarded]', 'awards exp to the players on a quest and closes the quest.')
                     .addField('~buyitem [char buying], [item name]', 'Lets the player buy the item at price and removes it from the shop')
+					.addField('~messagequest [quest name], [message text]', 'Message all the players on a quest you are running a particular message. Only works if you are the DM of that quest.')
                     .addField('~roster', 'Lists the entire guild roster and each character\'s level.')
 					.addField('~botstatus [new status]', 'sets the status of the bot.')
                     .addField('~test', 'Prints a "ping!" to confirm the bot is working.')
@@ -639,7 +663,52 @@ var weekly_progress = function() {
 	
 }
 
-
+var check_quest = function(args, message) {
+	var quest = args.splice(1).join(" ");
+	
+	con.query("SELECT * FROM quest_data WHERE quest_name=${quest};", function(err, result) {
+		if(err) {
+			message.author.send("Something went wrong. Try again in a couple of minutes.");
+		}
+		if(result == undefined) {
+			message.author.send("No such quest by that name. Check and make sure you spelled everything correctly and try again!");
+			return;
+		}
+		
+		if(result[0].active_players == '') {
+			message.author.send("${quest}\nQuest DM: ${cDM}\nQuest Level: ${result[0].quest_lvl}\nQuest Status: ${result[0].quest_status}\nActive Players: None");
+			return;
+			
+		}
+		
+		var cUP = result[0].active_players.split(" ");
+		var sql = "SELECT * FROM roster WHERE entryID=";
+		for(var i = 0; i < cUP.length; i++) {
+			if(i == 0) {
+				sql += cUP[i];
+			} else {
+				sql+= " OR entryID=" + cUP[i];
+			}
+		}
+		sql += ";";
+		
+		con.query(sql, function(err, result2) {
+			if(err) {
+				console.log("Idiocy");
+			}
+			var cDM = server.members.get(result[0].quest_DM);
+			
+			var characterNames = '';
+			
+			for(res in result2) {
+				characterNames += result2[res].charName + " ";
+			}
+				
+			
+			message.author.send("${quest}\nQuest DM: ${cDM}\nQuest Level: ${result[0].quest_lvl}\nQuest Status: ${result[0].quest_status}\nActive Players: characterNames");
+		});
+	});
+}
 
 var message_members = function(args, message) {
 	
@@ -657,7 +726,7 @@ var message_members = function(args, message) {
 		if (counter == 0){
 			quest = match;
 		} else {
-			mesText += (match + "\n");
+			mesText += match;
 		}		
 		counter++;
     }
@@ -667,9 +736,9 @@ var message_members = function(args, message) {
 			console.log("Invalid quest");
 		}
 		if(result[0] == undefined) { 
-                    message.channel.send("No such quest sith that title");
-                    return;
-                }
+            message.channel.send("No such quest with that title");
+            return;
+        }
 		console.log(result);
 		if(message.author.id != result[0].quest_DM) {
 			message.channel.send("You are not the DM of that quest, and can't message the players.");
@@ -701,6 +770,7 @@ var message_members = function(args, message) {
 				var DMName = message.author.username;
 				playerUser.send("Message from " + DMName + " about the quest " + result[0].quest_name + ":\n" + mesText);
 			}
+			message.author.send("You sent to the players on " + result[0].quest_name + ":\n" + mesText);
 			
 		});
 		
@@ -801,9 +871,11 @@ var join_quest = function (args, message) {
 				}
 				var qTotNew = result[0].total_players + 1;
 				var qStatNew;
+				var questClosed = false;
 				//If all spots full, closes the quest
 				if (qTotNew == result[0].size) {
 					qStatNew = "CLOSED";
+					questClosed = true;
 				} else {
 					qStatNew = "OPEN ("+ qTotNew + "/" + result[0].size + ")";
 				}
@@ -815,6 +887,9 @@ var join_quest = function (args, message) {
 					auth.send("You've successfully joined " + quest + " with " + character + "!");
 					var cDM = server.members.get(result[0].quest_DM);
 					cDM.send(auth.username + " has joined " + quest + " with the character " + character + ".");
+					if(questClosed == true) {
+						cDM.send(quest + " is now full. Reach out to your players to schedule a session.");
+					}
 					quest_board.fetchMessage(result[0].message_id).then(message => {
 						message.edit("**QUEST STATUS: " + qStatNew + "**");
 					});
@@ -824,7 +899,89 @@ var join_quest = function (args, message) {
 		}
 		
 	});
+}
+
+var leave_quest = function(args, message) {
+	
+	var auth = message.author;
+    //reads input arguments
+    var text = args.splice(1).join(" ");
+
+    //regEx to extract char names from 'text' string
+    var regEx = /\W*(.*?),\W(.*?)$/;
+    var match = regEx.exec(text);
+
+    var quest = match[1];
+    var character = match[2];
+	
+	con.query("SELECT * FROM quest_data WHERE quest_name=${quest};", function(err, result) {
+		if(err) {
+			auth.send("Something went wrong. Try again in a couple of minutes.");
+			return;
+		}
+		if(result == undefined) {
+			auth.send("No quest by that name. Make sure the spelling is correct!");
+			return;
+		}
+		
+		con.query("SELECT * FROM roster WHERE charName=${character};", function(err, result2) {
 			
+			if(err) {
+				auth.send("Something went wrong. Try again in a couple of minutes.");
+				return;
+			}
+			if(result2 == undefined) {
+				auth.send("No character by that name. Make sure the spelling is correct, and if you have a last name add it!");
+				return;
+			}
+			if(auth.id != result2[0].charPlayer) {
+				auth.send("That isn't your character, you can't remove them from the quest!");
+				return;
+			}
+			
+			//gets all of the players on the quest.
+			var cPlayers = result[0].active_players.split(" ");
+			if(!cPlayers.includes(result2[0].entryID)) {
+				auth.send("That character isn't on this quest.");
+			}
+			//New values
+			var qTotNew;
+			var qPlayersNew = "";
+			var reopened = false;
+			var qStatnew;
+			
+			qTotNew = result[0].total_players - 1;
+			for(pl in cPlayers) {
+				if(cPlayers[pl] !== result2[0].entryID) {
+					qPlayersNew += cPlayers[pl] + " ";
+				}
+			}
+			//Check if quest is reopened
+			if(result[0].total_players == result[0].size) {
+				reopened = true;
+			}
+			qStatNew = "OPEN (${qTotNew}/${result[0].size})"
+			
+			//Updates the SQL
+			var upquer = "UPDATE quest_data SET quest_status=\'" + qStatNew + "\', active_players=\'" + qPlayersNew + "\', total_players=" + qTotNew + " WHERE quest_name=\'" + quest + "\';";
+			con.query(upquer, function(err, result3) {
+				if (err) throw err;
+				console.log("Quest updated");	
+				auth.send("You've successfully removed " + character + " from " + quest + ".");
+				var cDM = server.members.get(result[0].quest_DM);
+				cDM.send(auth.username + " has removed the character " + character + " from " + quest + ".");
+				if(reopened == true) {
+					cDM.send(quest + " is now open again. Make sure to alert players if scheduling has already occurred.");
+				}
+				quest_board.fetchMessage(result[0].message_id).then(message => {
+					message.edit("**QUEST STATUS: " + qStatNew + "**");
+				});
+			});
+			
+		});
+	});		
+			
+}	
 
     //search all quest txt files **DEPRECATED
     /*fs.readdirSync(folder).forEach(file => {
@@ -857,8 +1014,8 @@ var join_quest = function (args, message) {
                 }
             });
         }
-    });*/
-}
+    })
+}*/
 //Changes quest to active
 var fire_quest = function(args, message) {
 	
@@ -1551,7 +1708,7 @@ var quest_complete = function(args, message) {
 		if (err) {
 			message.channel.send("No such quest with that title");
 		}
-		if (result[0] == undefined) { 
+		if (result == undefined) { 
             auth.send("No such quest with that title");
             return;
         }
@@ -1653,7 +1810,7 @@ var award_xp = function(players, xp) {
             console.log(result[i].charPlayer);
             var player = server.members.get(result[i].charPlayer);
             console.log(result[i]);
-            player.send(`${result[i].charName} was awarded ${xp} XP. They now have ${result[i].exp} XP.`);
+            player.send(`${result[i].charName} was awarded ${xp} XP. They now have ${result[i].exp + xp} XP.`);
 			newLevel = check_level(parseInt(result[i].exp) + parseInt(xp));
             //if they leveled up, update database
 			if (newLevel > parseInt(result[i].level)){
@@ -2069,7 +2226,7 @@ var view_shop = function (args, message) {
         //preps output embed
         var shop_inventory = new Discord.RichEmbed()
             .setColor([40, 110, 200])
-            .setTitle("The Magic Shop")
+            .setTitle("Soots\'s Magic Item Shop")
             .setThumbnail(bot.user.avatarURL);
 
         var list = "";
@@ -2087,6 +2244,7 @@ var view_shop = function (args, message) {
 
         //adds list to embed and prints
         shop_inventory.addField("Item Name : price (gp)", list);
+		shop_inventory.addField("Message a DM to buy an item.");
         message.channel.send(shop_inventory);
 
     });
