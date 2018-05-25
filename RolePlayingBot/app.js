@@ -454,7 +454,7 @@ var on_message = bot.on("message", function (message) {
 			//if not a valid command, note it
 			default:
 
-				mmessage.channel.send("~" + args[0] + " is not a valid command. Use ~help for a list of commands.");
+				message.channel.send("~" + args[0] + " is not a valid command. Use ~help for a list of commands.");
 				
 				break;
 
