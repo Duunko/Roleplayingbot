@@ -522,7 +522,6 @@ var on_message = bot.on("message", function (message) {
 
 var keepAlive = function () {
     console.log("keep alive activated");
-
     pool.getConnection(function (err, connection) {
         if (err) { return; }
         connection.query("SELECT 1", function (err, rows) {
@@ -537,14 +536,12 @@ var keepAlive = function () {
 
 
 var lockout_warning = function() {
-    return;
 	announcement_board.send("Weekly downtime in 30 minutes. Make sure that all finished quests have been closed with ~complete or you may lose downtime rewards.");
 	bot.user.setGame("Lockout 4AM PST");
     console.log("lockout warning sent.");
 }
 
 var weekly_progress = function () {
-    return;
     console.log("Lockout beginning. Updates in progress.");
 	lockout = true;
 	var fullHours = [];
