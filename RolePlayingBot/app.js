@@ -202,7 +202,7 @@ var on_message = bot.on("message", function (message) {
 				con.release();
 				return message.author.send("You need to DM me or use the #bot-commands channel.");
 			} else {
-				if(!party_channels.includes(message.channel)) {
+				if(!party_channels.includes(message.channel.id) {
 					con.release();
 					return message.author.send("You can only roll in #bot-commands or the party channels.");
 				}
@@ -647,12 +647,12 @@ var weekly_progress = function () {
 					
 				}
 				sql = ";"
-				var sql2 = "UPDATE roster SET downHours=downHours+20 WHERE entryID=\'";
+				var sql2 = "UPDATE roster SET downHours=downHours+10 WHERE entryID=\'";
 				for(var i = 0; i < fullHours.length; i++) {
 					if(i == 0) {
-						sql2+= fullHours[i];
+						sql2+= halfHours[i];
 					} else {
-						sql2+= " OR entryID=" + fullHours[i];
+						sql2+= " OR entryID=" + halfHours[i];
 					}
 					
 				}
@@ -710,7 +710,7 @@ var check_quest = function (args, message) {
 		if(err) {
 			message.author.send("Something went wrong. Try again in a couple of minutes.");
 		}
-		if(result == undefined) {
+		if(result[0] == undefined) {
 			message.author.send("No such quest by that name. Check and make sure you spelled everything correctly and try again!");
 			return;
 		}
@@ -734,7 +734,7 @@ var check_quest = function (args, message) {
 		
 		con.query(sql, function(err, result2) {
 			if(err) {
-				console.log("Idiocy");
+				console.log(err);
 			}
 			var cDM = server.members.get(result[0].quest_DM);
 			
@@ -1074,9 +1074,9 @@ var leave_quest = function(args, message) {
 			
 			qTotNew = result[0].total_players - 1;
             for (pl in cPlayers) {
-                if (cPlayers[pl] !== result2[0].entryID.toString()) {
+                if (cPlayers[pl] !== result2[0].entryID.toString() && cPlayers[p1] !== '') {
                     console.log(cPlayers[pl]);
-					qPlayersNew += cPlayers[pl] + " ";
+					qPlayersNew += cPlayers[pl] + ' ';
 				}
             }
 
@@ -1967,7 +1967,7 @@ var award_xp = function(players, xp) {
         if (err) throw err;
 
         //if no errors, award exp
-		con.query(sql, function (err, result) {
+		con.query(sql, function (err, resultX) {
 			if (err) throw err;
 			console.log("Exp awarded");
         });		
@@ -2453,7 +2453,7 @@ var view_shop = function (args, message) {
 
         //adds list to embed and prints
         shop_inventory.addField("**Item Name** : price (gp)", list);
-		shop_inventory.addField("Message a DM to buy an item.");
+		shop_inventory.addField("Message a DM to buy an item.", '');
         message.channel.send(shop_inventory);
         console.log("Shop inventory printed");
     });
