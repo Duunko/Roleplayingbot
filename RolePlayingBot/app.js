@@ -731,10 +731,11 @@ var check_quest = function (args, message) {
 			}
 		}
 		sql += ";";
+		console.log(sql);
 		
 		con.query(sql, function(err, result2) {
 			if(err) {
-				console.log("Idiocy");
+				console.log(err);
 			}
 			var cDM = server.members.get(result[0].quest_DM);
 			
@@ -777,7 +778,7 @@ var message_members = function (args, message) {
     }
     console.log(`Messaging members of ${quest}.`);
 
-    if (!match || mesText.length == 0) {
+    if (!quest || mesText.length == 0) {
         console.log("Invalid arguments or no message given.");
         message.author.send("Invalid arguments or no message given. The syntax for 'messagequest' is '~messagequest [quest name], [message]'.");
         return;
