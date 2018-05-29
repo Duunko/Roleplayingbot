@@ -1882,7 +1882,7 @@ var quest_complete = function(args, message) {
 
         var auth = message.author;
 		
-		var cUP = result[0].active_players.split(" ");
+		var cUP = result[0].active_players.trim().split(" ");
 		
 		var sql = "UPDATE roster SET completeQuests=completeQuests + 1 WHERE entryID=";
 		var sql2 = "SELECT * FROM roster WHERE entryID=";
@@ -2450,10 +2450,11 @@ var view_shop = function (args, message) {
         if (list.length === 0) {
             list = "No items";
         }
+		list += '**Message a DM to buy an Item**\n';
 
         //adds list to embed and prints
         shop_inventory.addField("**Item Name** : price (gp)", list);
-		shop_inventory.addField("Message a DM to buy an item.", '');
+		
         message.channel.send(shop_inventory);
         console.log("Shop inventory printed");
     });
