@@ -202,7 +202,7 @@ var on_message = bot.on("message", function (message) {
 				con.release();
 				return message.author.send("You need to DM me or use the #bot-commands channel.");
 			} else {
-				if(!party_channels.includes(message.channel.id) {
+				if(!party_channels.includes(message.channel.id)) {
 					con.release();
 					return message.author.send("You can only roll in #bot-commands or the party channels.");
 				}
@@ -721,7 +721,7 @@ var check_quest = function (args, message) {
 			
 		}
 		
-		var cUP = result[0].active_players.split(" ");
+		var cUP = result[0].active_players.trim().split(" ");
 		var sql = "SELECT * FROM roster WHERE entryID=";
 		for(var i = 0; i < cUP.length; i++) {
 			if(i == 0) {
@@ -731,6 +731,7 @@ var check_quest = function (args, message) {
 			}
 		}
 		sql += ";";
+		console.log(sql);
 		
 		con.query(sql, function(err, result2) {
 			if(err) {
@@ -777,7 +778,7 @@ var message_members = function (args, message) {
     }
     console.log(`Messaging members of ${quest}.`);
 
-    if (!match || mesText.length == 0) {
+    if (!quest || mesText.length == 0) {
         console.log("Invalid arguments or no message given.");
         message.author.send("Invalid arguments or no message given. The syntax for 'messagequest' is '~messagequest [quest name], [message]'.");
         return;
@@ -801,7 +802,7 @@ var message_members = function (args, message) {
 			
 		}
 		
-		var cUP = result[0].active_players.split(" ");
+		var cUP = result[0].active_players.trim().split(" ");
 		var sql = "SELECT * FROM roster WHERE entryID=";
 		for(var i = 0; i < cUP.length; i++) {
 			if(i == 0) {
@@ -1074,7 +1075,7 @@ var leave_quest = function(args, message) {
 			
 			qTotNew = result[0].total_players - 1;
             for (pl in cPlayers) {
-                if (cPlayers[pl] !== result2[0].entryID.toString() && cPlayers[p1] !== '') {
+                if (cPlayers[pl] !== result2[0].entryID.toString() && cPlayers[pl] !== '') {
                     console.log(cPlayers[pl]);
 					qPlayersNew += cPlayers[pl] + ' ';
 				}
