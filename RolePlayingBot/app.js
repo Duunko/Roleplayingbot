@@ -22,7 +22,6 @@ const token = package.token;
 //prefix for bot commands
 const prefix = "~";
 
-
 //alt prefix used for mubot in Beta development
 //const prefix = "!";
 
@@ -66,6 +65,7 @@ spell_list.push.apply(spell_list, require('./spells-xge.json').spell);
 
 var item_list = require('./items.json').item;
 item_list.push.apply(item_list, require('./variant_items.json').variant);
+item_list.push.apply(item_list, require('./basicitems.json').basicitem);
 
 //Weekly xp tables
 const rest_thresholds = [[4,20], [8,15], [12, 10], [17, 8], [20, 5], [29, 1]];
@@ -195,8 +195,9 @@ var on_message = bot.on("message", function (message) {
             message.channel.send("The bot is currently unavailable. Check the announcements board for more information.");
             return;
         }
-		//seperate message into array based on spaces (get rid of prefix)
-		var args = message.content.substring(prefix.length).split(" ");
+        //seperate message into array based on spaces (get rid of prefix)
+        var args = message.content.substring(prefix.length).split(" ").filter(arg => arg != '');
+        
         if (message.channel != bot_commands && message.channel.type != 'dm') {
 			if(args[0].toLowerCase() !== "roll") {
 				con.release();
@@ -294,7 +295,8 @@ var on_message = bot.on("message", function (message) {
             //Checks a characters exp, level, dth and shards
             case "checkchar":
             case "checkcharacter":
-			case "check":
+            case "char":
+            case "check":
 			
 				check_character(args, message);
 				con.release();	
@@ -372,6 +374,7 @@ var on_message = bot.on("message", function (message) {
 
 			//creates a new quest posting
             case "newquest":
+            case "addquest":
 			case "quest":
 				
 				new_quest(args, message);
@@ -386,7 +389,8 @@ var on_message = bot.on("message", function (message) {
 				break;
 
 			//command to test bot responsiveness, sends a response to the log
-			case "test":
+            case "test":
+            case "ping":
 
 				message.channel.send("ping!");
 				console.log("PING");
@@ -395,6 +399,8 @@ var on_message = bot.on("message", function (message) {
 			//command to add a character to the guild roster
             case "addchar":
             case "addcharacter":
+            case "newchar":
+            case "newcharacter":
 			case "character":
 				
 				add_character(args, message);
@@ -409,7 +415,9 @@ var on_message = bot.on("message", function (message) {
 				break;
 
             //manual add XP command (should be used with caution), notifies Duncan
-			case "addxp":
+            case "addxp":
+            case "manualxp":
+            case "xp":
 				
 				manual_xp(args, message);
 				
@@ -435,6 +443,9 @@ var on_message = bot.on("message", function (message) {
             //launches a quest and sets it's status to "active"
             case "firequest":
             case "launch": 
+            case "launchquest":
+            case "start":
+            case "startquest":
 			case "fire":
 				
 				fire_quest(args, message);
@@ -535,13 +546,15 @@ var keepAlive = function () {
 }
 
 
-var lockout_warning = function() {
+var lockout_warning = function () {
+    
 	announcement_board.send("Weekly downtime in 30 minutes. Make sure that all finished quests have been closed with ~complete or you may lose downtime rewards.");
 	bot.user.setGame("Lockout 4AM PST");
     console.log("lockout warning sent.");
 }
 
 var weekly_progress = function () {
+
     console.log("Lockout beginning. Updates in progress.");
 	lockout = true;
 	var fullHours = [];
@@ -699,7 +712,7 @@ var check_quest = function (args, message) {
 
     if (!args[1]) {
         console.log("No arguments provided for check_quest.");
-        message.author.send("The syntax for 'check' is '~checkquest [quest name]'.");
+        message.channel.send("The syntax for 'check' is '~checkquest [quest name]'.");
         return;
     }
 
@@ -708,21 +721,21 @@ var check_quest = function (args, message) {
 
 	con.query(`SELECT * FROM quest_data WHERE quest_name=\'${quest}\';`, function(err, result) {
 		if(err) {
-			message.author.send("Something went wrong. Try again in a couple of minutes.");
+			message.channel.send("Something went wrong. Try again in a couple of minutes.");
 		}
 		if(result[0] == undefined) {
-			message.author.send("No such quest by that name. Check and make sure you spelled everything correctly and try again!");
+			message.channel.send("No such quest by that name. Check and make sure you spelled everything correctly and try again!");
 			return;
 		}
 		
 		if(result[0].active_players == '') {
-			message.author.send(`${quest}\nQuest DM: ${cDM}\nQuest Level: ${result[0].quest_lvl}\nQuest Status: ${result[0].quest_status}\nActive Players: None`);
+			message.channel.send(`${quest}\nQuest DM: ${cDM}\nQuest Level: ${result[0].quest_lvl}\nQuest Status: ${result[0].quest_status}\nActive Players: None`);
 			return;
 			
 		}
 		
-		var cUP = result[0].active_players.trim().split(" ");
-		var sql = "SELECT * FROM roster WHERE entryID=";
+        var cUP = result[0].active_players.trim().replace(/\s+/g, ' ').split(" ");
+        var sql = "SELECT * FROM roster WHERE entryID=";
 		for(var i = 0; i < cUP.length; i++) {
 			if(i == 0) {
 				sql += cUP[i];
@@ -740,10 +753,11 @@ var check_quest = function (args, message) {
 			var cDM = server.members.get(result[0].quest_DM);
 			
 			var characterNames = '';
-			
+
 			for(res in result2) {
-				characterNames += result2[res].charName + " ";
-			}
+				characterNames += result2[res].charName + ", ";
+            }
+            characterNames = characterNames.substring(0, characterNames.length - 2);
 				
 			
 			message.author.send(`${quest}\nQuest DM: ${cDM}\nQuest Level: ${result[0].quest_lvl}\nQuest Status: ${result[0].quest_status}\nActive Players: ${characterNames}`);
@@ -802,7 +816,7 @@ var message_members = function (args, message) {
 			
 		}
 		
-		var cUP = result[0].active_players.trim().split(" ");
+        var cUP = result[0].active_players.trim().replace(/\s+/g, ' ').split(" ");
 		var sql = "SELECT * FROM roster WHERE entryID=";
 		for(var i = 0; i < cUP.length; i++) {
 			if(i == 0) {
@@ -1371,14 +1385,12 @@ var new_quest = function (args, message) {
 			console.log(queryText);
 			con.query(queryText, function(err){
 				if(err) throw err ;
-				console.log(`${quest} added to SQL data`);
-				
+				console.log(`${title} added to SQL data`);
 			});
 
         });
 		
     archive.send("**ARCHIVE COPY**", listing);
-    console.log("Quest successfully added");
     message.channel.send("Quest added to board.");
 }
 
@@ -1773,11 +1785,8 @@ var add_character = function (args, message) {
     //query SQL to add char to roster
     con.query(sql, function (err, result) {
 		if (err) throw err;
-        console.log("1 record inserted");
-        console.log(result);
         server.members.get(player_id).send(`${char_name} was added to the guild`);
-        general_chat.send("@<" + player_id + "> has made a new character. Welcome to the guild, " + char_name + "!");
-        message.channel.send(`${char_name} added.`);
+        //general_chat.send("@<" + player_id + "> has made a new character. Welcome to the guild, " + char_name + "!");
         console.log("Player successfully added.");
 	});
     
@@ -1832,7 +1841,7 @@ var manual_xp = function (args, message) {
 	
 	//Sends duncan a message
 	var dunc = server.members.get(duncan_id);
-    dunc.send(message.author.username + " has just manually added XP. You may want to check in with them.");
+    //dunc.send(message.author.username + " has just manually added XP. You may want to check in with them.");
     message.channel.send("Experience added.");
     console.log("Manual exp success");
 }
@@ -1883,7 +1892,7 @@ var quest_complete = function(args, message) {
 
         var auth = message.author;
 		
-		var cUP = result[0].active_players.trim().split(" ");
+        var cUP = result[0].active_players.trim().replace(/\s+/g, ' ').split(" ");
 		
 		var sql = "UPDATE roster SET completeQuests=completeQuests + 1 WHERE entryID=";
 		var sql2 = "SELECT * FROM roster WHERE entryID=";
@@ -1983,8 +1992,8 @@ var award_xp = function(players, xp) {
             //if they leveled up, update database
             if (newLevel > parseInt(result[i].level)) {
 				con.query("UPDATE roster SET level=" + newLevel + " WHERE charName=\'" + result[i].charName + "\';", function(err, result2) {
-					if (err) throw err;
-					console.log(`${result[i].charName} leveled up. SQL updated.`);
+                    if (err) throw err;
+
 				});
 				level_message(result[i].charName, result[i].charPlayer, newLevel);
             }
@@ -2276,7 +2285,11 @@ var check_character = function(args, message) {
     console.log(`Checking ${character}'s stats.`);
 
 	con.query("SELECT * FROM roster WHERE charName=\'" + character + "\';", function(err, result) {
-		if(err) throw err ;
+        if (err) {
+            console.log("Error occured");
+            console.log(err);
+            message.channel.send("An error occured. Try again in a few minutes.");
+        }
 		//console.log(result);
         if (result[0] == undefined) {
             console.log("No character found.");
@@ -2360,16 +2373,20 @@ var search_items = function (args, message) {
                 current_item = current_item.inherits;
             } 
 
-            var item_name_link = item_name.replace(/ /g, "%20") + "_" + current_item.source.replace(/ /g, "%20");
-            item_name_link = item_name_link.replace(/\,/g, "%2c");
-            item_name_link = item_name_link.replace(/\+/g, "%2b");
 
             item_basics += current_item.tier ? `: ${current_item.tier}*\n` : '*\n';
             item_basics += current_item.value ? `Price: **${current_item.value}**\n` : "";
             item_basics += current_item.rarity ? `Rarity: ${current_item.rarity}\n` : "";
             item_basics += current_item.weight ? `Weight: ${current_item.weight}\n` : "";
-            
-            show_item.addField(`https://5etools.com/items.html#${item_name_link}`, item_basics);
+
+            if (current_item.source == "AGHB") {
+                show_item.addField(`Homebrew item`, item_basics);
+
+            } else {
+                var item_name_link = item_name.replace(/ /g, "%20") + "_" + current_item.source.replace(/ /g, "%20").replace(/\,/g, "%2c").replace(/\+/g, "%2b");
+                show_item.addField(`https://5etools.com/items.html#${item_name_link}`, item_basics);
+            }
+
 
             
             var description = "";
@@ -2443,18 +2460,19 @@ var view_shop = function (args, message) {
 
         //adds all items a var for embed
         for (var item in result) {
-            console.log(item);
-            list += `**${result[item].item_name}** : ${result[item].item_price} gp\n`;
+            if (result[item].item_quantity > 0) {
+                list += `**${result[item].item_name}** :  ${result[item].item_price} gp   (${result[item].item_quantity})\n`;
+            }
         }
 
         //if there were no items, say that
         if (list.length === 0) {
             list = "No items";
         }
-		list += '**Message a DM to buy an Item**\n';
+		list += '\n**Message a DM to buy an Item**';
 
         //adds list to embed and prints
-        shop_inventory.addField("**Item Name** : price (gp)", list);
+        shop_inventory.addField("**Item Name**:   [price] gp   (quantity)", list);
 		
         message.channel.send(shop_inventory);
         console.log("Shop inventory printed");
@@ -2467,7 +2485,7 @@ var buy_item = function (args, message) {
 
     if (!args[1]) {
         console.log("No arguemnts for ~buyitem");
-        message.channel.send("The syntax for 'buyitem' is '~buyitem [character name], [item bought]'.");
+        return message.channel.send("The syntax for 'buyitem' is '~buyitem [character name], [item bought]'.");
     }
 
     var text = args.splice(1).join(" ");
@@ -2492,8 +2510,13 @@ var buy_item = function (args, message) {
             return message.channel.send("Item not found");
         }
 
+        if (result[0].item_quantity < 1) {
+            console.log("Item not in stock");
+            return message.channel.send(`${item_to_buy} is not in stock. Check again soon.`);
+        }
+
         //if item is there, remove it from the inventory
-        var remove_item_sql = `DELETE FROM shop_inventory WHERE item_name = '${item_to_buy}';`;        
+        var remove_item_sql = `UPDATE shop_inventory SET item_quantity = item_quantity - 1 WHERE item_name = '${item_to_buy}';`;        
 
         con.query(remove_item_sql, function (err, delete_result) {
             if (err) throw err;

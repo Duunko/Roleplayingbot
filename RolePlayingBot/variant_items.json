@@ -1020,6 +1020,23 @@
 			}
 		},
 		{
+			"name": "Sword of Ooze Slaying",
+			"type": "GV",
+			"requires": {
+				"sword": true
+			},
+			"inherits": {
+				"tier": "Major",
+				"rarity": "Common",
+				"source": "AGHB",
+				"page": "0",
+				"nameSuffix": " of Ooze Slaying",
+				"entries": [
+					"This weapon ignores the damage resistance/immunity to Slashing property of Oozes and does not split Oozes on hit."
+				]
+			}
+		},
+		{
 			"name": "Sword of Sharpness",
 			"type": "GV",
 			"requires": {
