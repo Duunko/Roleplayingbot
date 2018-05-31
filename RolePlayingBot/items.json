@@ -3769,6 +3769,19 @@
 			]
 		},
 		{
+			"name": "Dawnglare Shield",
+			"type": "S",
+			"weight": "6",
+			"tier": "Minor",
+			"rarity": "Common",
+			"source": "AGHB",
+			"page": 0,
+			"ac": 2,
+			"entries": [
+				"The shield behaves like a normal property, but upon saying a command word as a bonus action, the shield emits bright light for 10 ft. in a cone and dim light for an additional 20 ft."
+			]
+		},
+		{
 			"name": "Decanter of Endless Water",
 			"wondrous": true,
 			"weight": "2",
