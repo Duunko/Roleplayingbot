@@ -536,12 +536,14 @@ var keepAlive = function () {
 
 
 var lockout_warning = function() {
+return;
 	announcement_board.send("Weekly downtime in 30 minutes. Make sure that all finished quests have been closed with ~complete or you may lose downtime rewards.");
 	bot.user.setGame("Lockout 4AM PST");
     console.log("lockout warning sent.");
 }
 
 var weekly_progress = function () {
+return;
     console.log("Lockout beginning. Updates in progress.");
 	lockout = true;
 	var fullHours = [];
@@ -1984,7 +1986,7 @@ var award_xp = function(players, xp) {
             if (newLevel > parseInt(result[i].level)) {
 				con.query("UPDATE roster SET level=" + newLevel + " WHERE charName=\'" + result[i].charName + "\';", function(err, result2) {
 					if (err) throw err;
-					console.log(`${result[i].charName} leveled up. SQL updated.`);
+					//console.log(`${result[i].charName} leveled up. SQL updated.`);
 				});
 				level_message(result[i].charName, result[i].charPlayer, newLevel);
             }
