@@ -115,7 +115,8 @@ var on_ready = bot.on("ready", () => {
 	}
 	var dateAdjust = currentDate + dayAdjust;
 	var monthAdjust = currentMonth;
-	var yearAdjust = currentYear;
+    var yearAdjust = currentYear;
+    
 	if(dateAdjust > 28) {
 		if(currentMonth == 2) {
 			if(leapYears.includes(currentYear)){
