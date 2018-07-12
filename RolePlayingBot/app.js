@@ -175,7 +175,8 @@ var on_join = bot.on("guildMemberAdd", function (member) {
 var on_message = bot.on("message", function (message) {
 
     
-	pool.getConnection(function(err,connection) {
+    pool.getConnection(function (err, connection) {
+
 		if (err) throw err ;
 		con = connection;
 	
@@ -200,7 +201,7 @@ var on_message = bot.on("message", function (message) {
         var args = message.content.substring(prefix.length).split(" ").filter(arg => arg != '');
         
         if (message.channel != bot_commands && message.channel.type != 'dm') {
-			if(args[0].toLowerCase() !== "roll") {
+            if (args[0].toLowerCase() !== "roll" && args[0].toLowerCase() !== "r") {
 				con.release();
 				return message.author.send("You need to DM me or use the #bot-commands channel.");
 			} else {
@@ -472,8 +473,8 @@ var on_message = bot.on("message", function (message) {
 
 			//Fires the weekly progress function. For testing purposes
 			case "progress":
-				
-				if(message.author.id == duncan_id) {
+
+                if (message.author.id == duncan_id) {
 					weekly_progress();
 				} else {
                     message.channel.send("You are not Duncan, heathen!");
@@ -548,12 +549,13 @@ var keepAlive = function () {
 
 
 var lockout_warning = function () {
+    
 	announcement_board.send("Weekly downtime in 30 minutes. Make sure that all finished quests have been closed with ~complete or you may lose downtime rewards.");
 	bot.user.setGame("Lockout 4AM PST");
     console.log("lockout warning sent.");
 }
 
-var weekly_progress = function ()  {
+var weekly_progress = function () {
 
     console.log("Lockout beginning. Updates in progress.");
 	lockout = true;
@@ -613,7 +615,6 @@ var weekly_progress = function ()  {
 							
 						case 1:
 							//Gets the xp percentage based on level
-							//Gets the xp percentage based on level
 							var percentage = 25;
 							var xpTotal;
 							for(var i = 0; i < rest_thresholds.length; i++) {
@@ -650,48 +651,35 @@ var weekly_progress = function ()  {
 							break;		
 					}
 				}
-				var sql = "UPDATE roster SET downHours=downHours+20 WHERE entryID=\'";
+				var sql = "UPDATE roster SET downHours=downHours+20 WHERE entryID IN (\'";
 				for(var i = 0; i < fullHours.length; i++) {
-					if(i == 0) {
-						sql+= fullHours[i];
-					} else {
-						sql+= " OR entryID=" + fullHours[i];
-					}
-					
-				}
-				sql = ";"
-				var sql2 = "UPDATE roster SET downHours=downHours+10 WHERE entryID=\'";
-				for(var i = 0; i < fullHours.length; i++) {
-					if(i == 0) {
-						sql2+= halfHours[i];
-					} else {
-						sql2+= " OR entryID=" + halfHours[i];
-					}
-					
-				}
-				sql2 = ";"
-				con2.query(sql, function(err, result2) {
+					sql+= fullHours[i] + "\', \'";
+                }
+                sql = sql.substring(0, sql.length - 3) + ");";
+
+                var sql2 = "UPDATE roster SET downHours=downHours+10 WHERE entryID IN (\'";
+                for (var i = 0; i < halfHours.length; i++) {
+					sql2+= halfHours[i] + "\', \'";					
+                }
+                sql2 = sql2.substring(0, sql2.length - 3) + ");";
+
+                con2.query(sql, function (err, result2) {
 					if(err) {
 						console.log(err);
 					}
-					//console.log("Fullhours updated");
 					
 					con2.query(sql2, function(err, result3) {
 						if(err) {
 							console.log(err);
 						}
-						//console.log("Halfhours updated");
 						
 						con2.query("UPDATE roster SET numQuests= numQuests - completeQuests, completeQuests = 0", function(err, result4) {
 							if (err) {
 								console.log("Oops");
 							}
-							
-							//console.log("numQuests updated");
-							
+														
 						});
 					});
-					
 					
 				});
 			});
@@ -760,7 +748,7 @@ var check_quest = function (args, message) {
             characterNames = characterNames.substring(0, characterNames.length - 2);
 				
 			
-			message.author.send(`${quest}\nQuest DM: ${cDM}\nQuest Level: ${result[0].quest_lvl}\nQuest Status: ${result[0].quest_status}\nActive Players: ${characterNames}`);
+			message.channel.send(`${quest}\nQuest DM: ${cDM}\nQuest Level: ${result[0].quest_lvl}\nQuest Status: ${result[0].quest_status}\nActive Players: ${characterNames}`);
 		});
     });
     console.log(`Quest checked.`);
@@ -1786,7 +1774,7 @@ var add_character = function (args, message) {
     con.query(sql, function (err, result) {
 		if (err) throw err;
         server.members.get(player_id).send(`${char_name} was added to the guild`);
-        //general_chat.send("@<" + player_id + "> has made a new character. Welcome to the guild, " + char_name + "!");
+        general_chat.send("@<" + player_id + "> has made a new character. Welcome to the guild, " + char_name + "!");
         console.log("Player successfully added.");
 	});
     
@@ -1992,8 +1980,8 @@ var award_xp = function(players, xp) {
             //if they leveled up, update database
             if (newLevel > parseInt(result[i].level)) {
 				con.query("UPDATE roster SET level=" + newLevel + " WHERE charName=\'" + result[i].charName + "\';", function(err, result2) {
-					if (err) throw err;
-			
+                    if (err) throw err;
+
 				});
 				level_message(result[i].charName, result[i].charPlayer, newLevel);
             }
@@ -2298,7 +2286,7 @@ var check_character = function(args, message) {
 		}
         if (result[0].charPlayer == message.author.id || server.members.get(message.author.id).roles.find("name", "Dungeon Master")) {
             console.log("Stats printed");
-            message.channel.send("Character: " + result[0].charName + "\n Level: " + result[0].level + "\n XP: " + result[0].exp + "\n Downtime hours: " + result[0].downHours + "\n Rift Shards: " + result[0].riftShards + "\n Quests Completed: " + result[0].completeQuests);
+            message.channel.send("Character: " + result[0].charName + "\n Level: " + result[0].level + "\n XP: " + result[0].exp + "\n Downtime hours: " + result[0].downHours + "\n Rift Shards: " + result[0].riftShards + "\n Quests this Week: " + result[0].completeQuests);
         } else {
             console.log("Author doesn't own the player");
 			message.channel.send("You do not have permission to view that character!");
