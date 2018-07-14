@@ -14,16 +14,16 @@ const package = require('./package.json');
 const mysql = require('mysql');
 
 //bot token ***DO NOT SHARE***
-const token = package.token;
+//const token = package.token;
 
 //mubot's token, used for Beta development
-//const token = "MzYwMjEzNjU1MDA4MzEzMzU1.DL7GEg.n9ASGR38j8Q8hTNWW4L5anOxpRM";
+const token = "MzYwMjEzNjU1MDA4MzEzMzU1.DL7GEg.n9ASGR38j8Q8hTNWW4L5anOxpRM";
 
 //prefix for bot commands
-const prefix = "~";
+//const prefix = "~";
 
 //alt prefix used for mubot in Beta development
-//const prefix = "!";
+const prefix = "!";
 
 
 //create bot user and login
@@ -38,6 +38,7 @@ const duncan_id = '188928848287498240';
 const chris_id = '190248534925246464';
 const announcement_id = '438049253969887253';
 const bot_commands_id = '441609746475122688';
+const dm_bot_commands_id = '467439381083586560';
 const general_id = '438048843674943498';
 const party_channels = ['438107822149074979', '438107859553746950', '438107902683643917'];
 var quest_board;
@@ -46,6 +47,7 @@ var server;
 var complete_board;
 var announcement_board;
 var bot_commands;
+var dm_bot_commands;
 var general_chat;
 
 var lockout = false;
@@ -88,6 +90,7 @@ var on_ready = bot.on("ready", () => {
     server = quest_board.guild;
 	complete_board = bot.channels.get(complete_board_id);
     bot_commands = bot.channels.get(bot_commands_id);
+    dm_bot_commands = bot.channels.get(dm_bot_commands_id);
     general_chat = bot.channels.get(general_id);
 
 	pool = mysql.createPool({
@@ -199,8 +202,8 @@ var on_message = bot.on("message", function (message) {
         }
         //seperate message into array based on spaces (get rid of prefix)
         var args = message.content.substring(prefix.length).split(" ").filter(arg => arg != '');
-        
-        if (message.channel != bot_commands && message.channel.type != 'dm') {
+
+        if (message.channel != bot_commands && message.channel != dm_bot_commands && message.channel.type != 'dm') {
             if (args[0].toLowerCase() !== "roll" && args[0].toLowerCase() !== "r") {
 				con.release();
 				return message.author.send("You need to DM me or use the #bot-commands channel.");
@@ -742,8 +745,8 @@ var check_quest = function (args, message) {
 			
 			var characterNames = '';
 
-			for(res in result2) {
-				characterNames += result2[res].charName + ", ";
+            for (res in result2) {
+                characterNames += `${result2[res].charName} (${result2[res].level}), `;
             }
             characterNames = characterNames.substring(0, characterNames.length - 2);
 				
@@ -791,7 +794,7 @@ var message_members = function (args, message) {
             console.log("SQL error.");
             console.log(err);
 		}
-        if (result[0] == undefined) {
+        if (result.length == 0) {
             console.log("No quest found");
             message.channel.send("No such quest with that title");
             return;
@@ -801,7 +804,6 @@ var message_members = function (args, message) {
             console.log("Author isn't DM of the requested quest.");
 			message.channel.send("You are not the DM of that quest, and can't message the players.");
 			return;
-			
 		}
 		
         var cUP = result[0].active_players.trim().replace(/\s+/g, ' ').split(" ");
@@ -838,34 +840,267 @@ var message_members = function (args, message) {
 var roll_dice = function (args, message) {
     //if no input return
     if (!/\dd\d/.test(args[1])) {
-        message.channel.send("Roll takes in  ~roll [X]d[Y] as arguments, with [X] and [Y] the number of dice to roll and how many faces to roll. \n To add a modifier add +[Z] or -[Z] (no space between +/- and [Z]).");
+        message.channel.send("Roll takes in  ~roll [X]d[Y] as arguments, with [X] and [Y] the number of dice to roll and how many faces to roll.\nTo add a modifier add +[Z] or -[Z].\nTo keep high/low dice use [X]d[Y]h[n] to keep the highest 'n' dice and [X]d[Y]l[n] to keep the lowest 'n' dice.");
         console.log("Wrong/no arguments for ~roll.");
         return;
     }
-    
-    //splits input along 'd', converts to ints
-    var dice = args[1].split("d");
-    dice[0] = parseInt(dice[0]);
-    dice[1] = parseInt(dice[1]);
 
-    //creates array for the rolls, performs roll opperations
-    var rolls = [];
-    for (var i = 0; i < dice[0]; i++) {
-        rolls.push(Math.ceil(Math.random() * dice[1]));
+    //no match found yet
+    var found = false;
+    //reads input arguments
+    var text = args.splice(1).join(" ");
+
+    //regEx to extract char names from 'text' string
+    var regEx = /\W*(.*?)(?:,|$)/g;
+    var str = regEx.exec(text)[1].replace(/\s/g, "").toLowerCase();
+    var purpose = regEx.exec(text)[1];
+
+    if (!str) {
+        console.log("Invalid arguments for ~roll");
+        message.channel.send("Invalid arguments. The syntax for 'roll' is '~roll [X]d[Y]+/-[Z], [roll purpose (optional)]'. For more details, use '~roll'.");
+        return;
+    }
+
+    console.log(str, purpose);
+
+    const mods = [];
+
+    str = str.replace(/(([+-]+)\d+)(?=[^d]|$)|(([+-]+|^)\d+$)|(([+-]+|^)\d+(?=[+-]))/g, (m0) => {
+        mods.push(m0);
+        return "";
+    });
+
+    function cleanOperators(str) {
+        let len;
+        let nextLen;
+        do {
+            len = str.length;
+            str = str.replace(/--/g, "+").replace(/\+\++/g, "+").replace(/-\+/g, "-").replace(/\+-/g, "-");
+            nextLen = str.length;
+        } while (len !== nextLen);
+        return str;
+    }
+
+    const totalMods = mods.map(m => Number(cleanOperators(m))).reduce((a, b) => a + b, 0);
+
+    function isNumber(char) {
+        return char >= "0" && char <= "9";
+    }
+
+    function getNew() {
+        return {
+            neg: false,
+            num: 1,
+            faces: 20
+        };
+    }
+
+    const S_INIT = -1;
+    const S_NONE = 0;
+    const S_COUNT = 1;
+    const S_FACES = 2;
+
+    const stack = [];
+
+    let state = str.length ? S_NONE : S_INIT;
+    let cur = getNew();
+    let temp = "";
+    let c;
+    let keep = false;
+
+    for (let i = 0; i < str.length; ++i) {
+        c = str.charAt(i);
+        switch (state) {
+            case S_NONE:
+                if (c === "-") {
+                    cur.neg = !cur.neg;
+                } else if (isNumber(c)) {
+                    temp += c;
+                    state = S_COUNT;
+                } else if (c === "d") {
+                    state = S_FACES;
+                } else if (c !== "+") {
+                    return null;
+                }
+                break;
+            case S_COUNT:
+                if (isNumber(c)) {
+                    temp += c;
+                } else if (c === "d") {
+                    if (temp) {
+                        cur.num = Number(temp);
+                        temp = "";
+                    }
+                    state = S_FACES;
+                } else {
+                    return null;
+                }
+                break;
+            case S_FACES:
+                if (isNumber(c)) {
+                    temp += c;
+                } else if (c === "l") {
+                    cur.keeps = "l";
+                    if (temp) {
+                        keep = true;
+                        cur.faces = Number(temp);
+                        if (!cur.num || !cur.faces) return null;
+                        temp = "";
+                    } 
+                } else if (c === "h") {
+                    cur.keeps = "h";
+                    if (temp) {
+                        keep = true;
+                        cur.faces = Number(temp);
+                        if (!cur.num || !cur.faces) return null;
+                        temp = "";
+                    }
+                } else if (c === "+" || c === "-") {
+                    if (temp) {
+                        if (keep) cur.keep = Number(temp);
+                        else cur.faces = Number(temp);
+
+                        if (!cur.num || !cur.faces || (cur.keep && (cur.keep >= cur.num))) return null;
+                        stack.push(cur);
+                        cur = getNew();
+                        if (c === "-") cur.neg = true;
+                        temp = "";
+                        state = S_NONE;
+                    } else {
+                        return null;
+                    }
+                } else {
+                    return null;
+                }
+                break;
+        }
+    }
+    switch (state) {
+        case S_NONE:
+            return null;
+        case S_COUNT:
+            return null;
+        case S_FACES:
+            if (temp) {
+                if (keep) cur.keep = Number(temp);
+                else cur.faces = Number(temp);
+                if (cur.keep && (cur.keep >= cur.num)) return null;
+            } else {
+                return null;
+            }
+            break;
+    }
+
+    if (state !== S_INIT) {
+        if (!cur.num || !cur.faces) return null;
+        stack.push(cur);
+    }
+
+    var parsed = {dice: stack};
+
+    let rolls = [];
+
+    function rollDice(count, faces) {
+        const out = [];
+        for (let i = 0; i < count; ++i) {
+            out.push(Math.ceil(Math.random() * faces));
+        }
+        return out;
+    }
+
+    rolls = parsed.dice.map(d => {
+        function dropRolls(r) {
+            if (!d.keeps) return [r, []];
+            if (d.keeps === "l") {
+                r.sort((a, b) => a - b);
+            } else if (d.keeps === "h") {
+                r.sort((a, b) => b - a);
+            }
+            const toDrop = r.slice(d.keep, r.length);
+            const keepStack = [];
+            const dropStack = [];
+            r.forEach(it => {
+                const di = toDrop.indexOf(it);
+                if (~di) {
+                    toDrop.splice(di, 1);
+                    dropStack.push(it);
+                } else {
+                    keepStack.push(it);
+                }
+            });
+            return [keepStack, dropStack];
+        }
+
+        var r = rollDice(d.num, d.faces);
+        const [keepR, dropR] = dropRolls(r);
+
+        const total = keepR.reduce((a, b) => a + b, 0);
+        //const max = d.keep ? d.keep * d.faces : d.num*d.faces;
+        //const min = d.keep ? d.keep : d.num;
+        return {
+            rolls: keepR,
+            dropped: dropR.length ? dropR : null,
+            total: (-(d.neg || -1)) * total,
+            //isMax: total === max,
+            //isMin: total === min, // i.e. all 1's
+            neg: d.neg,
+            num: d.num,
+            faces: d.faces,
+            keep: d.keep,
+            keeps: d.keeps
+        }
+    });
+
+
+    console.log(rolls, totalMods);
+    var totalRoll = totalMods;
+    for (var roll in rolls) {
+        totalRoll += rolls[roll].total;
     }
 
     //begins to build output string
-    var output ="<@" + message.author.id + "> rolled " + dice[0] + "d" + dice[1];
+    var output = `<@${message.author.id}> rolled `;
 
-    //adds modifiers to roll if input given
-    if (/[\+\-]\d+/.exec(args[2])) {
-        rolls.push(parseInt(args[2]));
-        output += " " + args[2];
+    var toAdd = "";
+    for (var roll in rolls) {
+        toAdd += rolls[roll].neg ? `- ` : `+ `;
+        toAdd += rolls[roll].keep ? `${rolls[roll].num}d${rolls[roll].faces}${rolls[roll].keeps}${rolls[roll].keep} ` : `${rolls[roll].num}d${rolls[roll].faces} `;
     }
-    output += " and got ";
 
-    //sums rolls and adds to output
-    output += rolls.reduce((x, y) => x + " + " + y) + " = " + rolls.reduce((x, y) => x + y);
+    output += rolls[0].neg ? toAdd : toAdd.substring(2);
+    if (totalMods > 0) {
+        output += `+ ${totalMods}`;
+    } else if (totalMods < 0) {
+        output += `- ${totalMods*-1}`;
+    }
+
+    output += purpose ? `for **${purpose}** and got:` : "and got:";
+    toAdd = "";
+    for (var i = 0; i < rolls.length; i++) {
+        toAdd += rolls[i].neg ? ` - (` : ` + (`;
+        for (var j = 0; j < rolls[i].rolls.length; j++) {
+            toAdd += `${rolls[i].rolls[j]} + `
+        }
+
+        if (rolls[i].dropped) {
+            toAdd += `~~`;
+            for (var j = 0; j < rolls[i].dropped.length; j++) {
+                toAdd += `${rolls[i].dropped[j]} + `
+            }
+            toAdd = toAdd.substring(0, toAdd.length - 3) + "~~)";
+        } else {
+            toAdd = toAdd.substring(0, toAdd.length - 3) + ")";
+        }
+    }
+
+    output += rolls[0].neg ? toAdd : toAdd.substring(2);
+    if (totalMods > 0) {
+        output += ` + ${totalMods}`;
+    } else if (totalMods < 0) {
+        output += ` - ${totalMods * -1}`;
+    }
+    output += ` = ${totalRoll}`;
+    console.log(output);
 
     //sends result as a reply to sender
     message.channel.send(output);
@@ -1028,8 +1263,8 @@ var leave_quest = function(args, message) {
 		if(err) {
 			auth.send("Something went wrong. Try again in a couple of minutes.");
 			return;
-		}
-		if(result == undefined) {
+        }
+        if (result == undefined || result.length == 0) {
             auth.send("No quest by that name. Make sure the spelling is correct!");
             console.log(`${quest} not found.`);
 			return;
@@ -1040,8 +1275,8 @@ var leave_quest = function(args, message) {
 			if(err) {
 				auth.send("Something went wrong. Try again in a couple of minutes.");
 				return;
-			}
-			if(result2 == undefined) {
+            }
+            if (result2 == undefined || result2.length == 0) {
                 auth.send("No character by that name. Make sure the spelling is correct, and if you have a last name add it!");
                 console.log(`${character} not found.`);
 				return;
@@ -2277,20 +2512,39 @@ var check_character = function(args, message) {
             console.log("Error occured");
             console.log(err);
             message.channel.send("An error occured. Try again in a few minutes.");
+            
         }
 		//console.log(result);
         if (result[0] == undefined) {
             console.log("No character found.");
 			message.channel.send("No such character by that name!");
 			return;
-		}
-        if (result[0].charPlayer == message.author.id || server.members.get(message.author.id).roles.find("name", "Dungeon Master")) {
-            console.log("Stats printed");
-            message.channel.send("Character: " + result[0].charName + "\n Level: " + result[0].level + "\n XP: " + result[0].exp + "\n Downtime hours: " + result[0].downHours + "\n Rift Shards: " + result[0].riftShards + "\n Quests this Week: " + result[0].completeQuests);
-        } else {
-            console.log("Author doesn't own the player");
-			message.channel.send("You do not have permission to view that character!");
-		}
+        }
+
+        con.query(`SELECT quest_name FROM quest_data WHERE active_players LIKE '%${result[0].entryID}%';`, function (err, result2) {
+            if (err) {
+                console.log(err);
+                
+            }
+
+            if (result[0].charPlayer == message.author.id || server.members.get(message.author.id).roles.find("name", "Dungeon Master")) {
+                console.log("Stats printed");
+                var output = "Character: " + result[0].charName + "\n Level: " + result[0].level + "\n XP: " + result[0].exp + "\n Downtime hours: " + result[0].downHours + "\n Rift Shards: " + result[0].riftShards + "\n Quests this Week: " + result[0].completeQuests + "\n Actice Quests: ";
+                if (result2[0] == undefined || result2[0].length == 0) {
+                    message.channel.send(output + "none");
+                } else {
+                    for (var quest in result2) {
+                        output += `${result2[quest].quest_name}, `;
+                    }
+                    message.channel.send(output.substring(0, output.length-2));
+                }
+
+            } else {
+                console.log("Author doesn't own the player");
+                message.channel.send("You do not have permission to view that character!");
+            }
+            console.log("stats checked");
+        });
 		
 	});
 	
@@ -2457,7 +2711,7 @@ var view_shop = function (args, message) {
         if (list.length === 0) {
             list = "No items";
         }
-		list += '\n**Message a DM to buy an Item**';
+		list += '\n**Message a DM to buy an Item**\n*Buying an enchantment such as +1 Weapon requires you own the item to be enchanted. ex: to get +1 Plate Armor you must buy Plate armor **and** the +1 Armor enchantment.';
 
         //adds list to embed and prints
         shop_inventory.addField("**Item Name**:   [price] gp   (quantity)", list);
