@@ -649,7 +649,7 @@ var weekly_progress = function ()  {
 							break;		
 					}
 				}
-				var sql = "UPDATE roster SET downHours=downHours+20 WHERE entryID=\'";
+				var sql = "UPDATE roster SET downHours=downHours+20 WHERE entryID=";
 				for(var i = 0; i < fullHours.length; i++) {
 					if(i == 0) {
 						sql+= fullHours[i];
@@ -659,7 +659,7 @@ var weekly_progress = function ()  {
 					
 				}
 				sql = ";"
-				var sql2 = "UPDATE roster SET downHours=downHours+10 WHERE entryID=\'";
+				var sql2 = "UPDATE roster SET downHours=downHours+10 WHERE entryID=";
 				for(var i = 0; i < fullHours.length; i++) {
 					if(i == 0) {
 						sql2+= halfHours[i];
@@ -903,7 +903,7 @@ var join_quest = function (args, message) {
     var dm_proxy = false;
 
     //regEx to extract char names from 'text' string
-    var regEx = /\W*(.*?),\W(.*?)$/;
+    var regEx = /\s*(.*?),\s(.*?)$/;
     var match = regEx.exec(text);
 
     if (!match || match.length < 2) {
@@ -1858,7 +1858,7 @@ var quest_complete = function(args, message) {
   	//Format ~complete  [quest name], [xp]
     text = args.splice(1).join(" ");
 
-    var regEx = /\W*(.*?),\W(.*?)$/;
+    var regEx = /\s*(.*?),\s(.*?)$/;
     var match = regEx.exec(text);
 
     if (!match || match.length < 2 || !parseInt(match[2])) {
@@ -2251,7 +2251,7 @@ var spend_dth = function (args, message) {
             if (err) throw err;
 
             if (parseInt(dth_use)) {
-                bot_commands.send(`${char_name} has spent ${dth_quantity} hours work and and earned ${dth_quantity * 15} gp from your profession.`);
+                bot_commands.send(`${char_name} has spent ${dth_quantity} hours work and and earned ${dth_quantity * 8} gp from your profession.`);
             }
             else {
                 bot_commands.send(`${char_name} has spent ${dth_quantity} hours learning and picked up a new ${dth_use} proficiency.`);
