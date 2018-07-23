@@ -670,15 +670,15 @@ var weekly_progress = function () {
 							break;		
 					}
 				}
-				var sql = "UPDATE roster SET downHours=downHours+20 WHERE entryID IN (\'";
+				var sql = `UPDATE roster SET downHours=downHours+20 WHERE entryID IN ("`;
 				for(var i = 0; i < fullHours.length; i++) {
-					sql+= fullHours[i] + "\', \'";
+					sql+= fullHours[i] + `", "`;
                 }
                 sql = sql.substring(0, sql.length - 3) + ");";
 
-                var sql2 = "UPDATE roster SET downHours=downHours+10 WHERE entryID IN (\'";
+                var sql2 = `UPDATE roster SET downHours=downHours+10 WHERE entryID IN ("`;
                 for (var i = 0; i < halfHours.length; i++) {
-					sql2+= halfHours[i] + "\', \'";					
+					sql2+= halfHours[i] + `", "`;					
                 }
                 sql2 = sql2.substring(0, sql2.length - 3) + ");";
 
@@ -728,7 +728,7 @@ var check_quest = function (args, message) {
     var quest = args.splice(1).join(" ");
     console.log(`checking quest, ${quest}`);
 
-	con.query(`SELECT * FROM quest_data WHERE quest_name=\'${quest}\';`, function(err, result) {
+	con.query(`SELECT * FROM quest_data WHERE quest_name="${quest}";`, function(err, result) {
 		if(err) {
 			message.channel.send("Something went wrong. Try again in a couple of minutes.");
 		}
@@ -808,7 +808,7 @@ var message_members = function (args, message) {
 
     console.log(`Messaging members of ${quest}.`);
 
-    con.query("SELECT * FROM quest_data WHERE quest_name=\'" + quest + "\';", function (err, result) {
+    con.query(`SELECT * FROM quest_data WHERE quest_name="${quest}";`, function (err, result) {
 		if(err) {
             console.log("SQL error.");
             console.log(err);
@@ -1159,7 +1159,7 @@ var join_quest = function (args, message) {
     console.log(`${character} attempting to join ${quest}.`);
 
 	//Queries to find the quest
-	con.query("SELECT * FROM quest_data WHERE quest_name=\'" + quest + "\';", function(err, result) {
+	con.query(`SELECT * FROM quest_data WHERE quest_name="${quest}";`, function(err, result) {
 		if (err) {
             console.log("SQL error (result1): " + err);
             message.channel.send("SQL error, please try again in a few minutes.");
@@ -1169,11 +1169,17 @@ var join_quest = function (args, message) {
             message.channel.send("No such quest with that title. Please check spelling.");
             console.log(`${quest} was not found.`);
 			return;
-		}
+        }
+
+        if (result[0].active) {
+            message.channel.send("The quest has already launched. You can't join it.");
+            console.log("The quest has already fired. Join failed.");
+            return;
+        }
 
 		//If its open and inactive, query to find the player
 		if(result[0].quest_status != "CLOSED" && result[0].active != 1) {
-			con.query("SELECT * FROM roster WHERE charName=\'" + character + "\';", function(err, result2){
+			con.query(`SELECT * FROM roster WHERE charName="${character}";`, function(err, result2){
                 if (err) {
                     console.log("SQL error (result2): " + err);
                     message.channel.send("SQL error, please try again in a few minutes.");
@@ -1185,6 +1191,7 @@ var join_quest = function (args, message) {
                     console.log(`${character} was not found.`)
                     return;
                 }
+
 				//Make sure they own the character or are a DM
                 
 				if(auth.id != result2[0].charPlayer) {
@@ -1227,7 +1234,7 @@ var join_quest = function (args, message) {
 					qStatNew = "OPEN ("+ qTotNew + "/" + result[0].size + ")";
 				}
 				//Updates the SQL
-				var upquer = "UPDATE quest_data SET quest_status=\'" + qStatNew + "\', active_players=\'" + qPlayersNew + "\', total_players=" + qTotNew + " WHERE quest_name=\'" + quest + "\';";
+				var upquer = `UPDATE quest_data SET quest_status="${qStatNew}", active_players="${qPlayersNew}", total_players= ${qTotNew} WHERE quest_name="${quest}";`;
 				con.query(upquer, function(err, result3) {
                     if (err) {
                         console.log("SQL error (result3): " + err);
@@ -1290,7 +1297,7 @@ var leave_quest = function(args, message) {
 
     console.log(`${character} is attempting to leave ${quest}`);
 
-	con.query(`SELECT * FROM quest_data WHERE quest_name=\'${quest}\';`, function(err, result) {
+	con.query(`SELECT * FROM quest_data WHERE quest_name="${quest}";`, function(err, result) {
         if (err) {
             console.log("SQL error (result1): " + err);
 			message.channel.send("Something went wrong. Try again in a couple of minutes.");
@@ -1302,7 +1309,7 @@ var leave_quest = function(args, message) {
 			return;
 		}
 		
-		con.query(`SELECT * FROM roster WHERE charName=\'${character}\';`, function(err, result2) {
+		con.query(`SELECT * FROM roster WHERE charName="${character}";`, function(err, result2) {
             if (err) {
                 console.log("SQL error (result2): " + err);
                 message.channel.send("Something went wrong. Try again in a couple of minutes.");
@@ -1354,10 +1361,10 @@ var leave_quest = function(args, message) {
 			if(result[0].total_players == result[0].size) {
 				reopened = true;
 			}
-			qStatNew = `OPEN (${qTotNew}/${result[0].size})`;
-			
+			qStatNew = result[0].active ? `IN PROGRESS` : `OPEN (${qTotNew}/${result[0].size})`;
+
 			//Updates the SQL
-			var upquer = "UPDATE quest_data SET quest_status=\'" + qStatNew + "\', active_players=\'" + qPlayersNew + "\', total_players=" + qTotNew + " WHERE quest_name=\'" + quest + "\';";
+			var upquer = `UPDATE quest_data SET quest_status="${qStatNew}", active_players="${qPlayersNew}", total_players= ${qTotNew} WHERE quest_name="${quest}";`;
 
             con.query(upquer, function (err, result3) {
                 if (err) {
@@ -1365,6 +1372,17 @@ var leave_quest = function(args, message) {
                     message.channel.send("SQL error, try again in a few minutes");
                     return;
                 }
+                if (result[0].active) {
+                    var leave_active_quest_sql = `UPDATE roster SET completeQuests=completeQuests + 1 WHERE entryID = ${result2[0].entryID}`;
+                    con.query(leave_active_quest_sql, result4, function (err, result4) {
+                        if (err) {
+                            console.log("SQL error (result4): " + err);
+                            message.channel.send("SQL error, try again in a few minutes");
+                            return;
+                        }
+                    });
+                }
+
                 var cDM = server.members.get(result[0].quest_DM);
                 if (dm_proxy) {
                     message.channel.send(character + " has left " + quest + "!");
@@ -1403,7 +1421,7 @@ var fire_quest = function(args, message) {
 
     console.log(`Attempting to fire quest, ${quest}`);
 
-	con.query("SELECT * FROM quest_data WHERE quest_name=\'" + quest + "\';", function(err, result) {
+	con.query(`SELECT * FROM quest_data WHERE quest_name="${quest}";`, function(err, result) {
 		if(err) {
 			message.channel.send("There was an error. Please try again in a few minutes or notify a DM.");
             console.log("SQL error (result1): " + err);
@@ -1429,7 +1447,7 @@ var fire_quest = function(args, message) {
 		}
 		
 		//first, update the quest
-		con.query("UPDATE quest_data SET active=1, quest_status='IN PROGRESS' WHERE quest_name=\'" + quest + "\';", function(err, result2) {
+		con.query(`UPDATE quest_data SET active=1, quest_status="IN PROGRESS" WHERE quest_name="${quest}";`, function(err, result2) {
             if (err) {
                 console.log("SQL error (result2): " + err);
                 message.channel.send("SQL error, try again in a few minutes");
@@ -1510,7 +1528,7 @@ var list_quests = function (args, message) {
     message.channel.send("**Open quests of level " + input + ": **");
 	
 	//Reads SQL database to find quests of given level
-	con.query("SELECT quest_name FROM quest_data WHERE quest_status!='CLOSED' AND quest_lvl=" + input + ";", function(err, result) {
+	con.query(`SELECT quest_name FROM quest_data WHERE quest_status!="CLOSED" AND quest_status!="IN PROGRESS" AND quest_lvl=${input};`, function(err, result) {
         if (err) {
             console.log("SQL error (result): " + err);
             message.channel.send("SQL error, try again in a few minutes");
@@ -1603,7 +1621,7 @@ var new_quest = function (args, message) {
             var id = message.id;
             var title = message.embeds[0].title;
 			
-			var queryText = "INSERT INTO quest_data (quest_name, quest_DM, quest_lvl, size, message_id) VALUES (\'" + title + "\', \'" + auth + "\', " + lvl + ", " + size + ", \'" + message.id + "\');";
+			var queryText = `INSERT INTO quest_data (quest_name, quest_DM, quest_lvl, size, message_id) VALUES ("${title}", "${auth}", ${lvl}, ${size}, "${message.id}");`;
 
             con.query(queryText, function (err) {
                 if (err) {
@@ -1864,7 +1882,7 @@ var roll_loot = function (args, message) {
     var player = message.author.id;
     
     //SQL call to verify they have neough, and then update quantity if they do
-    var sql = "SELECT `riftShards` FROM `roster` WHERE `charPlayer`= '" + player + "' AND `charName` = '" + char_name + "'";
+    var sql = `SELECT riftShards FROM roster WHERE charPlayer= "${player}" AND charName= "${char_name}"`;
 
     con.query(sql, function (err, result) {
         if (err) {
@@ -1929,7 +1947,7 @@ var roll_loot = function (args, message) {
         }
 
         //SQL to update character's dth
-        var update = "UPDATE roster SET riftShards=riftShards - " + shards_used + " WHERE charName= '" + char_name + "'";
+        var update = `UPDATE roster SET riftShards=riftShards - ${shards_used} WHERE charName= "${char_name}"`;
         con.query(update, function (err, result2) {
             if (err) {
                 console.log("SQL error (result2): " + err);
@@ -2013,7 +2031,7 @@ var add_character = function (args, message) {
     }
 
     //build SQl string
-	var sql = "INSERT INTO roster (charName, charPlayer, exp, downHours, riftShards, dead, edited, level) VALUES (\'" + char_name+ "\', \'" + player_id + "\', " + initial_xp + ", 0, 0, 0, 0, " + level + ")";
+    var sql = `INSERT INTO roster (charName, charPlayer, exp, downHours, riftShards, dead, edited, level) VALUES ("${char_name}", "${player_id}", ${initial_xp}, 0, 0, 0, 0, ${level})`;
 
     //query SQL to add char to roster
     con.query(sql, function (err, result) {
@@ -2023,7 +2041,7 @@ var add_character = function (args, message) {
             return;
         }
         server.members.get(player_id).send(`${char_name} was added to the guild`);
-        general_chat.send("<@" + player_id + "> has made a new character. Welcome to the guild, " + char_name + "!");
+        general_chat.send(`<@${player_id}> has made a new character. Welcome to the guild, ${char_name}!`);
         console.log("Player successfully added.");
 	});
     
@@ -2110,7 +2128,7 @@ var quest_complete = function(args, message) {
 
     console.log(`Completing quest ${quest}`);
 
-	con.query("SELECT * FROM quest_data WHERE quest_name=\'" + quest + "\';", function(err, result) {
+	con.query(`SELECT * FROM quest_data WHERE quest_name="${quest}";`, function(err, result) {
         if (err) {
             console.log("SQL error (result): " + err);
             message.channel.send("SQL error, try again in a few minutes");
@@ -2126,7 +2144,13 @@ var quest_complete = function(args, message) {
             console.log(`Wrong DM of quest.`);
 			message.channel.send("You can't complete someone else's quest!");
 			return;
-		}
+        }
+
+        if (!result[0].active) {
+            console.log("Quest hasn't been started yet.");
+            message.channel.send("You must fire the quest before you complete it!");
+            return;
+        }
 
         var auth = message.author;
 		
@@ -2167,7 +2191,7 @@ var quest_complete = function(args, message) {
 						message.delete().then(msg => console.log("Quest posting deleted")).catch(console.log(error));
 				});
 				
-				con.query("DELETE FROM quest_data WHERE quest_name=\'" + quest + "\';", function(err, result4) {
+				con.query(`DELETE FROM quest_data WHERE quest_name="${quest}";`, function(err, result4) {
 					if(err) {
                         console.log("SQL error (result4): " + err);
                         message.channel.send("SQL error, try again in a few minutes");
@@ -2191,21 +2215,21 @@ var award_xp = function(players, xp) {
     console.log("Awarding exp to a (group?) of players.");
 
 	//builds query to search for all players to be awarded exp		
-	var quer1 = "SELECT exp, level, charName, charPlayer FROM roster WHERE charName IN (\'";
+	var quer1 = `SELECT exp, level, charName, charPlayer FROM roster WHERE charName IN ("`;
 	for(var i = 0; i < players.length; i++){
-		quer1 += players[i] + "\'";
+		quer1 += players[i] + `"`;
 		if(i + 1 != players.length){
-			quer1 += ", \'";
+			quer1 += `, "`;
 		}
 	}
 	quer1 += ");"
 
     //builds query to update their exp
-	var sql = "UPDATE roster SET exp=exp +" + xp + ", edited=1 WHERE charName IN (\'";
+	var sql = `UPDATE roster SET exp=exp + ${xp}, edited=1 WHERE charName IN ("`;
 	for(var i = 0; i < players.length; i++){
-		sql += players[i] + "\'";
+		sql += players[i] + `"`;
 		if(i + 1 != players.length){
-			sql += ", \'";
+			sql += `, "`;
 		}
 	}
 	sql += ");"
@@ -2232,7 +2256,7 @@ var award_xp = function(players, xp) {
 			newLevel = check_level(parseInt(result[i].exp) + parseInt(xp));
             //if they leveled up, update database
             if (newLevel > parseInt(result[i].level)) {
-				con.query("UPDATE roster SET level=" + newLevel + " WHERE charName=\'" + result[i].charName + "\';", function(err, result2) {
+				con.query(`UPDATE roster SET level= ${newLevel} WHERE charName= "${result[i].charName}";`, function(err, result2) {
                     if (err) throw err;
 
 				});
@@ -2299,11 +2323,11 @@ var add_shards = function(args, message){
 	}
 
     //builds sql query to update all players shards
-	var sql = "UPDATE roster SET riftShards=riftShards +" + shards + ", edited=1 WHERE charName IN (\'";
+	var sql = `UPDATE roster SET riftShards=riftShards + ${shards}, edited=1 WHERE charName IN ("`;
 	for(var i = 0; i < players.length; i++){
-		sql += players[i] + "\'";
+		sql += players[i] + `"`;
 		if(i + 1 != players.length){
-			sql += ", \'";
+			sql += `, "`;
 		}
 	}
 	sql += ");"
@@ -2367,14 +2391,14 @@ var add_hours = function(args, message){
 		return;	
 	}
 	
-	var sql = "UPDATE roster SET downHours=downHours +" + hours + ", edited=1 WHERE charName IN (\'";
-    var notify_sql = "SELECT charPlayer FROM roster WHERE charName IN (\'";
+	var sql = `UPDATE roster SET downHours=downHours + ${hours}, edited=1 WHERE charName IN ("`;
+    var notify_sql = `SELECT charPlayer FROM roster WHERE charName IN ("`;
     for (var i = 0; i < players.length; i++){
-        sql += players[i] + "\'";
-        notify_sql += players[i] + "\'";
+        sql += players[i] + `"`;
+        notify_sql += players[i] + `"`;
 		if(i + 1 != players.length){
-            sql += ", \'";
-            notify_sql += ", \'";
+            sql += `, "`;
+            notify_sql += `, "`;
 		}
 	}
 	sql += ");"
@@ -2477,7 +2501,7 @@ var spend_dth = function (args, message) {
     var player = message.author.id;
 
     //SQL call to verify they have neough, and then update quantity if they do
-    var sql = "SELECT `downHours` FROM `roster` WHERE `charPlayer`= '" + player + "' AND `charName` = '" + char_name + "'";
+    var sql = `SELECT downHours FROM roster WHERE charPlayer= "${player}" AND charName = "${char_name}"`;
 
     con.query(sql, function (err, result) {
         if (err) throw err;
@@ -2496,7 +2520,7 @@ var spend_dth = function (args, message) {
 
 
         //SQL to update character's dth
-        var update = "UPDATE roster SET downHours=downHours - " + dth_quantity + " WHERE charName= '" + char_name + "'";
+        var update = `UPDATE roster SET downHours=downHours - ${dth_quantity} WHERE charName= "${char_name}"`;
         con.query(update, function (err, result) {
             if (err) {
                 console.log("SQL error (result) : " + err);
@@ -2537,7 +2561,7 @@ var check_character = function(args, message) {
 
     console.log(`Checking ${character}'s stats.`);
 
-	con.query("SELECT * FROM roster WHERE charName=\'" + character + "\';", function(err, result) {
+	con.query(`SELECT * FROM roster WHERE charName="${character}";`, function(err, result) {
         if (err) {
             console.log("SQL error (result1) : " + err);
             message.channel.send("SQL error, try again in a few minutes");
@@ -2550,7 +2574,7 @@ var check_character = function(args, message) {
 			return;
         }
 
-        con.query(`SELECT quest_name FROM quest_data WHERE active_players LIKE '%${result[0].entryID}%';`, function (err, result2) {
+        con.query(`SELECT quest_name FROM quest_data WHERE active_players LIKE "%${result[0].entryID}%";`, function (err, result2) {
             if (err) {
                 console.log("SQL error (result2) : " + err);
                 message.channel.send("SQL error, try again in a few minutes");
@@ -2794,7 +2818,7 @@ var buy_item = function (args, message) {
     console.log(`Attempting to buy ${quantity_to_buy} of ${item_to_buy}.`);
 
     //looks for item in shop inventory
-    var sql = `SELECT * FROM shop_inventory WHERE item_name = '${item_to_buy}';`;
+    var sql = `SELECT * FROM shop_inventory WHERE item_name = "${item_to_buy}";`;
     con.query(sql, function (err, result) {
         if (err) {
             console.log("SQL error (result) : " + err);
@@ -2813,7 +2837,7 @@ var buy_item = function (args, message) {
         }
 
         //if item is there, remove it from the inventory
-        var remove_item_sql = `UPDATE shop_inventory SET item_quantity = item_quantity - ${quantity_to_buy} WHERE item_name = '${item_to_buy}';`;        
+        var remove_item_sql = `UPDATE shop_inventory SET item_quantity = item_quantity - ${quantity_to_buy} WHERE item_name = "${item_to_buy}";`;        
 
         con.query(remove_item_sql, function (err, delete_result) {
             if (err) {
