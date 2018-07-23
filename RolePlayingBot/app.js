@@ -81,6 +81,14 @@ var pool;
 
 var dateA;
 
+console.logCopy = console.log.bind(console);
+
+console.log = function (data) {
+    var timestamp = `[${new Date().toUTCString()}]`;
+    this.logCopy(timestamp, data);
+};
+
+
 //when ready, log in console
 var on_ready = bot.on("ready", () => {
 
@@ -154,12 +162,13 @@ var on_ready = bot.on("ready", () => {
 	console.log("weekly timed generation fires " + dateB);
 	
 	var adjustedTime = dateB.getTime() - dateA.getTime();
-	setTimeout(lockout_warning, adjustedTime - (30 * 60 * 1000));	
-	setTimeout(weekly_progress, adjustedTime);
-	setTimeout(keepAlive, 2*60*60*1000);	
+//	setTimeout(lockout_warning, adjustedTime - (30 * 60 * 1000));	
+//	setTimeout(weekly_progress, adjustedTime);
+//	setTimeout(keepAlive, 2*60*60*1000);	
 	
     console.log("Ready");
 
+    
 });
 
 //Auto assigns new members to the "Guild Members" Role
@@ -247,7 +256,7 @@ var on_message = bot.on("message", function (message) {
 				return;
 
 			//PM's the DM to join their quest and updates SQL
-            case  "joinquest":
+            case "joinquest":
 			case "join":
 				join_quest(args, message);
 				con.release();
@@ -543,25 +552,32 @@ var keepAlive = function () {
         connection.query("SELECT 1", function (err, rows) {
             connection.release();
             if (err) {
-                console.log("QUERY ERROR: " + err);
+                console.log("Keep alive error: " + err);
+            } else {
+                console.log("Keep alive successful");
             }
         });
     });
     setTimeout(keepAlive, 6 * 60 * 60 * 1000);
 }
 
+var bot_status_to_revert;
 
 var lockout_warning = function () {
-    
+
+    bot_status_to_revert = bot.user.localPresence.game.name;
 	announcement_board.send("Weekly downtime in 30 minutes. Make sure that all finished quests have been closed with ~complete or you may lose downtime rewards.");
-	bot.user.setGame("Lockout 4AM PST");
-    console.log("lockout warning sent.");
+    bot.user.setGame("Lockout 4AM PST");
+    bot.user.setStatus("idle");
+    console.log("lockout warning sent, bot status updated.");
 }
 
 var weekly_progress = function () {
 
-    console.log("Lockout beginning. Updates in progress.");
-	lockout = true;
+    console.log("Lockout beginning, bot status updated. Updates in progress.");
+    lockout = true;
+    bot.user.setGame("Lockout in Progress");
+    bot.user.setStatus("dnd");
 	var fullHours = [];
 	var halfHours = [];
 	pool.getConnection(function(err,connection) {
@@ -570,14 +586,14 @@ var weekly_progress = function () {
 		var con2;
 		pool.getConnection(function(err, connection2) {
 			if(err) {
-				console.log(err);
+				console.log("Connection Error: " + err);
 				return;
 			}
 			con2 = connection2;
 			con2.query("SELECT * FROM roster", function(err, result) {
 				if (err) {
-					console.log(err);
-					return;
+                    console.log("Weekly Updates Error (results1): " + err);
+					throw err;
 				}
 			
 				for(entry in result) {
@@ -668,19 +684,26 @@ var weekly_progress = function () {
 
                 con2.query(sql, function (err, result2) {
 					if(err) {
-						console.log(err);
+                        console.log("Weekly Updates Error (results2): " + err);
+                        throw err;
 					}
 					
 					con2.query(sql2, function(err, result3) {
 						if(err) {
-							console.log(err);
+                            console.log("Weekly Updates Error (results3): " + err);
+                            throw err;
 						}
 						
 						con2.query("UPDATE roster SET numQuests= numQuests - completeQuests, completeQuests = 0", function(err, result4) {
 							if (err) {
-								console.log("Oops");
+                                console.log("Weekly Updates Error (results4): " + err);
+                                throw err;
 							}
-														
+                            lockout = false;
+                            announcement_board.send("Weekly downtime Complete.");
+                            bot.user.setGame(bot_status_to_revert);
+                            bot.user.setStatus("online");
+                            console.log("Lockout complete, updates successful.");
 						});
 					});
 					
@@ -689,14 +712,9 @@ var weekly_progress = function () {
 			con2.release();
 		});
 		con.release();
-	});
-	lockout = false;
-	announcement_board.send("Weekly downtime Complete.");
-    bot.user.setGame("Lockout Complete");
-    console.log("Lockout complete, updates successful.");
-	setTimeout(lockout_warning, 7*24*60*60*1000); 
-	setTimeout(weekly_progress, (7*24*60*60*1000) - (30*60*1000));
-	
+    });	
+    setTimeout(lockout_warning, 7 * 24 * 60 * 60 * 1000);
+    setTimeout(weekly_progress, (7 * 24 * 60 * 60 * 1000) - (30 * 60 * 1000));							
 }
 
 var check_quest = function (args, message) {
@@ -735,7 +753,6 @@ var check_quest = function (args, message) {
 			}
 		}
 		sql += ";";
-		console.log(sql);
 		
 		con.query(sql, function(err, result2) {
 			if(err) {
@@ -751,17 +768,18 @@ var check_quest = function (args, message) {
             characterNames = characterNames.substring(0, characterNames.length - 2);
 				
 			
-			message.channel.send(`${quest}\nQuest DM: ${cDM}\nQuest Level: ${result[0].quest_lvl}\nQuest Status: ${result[0].quest_status}\nActive Players: ${characterNames}`);
+            message.channel.send(`${quest}\nQuest DM: ${cDM}\nQuest Level: ${result[0].quest_lvl}\nQuest Status: ${result[0].quest_status}\nActive Players: ${characterNames}`);
+            console.log(`Quest checked.`);
+
 		});
     });
-    console.log(`Quest checked.`);
 }
 
 var message_members = function (args, message) {
 
     if (!args[1]) {
         console.log("No arguments provided for ~messagequest.");
-        message.author.send("The syntax for ~messagequest is '~messagequest [quest name], [message]'.")
+        message.channel.send("The syntax for ~messagequest is '~messagequest [quest name], [message]'.")
     }
 	
 	var text = args.splice(1).join(" ");
@@ -781,18 +799,20 @@ var message_members = function (args, message) {
 		}		
 		counter++;
     }
-    console.log(`Messaging members of ${quest}.`);
 
     if (!quest || mesText.length == 0) {
         console.log("Invalid arguments or no message given.");
-        message.author.send("Invalid arguments or no message given. The syntax for 'messagequest' is '~messagequest [quest name], [message]'.");
+        message.channel.send("Invalid arguments or no message given. The syntax for 'messagequest' is '~messagequest [quest name], [message]'.");
         return;
     }
+
+    console.log(`Messaging members of ${quest}.`);
 
     con.query("SELECT * FROM quest_data WHERE quest_name=\'" + quest + "\';", function (err, result) {
 		if(err) {
             console.log("SQL error.");
             console.log(err);
+            return;
 		}
         if (result.length == 0) {
             console.log("No quest found");
@@ -802,7 +822,7 @@ var message_members = function (args, message) {
 		//console.log(result);
         if (message.author.id != result[0].quest_DM) {
             console.log("Author isn't DM of the requested quest.");
-			message.channel.send("You are not the DM of that quest, and can't message the players.");
+			message.channel.send("You are not the DM of that quest so you can't message the players.");
 			return;
 		}
 		
@@ -819,7 +839,8 @@ var message_members = function (args, message) {
 		
 		con.query(sql, function(err, result2) {
 			if(err) {
-				console.log("Idiocy");
+                console.log("SQL error (result2): " + err);
+                return;
 			}
 			
 			for(entry in result2) {
@@ -828,12 +849,11 @@ var message_members = function (args, message) {
 				playerUser.send("Message from " + DMName + " about the quest " + result[0].quest_name + ":\n" + mesText);
 			}
 			message.author.send("You sent to the players on " + result[0].quest_name + ":\n" + mesText);
+            console.log("Messaging complete");
 			
 		});
 		
 	});
-
-    console.log("Messaging complete");
 
 }
 
@@ -861,7 +881,7 @@ var roll_dice = function (args, message) {
         return;
     }
 
-    console.log(str, purpose);
+    console.log(`Rolling Dice`);
 
     const mods = [];
 
@@ -1051,8 +1071,6 @@ var roll_dice = function (args, message) {
         }
     });
 
-
-    console.log(rolls, totalMods);
     var totalRoll = totalMods;
     for (var roll in rolls) {
         totalRoll += rolls[roll].total;
@@ -1074,7 +1092,7 @@ var roll_dice = function (args, message) {
         output += `- ${totalMods*-1}`;
     }
 
-    output += purpose ? `for **${purpose}** and got:` : "and got:";
+    output += purpose ? ` for **${purpose}** and got:` : " and got:";
     toAdd = "";
     for (var i = 0; i < rolls.length; i++) {
         toAdd += rolls[i].neg ? ` - (` : ` + (`;
@@ -1100,10 +1118,10 @@ var roll_dice = function (args, message) {
         output += ` - ${totalMods * -1}`;
     }
     output += ` = ${totalRoll}`;
-    console.log(output);
 
     //sends result as a reply to sender
     message.channel.send(output);
+    console.log("Roll complete");
 
 }
 
@@ -1122,7 +1140,6 @@ var join_quest = function (args, message) {
     //reads input arguments
     var text = args.splice(1).join(" ");
 
-    console.log(text);
     //check if DM is making the command as a proxy for another user
     var dm_proxy = false;
 
@@ -1144,21 +1161,30 @@ var join_quest = function (args, message) {
 	//Queries to find the quest
 	con.query("SELECT * FROM quest_data WHERE quest_name=\'" + quest + "\';", function(err, result) {
 		if (err) {
-			auth.send("No such quest with that title");
+            console.log("SQL error (result1): " + err);
+            message.channel.send("SQL error, please try again in a few minutes.");
+            return;
 		}
 		if(result[0] == undefined) {
-            auth.send("No such quest with that title. Please check spelling.");
+            message.channel.send("No such quest with that title. Please check spelling.");
             console.log(`${quest} was not found.`);
 			return;
 		}
+
 		//If its open and inactive, query to find the player
 		if(result[0].quest_status != "CLOSED" && result[0].active != 1) {
 			con.query("SELECT * FROM roster WHERE charName=\'" + character + "\';", function(err, result2){
-				if(err || result2.length == 0) {
-                    auth.send("The character was not found. Please check spelling.");
+                if (err) {
+                    console.log("SQL error (result2): " + err);
+                    message.channel.send("SQL error, please try again in a few minutes.");
+                    return;
+                }
+
+                if (result2.length == 0) {
+                    message.channel.send("The character was not found. Please check spelling.");
                     console.log(`${character} was not found.`)
-					return;
-				}				
+                    return;
+                }
 				//Make sure they own the character or are a DM
                 
 				if(auth.id != result2[0].charPlayer) {
@@ -1167,7 +1193,7 @@ var join_quest = function (args, message) {
                         dm_proxy = true;
                     }
                     else {
-                        auth.send("That's not your character!");
+                        message.channel.send("That's not your character!");
                         console.log('Author is not a DM and doesn\'t own that character');
                         return;
                     }
@@ -1180,10 +1206,10 @@ var join_quest = function (args, message) {
 					qPlayersNew = result2[0].entryID;
 				} else {
 					var checkP = result[0].active_players.split(" ");
-					//console.log(checkP);
-					for(var i = 0; i < checkP.length; i++) {
-						if(parseInt(checkP[i]) == result2[0].entryID) {
-                            auth.send("That character is already on the quest!");
+
+                    for (var i = 0; i < checkP.length; i++) {
+                        if (parseInt(checkP[i]) == result2[0].entryID) {
+                            message.channel.send("That character is already on the quest!");
                             console.log(`The character was already on the quest`);
 							return;
 						}
@@ -1203,17 +1229,21 @@ var join_quest = function (args, message) {
 				//Updates the SQL
 				var upquer = "UPDATE quest_data SET quest_status=\'" + qStatNew + "\', active_players=\'" + qPlayersNew + "\', total_players=" + qTotNew + " WHERE quest_name=\'" + quest + "\';";
 				con.query(upquer, function(err, result3) {
-					if (err) throw err;
-                    console.log("Quest updated, character added.");
+                    if (err) {
+                        console.log("SQL error (result3): " + err);
+                        message.channel.send("SQL error, please try again in a few minutes.");
+                        return;
+                    }
+
                     var cDM = server.members.get(result[0].quest_DM);
                     if (dm_proxy) {
-                        auth.send(character + " has successfully joined " + quest + "!");
+                        message.channel.send(character + " has successfully joined " + quest + "!");
                         var proxied_player = server.members.get(result2[0].charPlayer);
                         proxied_player.send(`Your character, ${character}, was added to ${quest} by ${auth.username}`);
                         cDM.send(`${proxied_player} has joined ${quest} with the character ${character}. (${auth.username} proxied).`)
                     }
                     else {
-                        auth.send("You've successfully joined " + quest + " with " + character + "!");
+                        message.channel.send("You've successfully joined " + quest + " with " + character + "!");
                         cDM.send(auth.username + " has joined " + quest + " with the character " + character + ".");
                     
                     }
@@ -1221,7 +1251,8 @@ var join_quest = function (args, message) {
 						cDM.send(quest + " is now full. Reach out to your players to schedule a session.");
 					}
 					quest_board.fetchMessage(result[0].message_id).then(message => {
-						message.edit("**QUEST STATUS: " + qStatNew + "**");
+                        message.edit("**QUEST STATUS: " + qStatNew + "**");
+                        console.log("Quest updated, character added and quest posting editted.");
 					});
 				});
 				
@@ -1260,24 +1291,25 @@ var leave_quest = function(args, message) {
     console.log(`${character} is attempting to leave ${quest}`);
 
 	con.query(`SELECT * FROM quest_data WHERE quest_name=\'${quest}\';`, function(err, result) {
-		if(err) {
-			auth.send("Something went wrong. Try again in a couple of minutes.");
+        if (err) {
+            console.log("SQL error (result1): " + err);
+			message.channel.send("Something went wrong. Try again in a couple of minutes.");
 			return;
         }
         if (result == undefined || result.length == 0) {
-            auth.send("No quest by that name. Make sure the spelling is correct!");
+            message.channel.send("No quest by that name. Make sure the spelling is correct!");
             console.log(`${quest} not found.`);
 			return;
 		}
 		
 		con.query(`SELECT * FROM roster WHERE charName=\'${character}\';`, function(err, result2) {
-			
-			if(err) {
-				auth.send("Something went wrong. Try again in a couple of minutes.");
+            if (err) {
+                console.log("SQL error (result2): " + err);
+                message.channel.send("Something went wrong. Try again in a couple of minutes.");
 				return;
             }
             if (result2 == undefined || result2.length == 0) {
-                auth.send("No character by that name. Make sure the spelling is correct, and if you have a last name add it!");
+                message.channel.send("No character by that name. Make sure the spelling is correct, and if you have a last name add it!");
                 console.log(`${character} not found.`);
 				return;
             }
@@ -1288,7 +1320,7 @@ var leave_quest = function(args, message) {
                     dm_proxy = true;
                 }
                 else {
-                    auth.send("That's not your character!");
+                    message.channel.send("That's not your character!");
                     console.log('Author is not a DM and doesn\'t own that character');
                     return;
                 }
@@ -1300,7 +1332,7 @@ var leave_quest = function(args, message) {
 
             if (!cPlayers.includes(result2[0].entryID.toString())) {
                 console.log("Player wasn't on the quest");
-                auth.send("That character isn't on this quest.");
+                message.channel.send("That character isn't on this quest.");
                 return;
             }
 
@@ -1328,17 +1360,20 @@ var leave_quest = function(args, message) {
 			var upquer = "UPDATE quest_data SET quest_status=\'" + qStatNew + "\', active_players=\'" + qPlayersNew + "\', total_players=" + qTotNew + " WHERE quest_name=\'" + quest + "\';";
 
             con.query(upquer, function (err, result3) {
-				if (err) throw err;
-                console.log("Quest updated, character was removed");	
+                if (err) {
+                    console.log("SQL error (result3): " + err);
+                    message.channel.send("SQL error, try again in a few minutes");
+                    return;
+                }
                 var cDM = server.members.get(result[0].quest_DM);
                 if (dm_proxy) {
-                    auth.send(character + " has left " + quest + "!");
+                    message.channel.send(character + " has left " + quest + "!");
                     var proxied_player = server.members.get(result2[0].charPlayer);
                     proxied_player.send(`Your character, ${character}, was removed from ${quest} by ${auth.username}`);
                     cDM.send(`${proxied_player} has left ${quest} with the character ${character}. (${auth.username} proxied).`)
                 }
                 else {
-                    auth.send("You've successfully left " + quest + " with " + character + ".");
+                    message.channel.send("You've successfully left " + quest + " with " + character + ".");
                     cDM.send(auth.username + " has left " + quest + " with the character " + character + ".");
 
                 }
@@ -1346,7 +1381,8 @@ var leave_quest = function(args, message) {
 					cDM.send(quest + " is now open again. Make sure to alert players if scheduling has already occurred.");
 				}
 				quest_board.fetchMessage(result[0].message_id).then(message => {
-					message.edit("**QUEST STATUS: " + qStatNew + "**");
+                    message.edit("**QUEST STATUS: " + qStatNew + "**");
+                    console.log("Quest updated, character was removed and quest posting editted");	
 				});
 			});
 		});
@@ -1359,7 +1395,8 @@ var fire_quest = function(args, message) {
 
     if (!args[1]) {
         console.log("No arguments for ~fire");
-        message.author.send("The syntax for 'fire' is '~fire [quest title]'.");
+        message.channel.send("The syntax for 'fire' is '~fire [quest title]'.");
+        return;
     }
 
 	var quest = args.splice(1).join(" ");
@@ -1369,13 +1406,16 @@ var fire_quest = function(args, message) {
 	con.query("SELECT * FROM quest_data WHERE quest_name=\'" + quest + "\';", function(err, result) {
 		if(err) {
 			message.channel.send("There was an error. Please try again in a few minutes or notify a DM.");
-			console.log(err);
-		}
+            console.log("SQL error (result1): " + err);
+            return;
+        }
+
 		if(result[0] == undefined) { 
             message.channel.send("No such quest with that title");
             console.log(`${quest} wasn't found.`);
             return;
-                }
+        }
+
 		if(message.author.id !== result[0].quest_DM) {
             message.channel.send("You can't fire someone else's quest!");
             console.log(`Quest owned by another DM`);
@@ -1390,8 +1430,11 @@ var fire_quest = function(args, message) {
 		
 		//first, update the quest
 		con.query("UPDATE quest_data SET active=1, quest_status='IN PROGRESS' WHERE quest_name=\'" + quest + "\';", function(err, result2) {
-            if (err) throw err;
-
+            if (err) {
+                console.log("SQL error (result2): " + err);
+                message.channel.send("SQL error, try again in a few minutes");
+                return;
+            }
 			//Second, update all the characters
 			var cUP = result[0].active_players.split(" ");
 			var sql = "UPDATE roster SET numQuests=numQuests + 1 WHERE entryID=";
@@ -1409,12 +1452,15 @@ var fire_quest = function(args, message) {
 			sql2 += ";";
 			con.query(sql, function(err, result3) {
 				if (err) {
-					console.log("How the fuck");
-					console.log(err);
+                    console.log("SQL error (result3): " + err);
+                    message.channel.send("SQL error, try again in a few minutes");
+                    return;
 				}
 				con.query(sql2, function(err, result4) {
 					if (err) {
-						console.log(err);
+                        console.log("SQL error (result4): " + err);
+                        message.channel.send("SQL error, try again in a few minutes");
+                        return;
 					}
 					message.channel.send(quest + " has fired.");
 
@@ -1424,9 +1470,9 @@ var fire_quest = function(args, message) {
                     }
 
 					quest_board.fetchMessage(result[0].message_id).then(message => {
-						message.edit("**QUEST STATUS: IN PROGRESS**");
+                        message.edit("**QUEST STATUS: IN PROGRESS**");
+                        console.log(`Quest fired, players notified.`);
                     });
-                    console.log(`Quest fired, players notified`);
 				});
 				
 			});
@@ -1444,6 +1490,7 @@ var list_quests = function (args, message) {
     if (!args[1]) {
         console.log("No arguments for ~list");
         message.channel.send("The syntax for 'list' is '~list [quest's level]'.")
+        return;
     }
 
     //read argument
@@ -1460,68 +1507,23 @@ var list_quests = function (args, message) {
     console.log(`Listing open quests of lvl ${input}`);
 
     //prep the message
-    auth.send("**Open quests of level " + input + ": **");
+    message.channel.send("**Open quests of level " + input + ": **");
 	
 	//Reads SQL database to find quests of given level
 	con.query("SELECT quest_name FROM quest_data WHERE quest_status!='CLOSED' AND quest_lvl=" + input + ";", function(err, result) {
-		if (err) throw err ;
-		//console.log(result);
-		for(entry in result) {
-			try {
-				auth.send(result[entry].quest_name);
-            } catch (error) {
-                console.log('There was an error.');
-                console.log(error);
-                message.channel.send("There was an error in listing the quests.");
-                return;
-			}
+        if (err) {
+            console.log("SQL error (result): " + err);
+            message.channel.send("SQL error, try again in a few minutes");
+            return;
         }
+        for (entry in result) {
+            message.channel.send(result[entry].quest_name);
+        }
+
         console.log("Finished");
     });
     
 }
-/*
-//Deprecated. Functionality now automatic.
-var update_quest = function (args, message) {
-    //combines input into a string
-    var input = args.splice(1).join(" ");
-
-    //regex seperates title and status
-    var regEx = /\W*(.*?),\W(.*?)$/;
-
-    var match;
-    if (match = regEx.exec(input)) {
-        var title = match[1];
-        var status = match[2];
-    }
-    else {
-        message.channel.send("Error, please try again.");
-        return;
-    }
-
-    //try..catch for IO errors
-    try {
-
-        //looks for file w/ name of title
-        //var id = fs.readFileSync(__dirname + '/' + title + ".txt", 'utf8');
-
-        //if quest complete, delete txt file
-        //if (status.toLowerCase() == "complete") {
-            //fs.unlinkSync(__dirname + '/' + title + ".txt");
-        //}
-
-        //find the message posting, edit to set quest status to new status
-        quest_board.fetchMessage(id).then(message => {
-            message.edit("**QUEST STATUS: " + status.toUpperCase() + "**");
-        });
-    } catch (error) {
-        //if error, log error and notify user
-        console.log(error);
-        message.channel.send("Error, please try again.");
-    }
-
-}
-*/
 
 var new_quest = function (args, message) {
     //creates embed for quest listing
@@ -1597,24 +1599,26 @@ var new_quest = function (args, message) {
     quest_board.send("**QUEST STATUS: OPEN**", listing)
         .then((message) => {
 
-            //after message is sent, bot reads finds message id and stores as txt file
-            console.log(message.id);
-
             //grab ID of message, and title of embed
             var id = message.id;
             var title = message.embeds[0].title;
 			
 			var queryText = "INSERT INTO quest_data (quest_name, quest_DM, quest_lvl, size, message_id) VALUES (\'" + title + "\', \'" + auth + "\', " + lvl + ", " + size + ", \'" + message.id + "\');";
-			console.log(queryText);
-			con.query(queryText, function(err){
-				if(err) throw err ;
-				console.log(`${title} added to SQL data`);
+
+            con.query(queryText, function (err) {
+                if (err) {
+                    console.log("SQL error: " + err);
+                    message.channel.send("SQL error, try again in a few minutes");
+                    return;
+                }
+                console.log(`${title} added to SQL data`);
+                message.channel.send("Quest added to board.");
+
 			});
 
         });
 		
     archive.send("**ARCHIVE COPY**", listing);
-    message.channel.send("Quest added to board.");
 }
 
 
@@ -1622,7 +1626,7 @@ var update_bot_status = function (args, message) {
     //if there's no arguments, return
     if (!args[1]) {
         console.log("No arguments for ~botstatus");
-        message.author.send("The syntax for 'botstatus' is '~botstatus [new status]'.");
+        message.channel.send("The syntax for 'botstatus' is '~botstatus [new status]'.");
         return;
     }
 
@@ -1632,7 +1636,7 @@ var update_bot_status = function (args, message) {
     //set status
     bot.user.setGame(text);
     console.log("Bot status Updated.");
-    message.author.send("Bot status updated to " + text);
+    message.channel.send("Bot status updated to: " + text);
 }
 
 //searches database of spells and spits out description
@@ -1768,14 +1772,11 @@ var search_spells = function (args, message) {
                 var i = 0;
                 while (description.length > 1000) {
                     description_array[i] = description.substring(0, 1000);
-                    //console.log(description_array[i]);
                     i++;
                     description = description.substring(1000);
                 }
                 description_array[i] = description;
                 show_spell.addField("Description", description_array[0]);
-
-                //console.log(description_array);
 
                 for (i = 1; i < description_array.length; i++) {
                     show_spell.addField("Description (cont.)", description_array[i]);
@@ -1866,7 +1867,12 @@ var roll_loot = function (args, message) {
     var sql = "SELECT `riftShards` FROM `roster` WHERE `charPlayer`= '" + player + "' AND `charName` = '" + char_name + "'";
 
     con.query(sql, function (err, result) {
-        if (err) throw err;
+        if (err) {
+            console.log("SQL error (result1): " + err);
+            message.channel.send("SQL error, try again in a few minutes");
+            return;
+        }
+
         if (result.length == 0) {
             console.log("Player wasn't found");
             return message.channel.send("no character/player found");
@@ -1924,8 +1930,12 @@ var roll_loot = function (args, message) {
 
         //SQL to update character's dth
         var update = "UPDATE roster SET riftShards=riftShards - " + shards_used + " WHERE charName= '" + char_name + "'";
-        con.query(update, function (err, result) {
-            if (err) throw err;
+        con.query(update, function (err, result2) {
+            if (err) {
+                console.log("SQL error (result2): " + err);
+                message.channel.send("SQL error, try again in a few minutes");
+                return;
+            }
             console.log(`${char_name} spent ${shards_used} shards and rolled a ${rolled_item}`);
         });
 
@@ -1959,11 +1969,11 @@ var add_character = function (args, message) {
 	while ((match = regEx.exec(text)[1]) != '') {
         
         try {
-                outCats.push(match);
+            outCats.push(match);
         } catch (e) {
-                console.log(e);
-                message.channel.send("Error adding character, check console for details.");
-                return;
+            console.log("Error in matching: " + e);
+            message.channel.send("Error adding character, check console for details.");
+            return;
         }
         
     }
@@ -2007,9 +2017,13 @@ var add_character = function (args, message) {
 
     //query SQL to add char to roster
     con.query(sql, function (err, result) {
-		if (err) throw err;
+        if (err) {
+            console.log("SQL error: " + err);
+            message.channel.send("SQL error, try again in a few minutes");
+            return;
+        }
         server.members.get(player_id).send(`${char_name} was added to the guild`);
-        general_chat.send("@<" + player_id + "> has made a new character. Welcome to the guild, " + char_name + "!");
+        general_chat.send("<@" + player_id + "> has made a new character. Welcome to the guild, " + char_name + "!");
         console.log("Player successfully added.");
 	});
     
@@ -2055,7 +2069,7 @@ var manual_xp = function (args, message) {
 
     //if no players, return
     if (players.length === 0) {
-        console.log("No players found");
+        console.log("No players specified");
         message.channel.send("Invalid syntax, no characters selected. The syntax for 'addxp' is '~addxp [xp value], [char 1], [char 2], [char 3]' for as many characters as you need.");
 		return;	
 	}
@@ -2098,12 +2112,13 @@ var quest_complete = function(args, message) {
 
 	con.query("SELECT * FROM quest_data WHERE quest_name=\'" + quest + "\';", function(err, result) {
         if (err) {
-            console.log(err);
-			message.channel.send("SQL error");
+            console.log("SQL error (result): " + err);
+            message.channel.send("SQL error, try again in a few minutes");
+            return;
 		}
         if (result == undefined) {
             console.log(`No quest with that name found`);
-            auth.send("No such quest with that title");
+            message.channel.send("No such quest with that title");
             return;
         }
 		
@@ -2132,16 +2147,15 @@ var quest_complete = function(args, message) {
 		sql2 += ";";
 		con.query(sql, function(err, result2) {
 			if (err) {
-                console.log(err);
-                message.channel.send("SQL error");
-			}
+                console.log("SQL error (result2): " + err);
+                message.channel.send("SQL error, try again in a few minutes");
+                return;			}
 			
 			con.query(sql2, function(err, result3) {
 				if(err) {
-                    console.log("WHAT FUCK");
-                    console.log(err);
-                    message.channel.send("SQL error");
-                }
+                    console.log("SQL error (result3): " + err);
+                    message.channel.send("SQL error, try again in a few minutes");
+                    return;                }
 				var players = [];
 				for(entry in result3) {
                     players.push(result3[entry].charName);
@@ -2150,16 +2164,17 @@ var quest_complete = function(args, message) {
 				award_xp(players, xp);
 				
 				quest_board.fetchMessage(result[0].message_id).then(message => {
-						message.delete().then(msg => console.log("Message deleted")).catch(console.error);
+						message.delete().then(msg => console.log("Quest posting deleted")).catch(console.log(error));
 				});
 				
 				con.query("DELETE FROM quest_data WHERE quest_name=\'" + quest + "\';", function(err, result4) {
 					if(err) {
-                        console.log(err);
-                        message.channel.send("SQL error");
+                        console.log("SQL error (result4): " + err);
+                        message.channel.send("SQL error, try again in a few minutes");
+                        return;
 					}
 					
-                    auth.send("Quest completed successfully!");
+                    message.channel.send("Quest completed successfully!");
                     console.log("Quest completed, exp awarded");
 					
 				});
@@ -2173,7 +2188,7 @@ var quest_complete = function(args, message) {
 
 var award_xp = function(players, xp) {
 
-    console.log("Awarding exp to group of players.");
+    console.log("Awarding exp to a (group?) of players.");
 
 	//builds query to search for all players to be awarded exp		
 	var quer1 = "SELECT exp, level, charName, charPlayer FROM roster WHERE charName IN (\'";
@@ -2201,15 +2216,18 @@ var award_xp = function(players, xp) {
 
         //if no errors, award exp
 		con.query(sql, function (err, resultX) {
-			if (err) throw err;
+            if (err) {
+                console.log("SQL error (resultX) : " + err);
+                message.channel.send("SQL error, try again in a few minutes");
+                return;
+            }
 			console.log("Exp awarded");
         });		
 
         //check to see if anyone leveled up
         for (var i = 0; i < result.length; i++){
-            //console.log(result[i].charPlayer);
             var player = server.members.get(result[i].charPlayer);
-            //console.log(result[i]);
+
             player.send(`${result[i].charName} was awarded ${xp} XP. They now have ${result[i].exp + xp} XP.`);
 			newLevel = check_level(parseInt(result[i].exp) + parseInt(xp));
             //if they leveled up, update database
@@ -2221,10 +2239,10 @@ var award_xp = function(players, xp) {
 				level_message(result[i].charName, result[i].charPlayer, newLevel);
             }
 		}
+        console.log(`EXP awarding successful`);
 			
 	});
 
-    console.log(`EXP awarding successful`);
 	
 }
 
@@ -2232,7 +2250,6 @@ var award_xp = function(players, xp) {
 var add_shards = function(args, message){
 
     //if Duncan isn't using the command, it is invalid
-    console.log(message.author.username);
     if (message.author.id != duncan_id) {
         console.log("Not duncan trying to add shards.");
         message.channel.send("You do not have permission to use this command!");
@@ -2246,7 +2263,6 @@ var add_shards = function(args, message){
     }
 
     console.log("Attempting to add shards");
-
 
     //input form:
     //~addshards [quantity of shards], [player1 name], [player2 name],... 
@@ -2265,12 +2281,10 @@ var add_shards = function(args, message){
     var text = args.splice(2).join(" ");
 
     //regEx to extract char names from 'text' string
-    var regEx = /\W*(.*?)(?:,|$)/g;
+    var regEx = /\s*(.*?)(?:,|$)/g;
     var match;
 
     var players = [];
-	
-	console.log(text);
 	
 	//grabs all players to be given shards
 	while ((match = regEx.exec(text)[1]) != '') {
@@ -2296,7 +2310,11 @@ var add_shards = function(args, message){
 	
     //SQL updates player information
 	con.query(sql, function (err, result) {
-		if (err) throw err;
+        if (err) {
+            console.log("SQL error: " + err);
+            message.channel.send("SQL error, try again in a few minutes");
+            return;
+        }
         console.log("Shards awarded successfully.");
         message.channel.send("Shards awarded.");
 		});
@@ -2317,6 +2335,7 @@ var add_hours = function(args, message){
     if (!args[1]) {
         console.log("No arguments for ~addhours");
         message.channel.send("The syntax for 'addhours' is '~addhours [hours added] [character 1], [character 2]' for as many characters as desired.");
+        return;
     }
 
     console.log("Attempting to add DTH hours manually");
@@ -2333,12 +2352,10 @@ var add_hours = function(args, message){
     var text = args.splice(2).join(" ");
 
     //regEx to extract char names from 'text' string
-    var regEx = /\W*(.*?)(?:,|$)/g;
+    var regEx = /\s*(.*?)(?:,|$)/g;
     var match;
 
     var players = [];
-
-    console.log(text);
 
 	while ((match = regEx.exec(text)[1]) != "") {
         players.push(match);        
@@ -2364,20 +2381,29 @@ var add_hours = function(args, message){
     notify_sql += ");";
 	
     con.query(sql, function (err, result) {
-        console.log(result);
-	    if (err) throw err;
-        console.log("DTH successfully awarded.");
+        if (err) {
+            console.log("SQL error (result1): " + err);
+            message.channel.send("SQL error, try again in a few minutes");
+            return;
+        }
         var output = `**${hours} DTH** have been given to `;
 
         con.query(notify_sql, function (err, result2) {
-            if (err) throw err;
+            if (err) {
+                console.log("SQL error (result2): " + err);
+                message.channel.send("SQL error, try again in a few minutes");
+                return;
+            }
             for (var i = 0; i < result2.length; i++) {
                 output += `${players[i]}, `;
                 var char_player = server.members.get(result2[i].charPlayer);
                 char_player.send(`Your character ${players[i]} was awarded ${hours} DTH.`);
             }
             output = output.substring(0, output.length-2);
-            message.author.send(output);
+            message.channel.send(output);
+
+            console.log("DTH successfully awarded.");
+
         });
 	});
 	
@@ -2417,7 +2443,7 @@ var spend_dth = function (args, message) {
     var text = args.splice(1).join(" ");
 
     //regEx to extract char names from 'text' string
-    var regEx = /\W*(.*?),\W(.*?)$/;
+    var regEx = /\s*(.*?),\s(.*?)$/;
     var match = regEx.exec(text);
 
     if (!match || match.length < 2) {
@@ -2472,10 +2498,14 @@ var spend_dth = function (args, message) {
         //SQL to update character's dth
         var update = "UPDATE roster SET downHours=downHours - " + dth_quantity + " WHERE charName= '" + char_name + "'";
         con.query(update, function (err, result) {
-            if (err) throw err;
+            if (err) {
+                console.log("SQL error (result) : " + err);
+                message.channel.send("SQL error, try again in a few minutes");
+                return;
+            }
 
             if (parseInt(dth_use)) {
-                bot_commands.send(`${char_name} has spent ${dth_quantity} hours work and and earned ${dth_quantity * 8} gp from your profession.`);
+                bot_commands.send(`${char_name} has spent ${dth_quantity} hours work and earned ${dth_quantity * 8} gp from their profession.`);
             }
             else {
                 bot_commands.send(`${char_name} has spent ${dth_quantity} hours learning and picked up a new ${dth_use} proficiency.`);
@@ -2509,10 +2539,9 @@ var check_character = function(args, message) {
 
 	con.query("SELECT * FROM roster WHERE charName=\'" + character + "\';", function(err, result) {
         if (err) {
-            console.log("Error occured");
-            console.log(err);
-            message.channel.send("An error occured. Try again in a few minutes.");
-            
+            console.log("SQL error (result1) : " + err);
+            message.channel.send("SQL error, try again in a few minutes");
+            return;            
         }
 		//console.log(result);
         if (result[0] == undefined) {
@@ -2523,13 +2552,14 @@ var check_character = function(args, message) {
 
         con.query(`SELECT quest_name FROM quest_data WHERE active_players LIKE '%${result[0].entryID}%';`, function (err, result2) {
             if (err) {
-                console.log(err);
-                
+                console.log("SQL error (result2) : " + err);
+                message.channel.send("SQL error, try again in a few minutes");
+                return;                
             }
 
             if (result[0].charPlayer == message.author.id || server.members.get(message.author.id).roles.find("name", "Dungeon Master")) {
-                console.log("Stats printed");
-                var output = "Character: " + result[0].charName + "\n Level: " + result[0].level + "\n XP: " + result[0].exp + "\n Downtime hours: " + result[0].downHours + "\n Rift Shards: " + result[0].riftShards + "\n Quests this Week: " + result[0].completeQuests + "\n Actice Quests: ";
+
+                var output = "Character: " + result[0].charName + "\n Level: " + result[0].level + "\n XP: " + result[0].exp + "\n Downtime hours: " + result[0].downHours + "\n Rift Shards: " + result[0].riftShards + "\n Quests this Week: " + result[0].completeQuests + "\n Active Quests: ";
                 if (result2[0] == undefined || result2[0].length == 0) {
                     message.channel.send(output + "none");
                 } else {
@@ -2538,12 +2568,12 @@ var check_character = function(args, message) {
                     }
                     message.channel.send(output.substring(0, output.length-2));
                 }
+                console.log("Stats printed");
 
             } else {
                 console.log("Author doesn't own the player");
                 message.channel.send("You do not have permission to view that character!");
             }
-            console.log("stats checked");
         });
 		
 	});
@@ -2690,7 +2720,11 @@ var view_shop = function (args, message) {
     //selects all items from shop inventory
     var sql = "SELECT * FROM shop_inventory;";
     con.query(sql, function (err, result) {
-        if (err) throw err;
+        if (err) {
+            console.log("SQL error (result) : " + err);
+            message.channel.send("SQL error, try again in a few minutes");
+            return;
+        }
 
         //preps output embed
         var shop_inventory = new Discord.RichEmbed()
@@ -2727,45 +2761,70 @@ var buy_item = function (args, message) {
 
     if (!args[1]) {
         console.log("No arguemnts for ~buyitem");
-        return message.channel.send("The syntax for 'buyitem' is '~buyitem [character name], [item bought]'.");
+        return message.channel.send("The syntax for 'buyitem' is '~buyitem [character name], [item bought]', or '~buyitem [character name], [item bought], [quantity bought]'.");
     }
 
     var text = args.splice(1).join(" ");
 
-    //regEx to extract char names from 'text' string
-    var regEx = /\W*(.*?),\W(.*?)$/;
-    var match = regEx.exec(text);
+    var regEx = /\s*(.*?)(?:,|$)/g;
+    var match;
 
-    //form of [char buying item], [item to buy]
-    var char_name = match[1];
-    var item_to_buy = match[2];
+    var matches = [];
 
-    console.log(`Attempting to buy ${item_to_buy}.`);
+    //grabs all players to be given shards
+    while ((match = regEx.exec(text)[1]) != '') {
+        matches.push(match);
+    }
+
+    ///////////////
+    if (!matches || matches.length < 2 || matches.length > 3) {
+        console.log("Invalid arguments for ~buyitem");
+        return message.channel.send("Invalid syntax for ~buy item. make sure there is an item and a character");
+    }
+
+    var char_name = matches[0];
+    var item_to_buy = matches[1];
+    var quantity_to_buy = matches.length === 3 ? matches[2] : 1;
+
+    if (!parseInt(quantity_to_buy) || quantity_to_buy < 1) {
+        console.log(`Cannot buy a non-integer or negative quantity of an item`);
+        return message.channel.send("Invalid Syntax. Please give a positivy integer for quantity.");
+    }
+
+    console.log(`Attempting to buy ${quantity_to_buy} of ${item_to_buy}.`);
 
     //looks for item in shop inventory
     var sql = `SELECT * FROM shop_inventory WHERE item_name = '${item_to_buy}';`;
     con.query(sql, function (err, result) {
-        if (err) throw err;
+        if (err) {
+            console.log("SQL error (result) : " + err);
+            message.channel.send("SQL error, try again in a few minutes");
+            return;
+        }
 
         if (!result || result.length == 0) {
             console.log("Item not found");
             return message.channel.send("Item not found");
         }
 
-        if (result[0].item_quantity < 1) {
-            console.log("Item not in stock");
-            return message.channel.send(`${item_to_buy} is not in stock. Check again soon.`);
+        if (result[0].item_quantity < quantity_to_buy) {
+            console.log("Not enough of the item in stock");
+            return message.channel.send(`${item_to_buy} does not have ${quantity_to_buy} in stock. Check again soon.`);
         }
 
         //if item is there, remove it from the inventory
-        var remove_item_sql = `UPDATE shop_inventory SET item_quantity = item_quantity - 1 WHERE item_name = '${item_to_buy}';`;        
+        var remove_item_sql = `UPDATE shop_inventory SET item_quantity = item_quantity - ${quantity_to_buy} WHERE item_name = '${item_to_buy}';`;        
 
         con.query(remove_item_sql, function (err, delete_result) {
-            if (err) throw err;
+            if (err) {
+                console.log("SQL error (delete_result) : " + err);
+                message.channel.send("SQL error, try again in a few minutes");
+                return;
+            }
 
             console.log("Item found, removed from shop inventory");
             //message that the item was bought for expected price
-            return bot_commands.send(`**${item_to_buy}** was bought by **${char_name}** for **${result[0].item_price} gp**`);
+            return bot_commands.send(`**${quantity_to_buy} ${item_to_buy}** ${quantity_to_buy > 1 ? 'were' : 'was'} bought by **${char_name}** for **${result[0].item_price * quantity_to_buy} gp**`);
 
         });
 
@@ -2869,7 +2928,11 @@ var list_guild = function (args, message) {
     var sql = `SELECT * FROM roster WHERE 1`;
 
     con.query(sql, function (err, result) {
-        if (err) throw err;
+        if (err) {
+            console.log("SQL error (result) : " + err);
+            message.channel.send("SQL error, try again in a few minutes");
+            return;
+        }
 
         var output = "**__GUILD ROSTER__**\n__**Character**, level__\n";
 
