@@ -1453,6 +1453,7 @@ var fire_quest = function(args, message) {
 			con.query(sql, function(err, result3) {
 				if (err) {
                     console.log("SQL error (result3): " + err);
+                    console.log(sql);
                     message.channel.send("SQL error, try again in a few minutes");
                     return;
 				}
