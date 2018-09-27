@@ -466,7 +466,17 @@ var on_message = bot.on("message", function (message) {
 				
                 break;
 
+            case "editquest":
 
+                edit_quest(args, message);
+
+                break;
+
+            case "repostquest":
+
+                repost_quest(args, message);
+
+                break;
             //lets a DM to buy an item for a player from Soot's Shop
             case "buy":
             case "buyitem":
@@ -2971,6 +2981,186 @@ var list_guild = function (args, message) {
 
 }
 
+var edit_quest = function (args, message) {
+
+    if (!args[1]) {
+        console.log("No arguments provided for edit_quest.");
+        message.channel.send("The syntax for 'check' is '~editquest [quest name], [property to add/change], [new value]'.");
+        return;
+    }
+
+    //Format ~complete  [quest name], [field to edit/add], [new value]
+    text = args.splice(1).join(" ");
+
+    var regEx = /\s*(.*?),\s*(.*?),\s*(.*?)$/;
+    var match = regEx.exec(text);
+
+    if (!match || match.length < 3) {
+        console.log("Invalid arguments for ~complete");
+        message.channel.send("Invalid syntax. The syntax for 'complete' is '~complete [quest title], [xp awarded]'.");
+        return;
+    }
+
+    var quest = match[1];
+    var editField = match[2];
+    var newValue = match[3];
+
+    console.log(`editing quest, ${quest}, making field ${editField} have value of ${newValue}.`);
+
+    con.query(`SELECT * FROM quest_data WHERE quest_name="${quest}";`, function (err, result) {
+        if (err) {
+            message.channel.send("Something went wrong. Try again in a couple of minutes.");
+        }
+
+        if (result[0] == undefined) {
+            message.channel.send("No such quest with that title");
+            console.log(`${quest} wasn't found.`);
+            return;
+        }
+
+        if (message.author.id !== result[0].quest_DM && message.author.id !== chris_id) {
+            message.channel.send("You can't edit someone else's quest!");
+            console.log(`Quest owned by another DM`);
+            return;
+        }
+
+        quest_board.fetchMessage(result[0].message_id)
+            .then(msg => {
+                let newEmbed = new Discord.RichEmbed(msg.embeds[0]);
+
+                var editErrors = false;
+
+                try {
+                    var matchFound = false;
+                    if (editField == 'title' || editField == newEmbed.title) {
+                        if (newValue == '-remove') { editErrors = true; }
+                        newEmbed.setTitle(newValue);
+                        matchFound = true;
+                    } else {
+                        for (var field in newEmbed.fields) {
+                            if (newEmbed.fields[field].name == editField) {
+                                if (newValue == '-remove') {
+                                    newEmbed.fields.splice(field, 1);
+                                } else {
+                                    newEmbed.fields[field].value = newValue;
+                                }
+                                matchFound = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (!matchFound) {
+                        console.log("none found");
+                        if (!newValue != '-remove') {
+                            newEmbed.addField(editField, newValue);
+                        } else {
+                            message.channel.send(`Could not remove field ${editField}`);
+                            return;
+                        }
+                    }
+                } catch (e) {
+                    console.log(e);
+                    message.channel.send("Error editing quest, check console for details; likely a field exceeded 1024 characters.");
+                    return;
+                }
+
+                
+                var newlvl;
+                var newsize;
+                //console.log(newEmbed.fields);
+                for (var field in newEmbed.fields) {
+                    if (newEmbed.fields[field].name.toLowerCase() == "party level" || newEmbed.fields[field].name.toLowerCase() == "recommended level" || newEmbed.fields[field].name.toLowerCase() == "level") {
+                        newlvl = parseInt(newEmbed.fields[field].value);
+                    }
+                    if (newEmbed.fields[field].name.toLowerCase() == "party size" || newEmbed.fields[field].name.toLowerCase() == "size") {
+                        var numbers = newEmbed.fields[field].value.match(/\d+/g).map(Number);
+                        newsize = numbers[numbers.length - 1];
+                    }
+                }
+
+                if (!newlvl || !newsize) {
+                    editErrors = true;
+                }
+
+                if (editErrors) {
+                    message.channel.send("Could not process changes. Please check your syntax and make sure you did not remove an important element.");
+                    console.log('edit errors');
+                    return;
+                }
+
+                var sql = `UPDATE quest_data SET quest_name='${newEmbed.title}', quest_lvl=${newlvl}, size=${newsize} WHERE message_id = ${msg.id}`;
+
+                con.query(sql, (err, result2) => {
+                    if (err) throw err;
+
+                    //msg.edit(msg.content, { embed: newEmbed });
+                    var new_text;
+
+                    if (result[0].total_players >= newsize) {
+                        new_text = '**QUEST STATUS: CLOSED**';
+                    } else {
+                        new_text = `**QUEST STATUS: OPEN ${result[0].total_players}/${newsize}**`;
+                    }
+
+                    var chris = server.members.get(chris_id);
+
+                    msg.edit(new_text, { embed: newEmbed });
+
+                });
+
+        });
+
+    });
+}
+
+var repost_quest = function (args, message) {
+
+    if (!args[1]) {
+        console.log("No arguments provided for repost_quest.");
+        message.channel.send("The syntax for 'check' is '~repostquest [quest name]'.");
+        return;
+    }
+
+    var quest = args.splice(1).join(" ");
+    console.log(`reposting quest, ${quest}`);
+
+    con.query(`SELECT * FROM quest_data WHERE quest_name="${quest}";`, function (err, result) {
+        if (err) {
+            message.channel.send("Something went wrong. Try again in a couple of minutes.");
+        }
+
+        if (result[0] == undefined) {
+            message.channel.send("No such quest with that title");
+            console.log(`${quest} wasn't found.`);
+            return;
+        }
+
+        if (message.author.id !== result[0].quest_DM && message.author.id !== chris_id) {
+            message.channel.send("You can't repost someone else's quest!");
+            console.log(`Quest owned by another DM`);
+            return;
+        }
+
+        var chris = server.members.get(chris_id);
+
+        quest_board.fetchMessage(result[0].message_id)
+            .then(msg => {
+                quest_board.send(msg.content, { embed: new Discord.RichEmbed(msg.embeds[0]) }).then(newPost => {
+                    var sql = `UPDATE quest_data SET message_id='${newPost.id}' WHERE message_id = ${msg.id}`;
+
+                    con.query(sql, (err, result2) => {
+                        if (err) throw err;
+
+                        msg.delete();
+                        console.log("quest reposted.");
+                    });
+                });
+
+        });
+
+    });
+}
 
 var rand_shop_item = function (args, message) {
 

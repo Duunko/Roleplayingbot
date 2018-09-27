@@ -1,0 +1,3 @@
+C:\Users\Chris\Desktop\RPGBOT_PULL\Roleplayingbot\RolePlayingBot\obj\Debug\RolePlayingBot.njsprojResolveAssemblyReference.cache
+C:\Users\Chris\Desktop\RPGBOT_PULL\Roleplayingbot\RolePlayingBot\obj\Debug\RolePlayingBot.njsproj.CoreCompileInputs.cache
+C:\Users\Chris\Desktop\RPGBOT_PULL\Roleplayingbot\RolePlayingBot\bin\Microsoft.NodejsTools.WebRole.dll
