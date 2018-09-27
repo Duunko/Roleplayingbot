@@ -124,7 +124,6 @@ var on_ready = bot.on("ready", () => {
 	if(dayAdjust < 0) {
 		dayAdjust = 7 + dayAdjust;
 	}
-
 	var dateAdjust = currentDate + dayAdjust;
 	var monthAdjust = currentMonth;
     var yearAdjust = currentYear;
@@ -165,7 +164,7 @@ var on_ready = bot.on("ready", () => {
 	var adjustedTime = dateB.getTime() - dateA.getTime();
 //	setTimeout(lockout_warning, adjustedTime - (30 * 60 * 1000));	
 //	setTimeout(weekly_progress, adjustedTime);
-	setTimeout(keepAlive, 2*60*60*1000);	
+//	setTimeout(keepAlive, 2*60*60*1000);	
 	
     console.log("Ready");
 
@@ -497,7 +496,7 @@ var on_message = bot.on("message", function (message) {
 			//Fires the weekly progress function. For testing purposes
 			case "progress":
 
-                if (message.author.id == duncan_id|| message.author.id == chris_id) {
+                if (message.author.id == duncan_id) {
 					weekly_progress();
 				} else {
                     message.channel.send("You are not Duncan, heathen!");
@@ -576,7 +575,7 @@ var bot_status_to_revert;
 
 var lockout_warning = function () {
 
-    bot_status_to_revert = "Done";
+    bot_status_to_revert = bot.user.localPresence.game.name;
 	announcement_board.send("Weekly downtime in 30 minutes. Make sure that all finished quests have been closed with ~complete or you may lose downtime rewards.");
     bot.user.setGame("Lockout 4AM PST");
     bot.user.setStatus("idle");
@@ -636,8 +635,7 @@ var weekly_progress = function () {
 							player.push(result[entry].charName);
 							//Adds to the list of people getting full dth
 							fullHours.push(result[entry].entryID);
-							//Messages the player\
-                                                        console.log("Messaging user with id" + result[entry].charPlayer);
+							//Messages the player
 							var play = server.members.get(result[entry].charPlayer);
 							play.send(result[entry].charName + " got " + xpTotal + " experience and 20 Downtime Hours for their restful week.");
 							award_xp(player, xpTotal);
@@ -750,7 +748,7 @@ var check_quest = function (args, message) {
 		}
 		
 		if(result[0].active_players == '') {
-			message.channel.send(`${quest}\nQuest DM: ${result[0].quest_DM}\nQuest Level: ${result[0].quest_lvl}\nQuest Status: ${result[0].quest_status}\nActive Players: None`);
+			message.channel.send(`${quest}\nQuest DM: ${cDM}\nQuest Level: ${result[0].quest_lvl}\nQuest Status: ${result[0].quest_status}\nActive Players: None`);
 			return;
 			
 		}
@@ -2287,7 +2285,7 @@ var award_xp = function(players, xp) {
 var add_shards = function(args, message){
 
     //if Duncan isn't using the command, it is invalid
-    if (message.author.id != duncan_id && message.author.id != chris_id) {
+    if (message.author.id != duncan_id) {
         console.log("Not duncan trying to add shards.");
         message.channel.send("You do not have permission to use this command!");
         return;

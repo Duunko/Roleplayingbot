@@ -28,7 +28,9 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="app.js" />
+    <Compile Include="..\..\..\app.js">
+      <Link>app.js</Link>
+    </Compile>
     <Compile Include="Player.js">
       <SubType>Code</SubType>
     </Compile>
